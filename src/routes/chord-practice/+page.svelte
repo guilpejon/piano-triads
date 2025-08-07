@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+<div class="w-full min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
 	<div class="max-w-4xl mx-auto">
 		<div class="mb-8">
 			<a href="/" class="inline-flex items-center text-green-600 hover:text-green-800 mb-4">

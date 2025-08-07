@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+<div class="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
 	<div class="max-w-4xl w-full">
 		<div class="text-center mb-12">
 			<h1 class="text-5xl font-bold text-gray-800 mb-4">Piano Triads</h1>
