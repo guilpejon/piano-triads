@@ -1,5 +1,5 @@
 <div class="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-	<div class="max-w-4xl w-full">
+    <div class="max-w-7xl w-full">
     <div class="text-center mb-8 sm:mb-12">
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 mb-3 sm:mb-4">Piano Triads</h1>
         <p class="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8">Master piano chords, scales, and ear training</p>

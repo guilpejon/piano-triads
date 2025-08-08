@@ -12,8 +12,8 @@
         <slot />
     </main>
 	
-	<footer class="bg-gray-800 text-white py-6">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
 			<p class="text-sm">
 				Made with <span class="text-red-500">♥</span> by 
 				<a 
