@@ -1,8 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
 </script>
 
 <svelte:head>
@@ -10,12 +8,12 @@
 </svelte:head>
 
 <div class="min-h-screen flex flex-col">
-	<main class="flex-1 flex">
-		{@render children?.()}
-	</main>
+    <main class="flex-1 flex">
+        <slot />
+    </main>
 	
 	<footer class="bg-gray-800 text-white py-6">
-		<div class="max-w-4xl mx-auto px-4 text-center">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
 			<p class="text-sm">
 				Made with <span class="text-red-500">♥</span> by 
 				<a 

@@ -7,12 +7,12 @@
 				</svg>
 				Back to Home
 			</a>
-			<h1 class="text-4xl font-bold text-gray-800 mb-4">Learn Scales</h1>
-			<p class="text-xl text-gray-600">Master major, minor, and exotic scales with interactive lessons</p>
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Learn Scales</h1>
+    <p class="text-base sm:text-lg md:text-xl text-gray-600">Master major, minor, and exotic scales with interactive lessons</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-			<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
 				<div class="text-center mb-4">
 					<div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
 						<span class="text-white font-bold text-lg">M</span>
@@ -32,7 +32,7 @@
 				</button>
 			</div>
 
-			<div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
 				<div class="text-center mb-4">
 					<div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
 						<span class="text-white font-bold text-lg">m</span>
@@ -52,7 +52,7 @@
 				</button>
 			</div>
 
-			<div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
 				<div class="text-center mb-4">
 					<div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
 						<span class="text-white font-bold text-lg">×</span>
@@ -73,10 +73,10 @@
 			</div>
 		</div>
 
-		<div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 mb-8">
 			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Interactive Scale Trainer</h2>
 			
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
 				<div>
 					<h3 class="text-lg font-medium text-gray-800 mb-4">Current Scale: C Major</h3>
 					<div class="bg-gray-100 rounded-lg p-4 mb-4">
@@ -142,9 +142,9 @@
 			</div>
 		</div>
 
-		<div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Learning Path</h2>
-			<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
 				<div class="text-center">
 					<div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
 						<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

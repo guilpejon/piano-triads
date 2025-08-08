@@ -7,15 +7,15 @@
 				</svg>
 				Back to Home
 			</a>
-			<h1 class="text-4xl font-bold text-gray-800 mb-4">Chord Practice</h1>
-			<p class="text-xl text-gray-600">Practice chord progressions and improve your playing skills</p>
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Chord Practice</h1>
+    <p class="text-base sm:text-lg md:text-xl text-gray-600">Practice chord progressions and improve your playing skills</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-			<div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Practice Modes</h2>
 				
-				<div class="space-y-4">
+                <div class="space-y-3 sm:space-y-4">
 					<div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors">
 						<h3 class="text-lg font-medium text-gray-800 mb-2">Chord Recognition</h3>
 						<p class="text-gray-600 text-sm">Listen to chords and identify them by name</p>
@@ -50,7 +50,7 @@
 				</div>
 			</div>
 
-			<div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Progress</h2>
 				
 				<div class="space-y-6">
@@ -108,9 +108,9 @@
 			</div>
 		</div>
 
-		<div class="mt-8 bg-white rounded-xl shadow-lg p-8">
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Quick Practice</h2>
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
 				<button class="bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors">
 					<div class="text-lg font-medium">5-Minute Warm-up</div>
 					<div class="text-sm opacity-90">Basic chord changes</div>

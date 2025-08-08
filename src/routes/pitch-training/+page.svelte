@@ -7,12 +7,12 @@
 				</svg>
 				Back to Home
 			</a>
-			<h1 class="text-4xl font-bold text-gray-800 mb-4">Pitch Training</h1>
-			<p class="text-xl text-gray-600">Develop perfect pitch and interval recognition skills</p>
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Pitch Training</h1>
+    <p class="text-base sm:text-lg md:text-xl text-gray-600">Develop perfect pitch and interval recognition skills</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-			<div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Training Modules</h2>
 				
 				<div class="space-y-4">
@@ -26,7 +26,7 @@
 							<div class="text-xs text-gray-500">
 								<span>Accuracy: 78%</span> • <span>Best Streak: 12</span>
 							</div>
-							<button class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-3 py-1 rounded transition-colors">
+                    <button class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-3 py-1 rounded transition-colors">
 								Practice
 							</button>
 						</div>
@@ -82,7 +82,7 @@
 				</div>
 			</div>
 
-			<div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Current Exercise</h2>
 				
 				<div class="text-center mb-6">
@@ -97,7 +97,7 @@
 
 				<div class="bg-gray-50 rounded-lg p-6 mb-6">
 					<div class="text-center mb-4">
-						<button class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition-colors text-lg font-medium">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg transition-colors text-base sm:text-lg font-medium">
 							Play Interval
 						</button>
 					</div>
@@ -109,7 +109,7 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-6">
 					<button class="border border-gray-300 hover:border-orange-500 hover:bg-orange-50 py-3 px-4 rounded-lg transition-colors">
 						Perfect 4th
 					</button>
@@ -137,7 +137,7 @@
 			</div>
 		</div>
 
-		<div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
 			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistics & Progress</h2>
 			
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -166,7 +166,7 @@
 					<div class="flex items-center justify-between text-sm">
 						<span class="text-gray-600">Monday</span>
 						<div class="flex items-center">
-							<div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                    <div class="w-24 sm:w-32 bg-gray-200 rounded-full h-2 mr-3">
 								<div class="bg-orange-500 h-2 rounded-full" style="width: 80%"></div>
 							</div>
 							<span class="text-gray-700 font-medium">12 exercises</span>
