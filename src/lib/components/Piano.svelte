@@ -1,189 +1,272 @@
-<script>
-  import { onMount } from 'svelte';
+<ul class="piano">
+	<!-- Octave 3 -->
+	<li class="key white c" data-note="C3" role="button" tabindex="0" aria-label="Piano key C">
+		<p class="note" aria-label="Note C">C</p>
+	</li>
+	<li class="key black cs" data-note="C#3/Db3" role="button" tabindex="0" aria-label="Piano key C#">
+		<p class="note" aria-label="Note C#">C#</p>
+		<p class="note" aria-label="Note Db">Db</p>
+	</li>
+	<li class="key white d" data-note="D3" role="button" tabindex="0" aria-label="Piano key D">
+		<p class="note" aria-label="Note D">D</p>
+	</li>
+	<li class="key black ds" data-note="D#3/Eb3" role="button" tabindex="0" aria-label="Piano key D#">
+		<p class="note" aria-label="Note D#">D#</p>
+		<p class="note" aria-label="Note Eb">Eb</p>
+	</li>
+	<li class="key white e" data-note="E3" role="button" tabindex="0" aria-label="Piano key E">
+		<p class="note" aria-label="Note E">E</p>
+	</li>
+	<li class="key white f" data-note="F3" role="button" tabindex="0" aria-label="Piano key F">
+		<p class="note" aria-label="Note F">F</p>
+	</li>
+	<li class="key black fs" data-note="F#3/Gb3" role="button" tabindex="0" aria-label="Piano key F#">
+		<p class="note" aria-label="Note F#">F#</p>
+		<p class="note" aria-label="Note Gb">Gb</p>
+	</li>
+	<li class="key white g" data-note="G3" role="button" tabindex="0" aria-label="Piano key G">
+		<p class="note" aria-label="Note G">G</p>
+	</li>
+	<li class="key black gs" data-note="G#3/Ab3" role="button" tabindex="0" aria-label="Piano key G#">
+		<p class="note" aria-label="Note G#">G#</p>
+		<p class="note" aria-label="Note Ab">Ab</p>
+	</li>
+	<li class="key white a" data-note="A3" role="button" tabindex="0" aria-label="Piano key A">
+		<p class="note" aria-label="Note A">A</p>
+	</li>
+	<li class="key black as" data-note="A#3/Bb3" role="button" tabindex="0" aria-label="Piano key A#">
+		<p class="note" aria-label="Note A#">A#</p>
+		<p class="note" aria-label="Note Bb">Bb</p>
+	</li>
+	<li class="key white b" data-note="B3" role="button" tabindex="0" aria-label="Piano key B">
+		<p class="note" aria-label="Note B">B</p>
+	</li>
 
-  /** @type {{ dataNote: string, src: string }[]} */
-  export let audioNotes = [];
-  export let showLabels = true;
-  export let preferFlat = false; // if true, show flats for black keys
-
-  // Fixed full-size keyboard dimensions; keep constant on all screens
-  export let whiteKeyWidth = 70;
-  export let whiteKeyHeight = 280;
-  export let blackKeyWidth = 40;
-  export let blackKeyHeight = 180;
-  const whiteKeyGap = 2;
-
-  const keys = [
-    { type: 'white', label: 'C', noteIds: ['C3'] },
-    { type: 'black', labels: ['C#', 'Db'], boundaryIndex: 1, noteIds: ['C#3', 'Db3'] },
-    { type: 'white', label: 'D', noteIds: ['D3'] },
-    { type: 'black', labels: ['D#', 'Eb'], boundaryIndex: 2, noteIds: ['D#3', 'Eb3'] },
-    { type: 'white', label: 'E', noteIds: ['E3'] },
-    { type: 'white', label: 'F', noteIds: ['F3'] },
-    { type: 'black', labels: ['F#', 'Gb'], boundaryIndex: 4, noteIds: ['F#3', 'Gb3'] },
-    { type: 'white', label: 'G', noteIds: ['G3'] },
-    { type: 'black', labels: ['G#', 'Ab'], boundaryIndex: 5, noteIds: ['G#3', 'Ab3'] },
-    { type: 'white', label: 'A', noteIds: ['A3'] },
-    { type: 'black', labels: ['A#', 'Bb'], boundaryIndex: 6, noteIds: ['A#3', 'Bb3'] },
-    { type: 'white', label: 'B', noteIds: ['B3'] },
-    { type: 'white', label: 'C', noteIds: ['C4'] },
-    { type: 'black', labels: ['C#', 'Db'], boundaryIndex: 8, noteIds: ['C#4', 'Db4'] },
-    { type: 'white', label: 'D', noteIds: ['D4'] },
-    { type: 'black', labels: ['D#', 'Eb'], boundaryIndex: 9, noteIds: ['D#4', 'Eb4'] },
-    { type: 'white', label: 'E', noteIds: ['E4'] },
-    { type: 'white', label: 'F', noteIds: ['F4'] },
-    { type: 'black', labels: ['F#', 'Gb'], boundaryIndex: 11, noteIds: ['F#4', 'Gb4'] },
-    { type: 'white', label: 'G', noteIds: ['G4'] },
-    { type: 'black', labels: ['G#', 'Ab'], boundaryIndex: 12, noteIds: ['G#4', 'Ab4'] },
-    { type: 'white', label: 'A', noteIds: ['A4'] },
-    { type: 'black', labels: ['A#', 'Bb'], boundaryIndex: 13, noteIds: ['A#4', 'Bb4'] },
-    { type: 'white', label: 'B', noteIds: ['B4'] }
-  ];
-
-  let noteToAudio = new Map();
-
-  onMount(() => {
-    // Build the lookup for fast playback
-    for (const an of audioNotes) {
-      const el = document.querySelector(`audio[data-note="${an.dataNote}"]`);
-      if (el) noteToAudio.set(an.dataNote, el);
-    }
-  });
-
-  /** @param {string[]} noteIds */
-  function play(noteIds) {
-    for (const id of noteIds) {
-      const audio = noteToAudio.get(id);
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
-        return;
-      }
-    }
-    console.log('Played note:', noteIds[0]);
-  }
-
-  /** @param {[string,string]} labels */
-  function blackLabel(labels) {
-    return preferFlat ? labels[1] : labels[0];
-  }
-</script>
-
-{#if audioNotes.length}
-  {#each audioNotes as a}
-    <audio data-note={a.dataNote} src={a.src} preload="none" />
-  {/each}
-{/if}
-
-<div class="piano-container">
-  <div
-    class="piano"
-    style={`--whiteW:${whiteKeyWidth}px; --whiteH:${whiteKeyHeight}px; --blackW:${blackKeyWidth}px; --blackH:${blackKeyHeight}px; --gap:${whiteKeyGap}px;`}
-  >
-    <div class="relative flex">
-      {#each keys as key}
-        {#if key.type === 'white'}
-          <button
-            type="button"
-            class="white-key"
-            aria-label={`Piano key ${key.label}`}
-            on:click={() => play(key.noteIds)}
-          >
-            {#if showLabels}
-              <span class="key-label white">{key.label}</span>
-            {/if}
-          </button>
-        {/if}
-      {/each}
-
-      <div class="absolute top-0 left-0">
-        {#each keys as key}
-          {#if key.type === 'black' && key.boundaryIndex !== undefined}
-            <button
-              type="button"
-              class="black-key"
-              style={`--b:${key.boundaryIndex}`}
-              aria-label={`Piano key ${blackLabel(/** @type {[string,string]} */(key.labels || ['#','b']))}`}
-              on:click={() => play(key.noteIds)}
-            >
-              {#if showLabels}
-                <span class="key-label black">{blackLabel(/** @type {[string,string]} */(key.labels || ['#','b']))}</span>
-              {/if}
-            </button>
-          {/if}
-        {/each}
-      </div>
-    </div>
-  </div>
-  
-</div>
+	<!-- Octave 4 -->
+	<li class="key white c" data-note="C4" role="button" tabindex="0" aria-label="Piano key C">
+		<p class="note" aria-label="Note C">C</p>
+	</li>
+	<li class="key black cs" data-note="C#4/Db4" role="button" tabindex="0" aria-label="Piano key C#">
+		<p class="note" aria-label="Note C#">C#</p>
+		<p class="note" aria-label="Note Db">Db</p>
+	</li>
+	<li class="key white d" data-note="D4" role="button" tabindex="0" aria-label="Piano key D">
+		<p class="note" aria-label="Note D">D</p>
+	</li>
+	<li class="key black ds" data-note="D#4/Eb4" role="button" tabindex="0" aria-label="Piano key D#">
+		<p class="note" aria-label="Note D#">D#</p>
+		<p class="note" aria-label="Note Eb">Eb</p>
+	</li>
+	<li class="key white e" data-note="E4" role="button" tabindex="0" aria-label="Piano key E">
+		<p class="note" aria-label="Note E">E</p>
+	</li>
+	<li class="key white f" data-note="F4" role="button" tabindex="0" aria-label="Piano key F">
+		<p class="note" aria-label="Note F">F</p>
+	</li>
+	<li class="key black fs" data-note="F#4/Gb4" role="button" tabindex="0" aria-label="Piano key F#">
+		<p class="note" aria-label="Note F#">F#</p>
+		<p class="note" aria-label="Note Gb">Gb</p>
+	</li>
+	<li class="key white g" data-note="G4" role="button" tabindex="0" aria-label="Piano key G">
+		<p class="note" aria-label="Note G">G</p>
+	</li>
+	<li class="key black gs" data-note="G#4/Ab4" role="button" tabindex="0" aria-label="Piano key G#">
+		<p class="note" aria-label="Note G#">G#</p>
+		<p class="note" aria-label="Note Ab">Ab</p>
+	</li>
+	<li class="key white a" data-note="A4" role="button" tabindex="0" aria-label="Piano key A">
+		<p class="note" aria-label="Note A">A</p>
+	</li>
+	<li class="key black as" data-note="A#4/Bb4" role="button" tabindex="0" aria-label="Piano key A#">
+		<p class="note" aria-label="Note A#">A#</p>
+		<p class="note" aria-label="Note Bb">Bb</p>
+	</li>
+	<li class="key white b" data-note="B4" role="button" tabindex="0" aria-label="Piano key B">
+		<p class="note" aria-label="Note B">B</p>
+	</li>
+</ul>
 
 <style>
-  .piano-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    overflow-x: auto;
-    padding: 0 0.5rem;
+  :root {
+    --main-color: #4CAF50;
+    --text-primary: #333;
+    --text-light: #FFF;
+    --bg-primary: #FFF;
+    --bg-secondary: #eee;
+    --bg-dark: #222;
+    --border-light: #bbb;
+    --border-dark: #000;
+    --shadow-light: rgba(0,0,0,0.1);
+    --shadow-medium: rgba(0,0,0,0.2);
+    --shadow-dark: rgba(0,0,0,0.5);
   }
 
   .piano {
-    background: linear-gradient(135deg, #2c3e50, #34495e);
-    border: 3px solid #1a252f;
-    border-radius: 1.5rem;
-    padding: 24px;
-    flex-shrink: 0;
-    width: calc(var(--whiteW) * 14 + var(--gap) * 13);
-  }
-
-  .white-key {
-    width: var(--whiteW);
-    height: var(--whiteH);
-    margin-right: var(--gap);
+    height: 18.875em;
+    width: 62.2em;
+    margin: auto;
+    padding: 3em 0 0 3em;
     position: relative;
+    border: 1px solid var(--border-dark);
+    border-radius: 1em;
+    background: var(--bg-dark);
+    box-shadow: 0 0 50px var(--shadow-dark) inset, 0 1px rgba(212,152,125,0.2) inset, 0 5px 15px var(--shadow-dark);
+    list-style: none;
+  }
+
+  .key {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: relative;
+    float: left;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    outline: none;
+  }
+  .key.white {
+    height: 16em;
+    width: 4em;
     z-index: 1;
-    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-    border: 2px solid #dee2e6;
-    border-bottom-left-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+    border-left: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    border-radius: 0 0 5px 5px;
+    box-shadow: -1px 0 0 rgba(255,255,255,0.8) inset, 0 0 5px #ccc inset, 0 0 3px var(--shadow-medium);
+    background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   }
-  .white-key:last-child { margin-right: 0; }
-  .white-key:hover { transform: translateY(1px); }
-  .white-key:active { transform: translateY(2px); }
 
-  .black-key {
-    position: absolute;
+  .key.white:active,
+  .key.white:focus {
+    border-top: 1px solid #777;
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #999;
+    box-shadow: 2px 0 3px var(--shadow-light) inset, -5px 5px 20px var(--shadow-medium) inset, 0 0 3px var(--shadow-medium);
+    background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
+  }
+  .key.white:hover {
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #999;
+    background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
+  }
+  .g, .a, .b, .d, .e {
+    margin: 0 0 0 -1em;
+  }
+  .key.black {
+    height: 9em;
+    width: 2em;
+    margin: 0 0 0 -1em;
     z-index: 2;
-    width: var(--blackW);
-    height: var(--blackH);
-    background: linear-gradient(to bottom, #343a40, #212529);
-    border: 1px solid #000000;
-    border-bottom-left-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-    left: calc(var(--whiteW) * var(--b) + var(--gap) * var(--b) - var(--blackW) / 2);
+    border: 1px solid var(--border-dark);
+    border-radius: 0 0 3px 3px;
+    box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset, 0 -5px 2px 3px rgba(0,0,0,0.6) inset, 0 2px 4px var(--shadow-dark);
+    background: linear-gradient(45deg, var(--bg-dark) 0%, #555 100%);
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-end;
   }
-  .black-key:hover { transform: translateY(1px); }
-  .black-key:active { transform: translateY(2px); }
 
-  .key-label {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
+  .key.black p {
+    font-size: 20px;
+    position: relative;
+    padding: 0;
+    margin-bottom: 3px;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .key.black:active,
+  .key.black:focus {
+    box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset, 0 -2px 2px 3px rgba(0,0,0,0.6) inset, 0 1px 2px var(--shadow-dark);
+    background: linear-gradient(to right, #323232 0%, var(--bg-dark) 100%);
+  }
+
+  .key.black:hover {
+    box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset, 0 -2px 2px 3px rgba(0,0,0,0.6) inset, 0 1px 2px var(--shadow-dark);
+  }
+
+  .key .note {
+    color: var(--text-light);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     font-weight: 600;
-    user-select: none;
-    pointer-events: none;
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
   }
-  .key-label.white { color: #444; }
-  .key-label.black { color: #eee; bottom: 6px; }
 
-  @media (min-width: 1200px) {
-    .piano-container { padding: 0; }
+  .key.white .note {
+    margin-left: 11px !important;
+    font-size: 25px;
+    color: var(--text-primary);
+  }
+
+  .piano .key:first-child {
+    border-radius: 5px 0 5px 5px;
+  }
+
+  .piano .key:last-child {
+    border-radius: 0 5px 5px 5px;
+  }
+
+  @media (max-width: 1100px) {
+    .piano {
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: column;
+      padding: 3em 0 0 0em;
+      overflow-y: hidden;
+    }
+
+    .key.white {
+      width: 4.6rem;
+    }
+
+    .key.white p.note {
+      margin-left: 16px !important;
+    }
+  }
+
+  @media (min-width: 950px) and (max-width: 1100px) {
+    .key.white {
+      width: 4.6rem;
+    }
+  }
+  @media (max-width: 600px) {
+    .piano {
+      box-shadow: none;
+      margin: 0;
+      padding: 0;
+      border: none;
+      height: 16rem;
+
+      .key.white {
+        height: 14rem;
+        p.note {
+          margin-left: 20px !important;
+          bottom: 5px;
+        }
+      }
+    }
+    .key.black {
+      width: 2rem;
+      height: 8rem;
+
+      p.note {
+        margin-bottom: 0;
+      }
+    }
+
+    .key .note {
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+    }
+
+    .key.white .note {
+      font-size: 20px;
+    }
   }
 </style>
-
-

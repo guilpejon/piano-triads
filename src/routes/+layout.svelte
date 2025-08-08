@@ -8,7 +8,7 @@
 </svelte:head>
 
 <div class="min-h-screen flex flex-col">
-    <main class="flex-1 flex">
+    <main class="flex-1 flex justify-center items-center">
         <slot />
     </main>
 	
