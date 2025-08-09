@@ -91,6 +91,12 @@
     justify-content: center;
     min-height: calc(100vh - 4rem); /* Account for navbar */
     padding: 3rem 0;
+		.header-section {
+			margin-bottom: 4rem;
+			h1 {
+				margin-bottom: 2rem;
+			}
+		}
   }
 
   /* Features section */
@@ -104,17 +110,6 @@
     gap: 1.5rem;
     max-width: 64rem;
     margin: 0 auto;
-  }
-
-  .footer-section {
-    text-align: center;
-    padding: 2.5rem 0;
-  }
-
-  .footer-text {
-    font-size: 1.125rem;
-    color: #9ca3af;
-    margin: 0;
   }
 
   /* Feature Card Specific Styles */

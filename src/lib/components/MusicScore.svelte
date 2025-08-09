@@ -1,6 +1,7 @@
 <script lang="ts">
   export let activeNotes: string[] = [];
   export let chordName: string = '';
+  export let chordToneRule: string = '';
   
   // Note positions on the staff (middle C = 0)
   const notePositions: { [key: string]: number } = {
@@ -130,7 +131,7 @@
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
-    padding: 2rem;
+    padding: 1.5rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     max-width: 500px;
@@ -140,16 +141,24 @@
 
   .chord-name-display {
     text-align: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
   }
 
   .chord-name {
     font-size: 24px;
     font-weight: 600;
     color: #1d1d1f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .chord-tone-rule {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-text-secondary);
     margin: 0;
+    text-align: center;
+    opacity: 0.8;
+    font-style: italic;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
@@ -275,6 +284,9 @@
   {#if chordName}
     <div class="chord-name-display">
       <h2 class="chord-name">{chordName}</h2>
+      {#if chordToneRule}
+        <p class="chord-tone-rule">{chordToneRule}</p>
+      {/if}
     </div>
   {/if}
   <div class="score-container">

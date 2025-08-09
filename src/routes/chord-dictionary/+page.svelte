@@ -225,6 +225,23 @@
     return `${currentNote} ${chordTypeName}`;
   })();
 
+  // Reactive chord tone rule that explains how to build the chord with semitone steps
+  $: chordToneRule = (() => {
+    const chordRules: { [key: string]: string } = {
+      'M': '1, 3, 5',
+      'm': '1, b3, 5',
+      'dim': '1, b3, b5',
+      'sus4': '1, 4, 5',
+      '7': '1, 3, 5, b7',
+      'maj7': '1, 3, 5, 7',
+      '9': '1, 3, 5, b7, 9',
+      'm7': '1, b3, 5, b7',
+      '11': '1, 3, 5, b7, 9, 11'
+    };
+
+    return chordRules[currentChordType] || 'Custom chord structure';
+  })();
+
   // Function to update URL based on current chord selection
   function updateURL() {
     if (isInitialLoad) return; // Don't update URL during initial load
@@ -440,6 +457,9 @@
   .chord-dictionary-wrapper {
     min-height: calc(100vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
+    .main-title {
+      font-size: clamp(48px, 8vw, 70px);
+    }
   }
 
   /* Navigation */
@@ -619,7 +639,7 @@
 
     <!-- Music Score Section -->
     <section class="score-section">
-      <MusicScore {activeNotes} chordName={fullChordName} />
+      <MusicScore {activeNotes} chordName={fullChordName} {chordToneRule} />
     </section>
 
     <!-- Chord Controls -->
