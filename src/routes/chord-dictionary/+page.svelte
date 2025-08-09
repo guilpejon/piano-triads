@@ -501,7 +501,7 @@
     letter-spacing: -0.02em;
     line-height: 1.05;
     color: #1d1d1f;
-    margin: 0 0 24px;
+    margin: 0;
     background: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -691,7 +691,6 @@
     <header class="header-section">
       <div class="header-content">
         <h1 class="main-title">Chord Dictionary</h1>
-        <p class="main-subtitle">Explore and learn piano chord fingerings and progressions.</p>
       </div>
     </header>
 
