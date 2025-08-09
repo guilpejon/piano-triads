@@ -1,6 +1,7 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import MusicScore from '$lib/components/MusicScore.svelte';
+  import { playChord } from '$lib/utils/audioUtils';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -278,6 +279,11 @@
     }
     
     updatePianoDisplay();
+    
+    // Play the chord audio when it's updated (skip on initial load)
+    if (!isInitialLoad && activeNotes.length > 0) {
+      playChord(activeNotes);
+    }
     
     // Update URL to reflect current chord selection
     updateURL();
