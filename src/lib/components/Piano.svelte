@@ -1,90 +1,90 @@
-<ul class="piano">
+<div class="piano">
 	<!-- Octave 3 -->
-	<li class="key white c" data-note="C3" role="button" tabindex="0" aria-label="Piano key C">
+	<button class="key white c" data-note="C3" aria-label="Piano key C">
 		<p class="note" aria-label="Note C">C</p>
-	</li>
-	<li class="key black cs" data-note="C#3/Db3" role="button" tabindex="0" aria-label="Piano key C#">
+	</button>
+	<button class="key black cs" data-note="C#3/Db3" aria-label="Piano key C#">
 		<p class="note" aria-label="Note C#">C#</p>
 		<p class="note" aria-label="Note Db">Db</p>
-	</li>
-	<li class="key white d" data-note="D3" role="button" tabindex="0" aria-label="Piano key D">
+	</button>
+	<button class="key white d" data-note="D3" aria-label="Piano key D">
 		<p class="note" aria-label="Note D">D</p>
-	</li>
-	<li class="key black ds" data-note="D#3/Eb3" role="button" tabindex="0" aria-label="Piano key D#">
+	</button>
+	<button class="key black ds" data-note="D#3/Eb3" aria-label="Piano key D#">
 		<p class="note" aria-label="Note D#">D#</p>
 		<p class="note" aria-label="Note Eb">Eb</p>
-	</li>
-	<li class="key white e" data-note="E3" role="button" tabindex="0" aria-label="Piano key E">
+	</button>
+	<button class="key white e" data-note="E3" aria-label="Piano key E">
 		<p class="note" aria-label="Note E">E</p>
-	</li>
-	<li class="key white f" data-note="F3" role="button" tabindex="0" aria-label="Piano key F">
+	</button>
+	<button class="key white f" data-note="F3" aria-label="Piano key F">
 		<p class="note" aria-label="Note F">F</p>
-	</li>
-	<li class="key black fs" data-note="F#3/Gb3" role="button" tabindex="0" aria-label="Piano key F#">
+	</button>
+	<button class="key black fs" data-note="F#3/Gb3" aria-label="Piano key F#">
 		<p class="note" aria-label="Note F#">F#</p>
 		<p class="note" aria-label="Note Gb">Gb</p>
-	</li>
-	<li class="key white g" data-note="G3" role="button" tabindex="0" aria-label="Piano key G">
+	</button>
+	<button class="key white g" data-note="G3" aria-label="Piano key G">
 		<p class="note" aria-label="Note G">G</p>
-	</li>
-	<li class="key black gs" data-note="G#3/Ab3" role="button" tabindex="0" aria-label="Piano key G#">
+	</button>
+	<button class="key black gs" data-note="G#3/Ab3" aria-label="Piano key G#">
 		<p class="note" aria-label="Note G#">G#</p>
 		<p class="note" aria-label="Note Ab">Ab</p>
-	</li>
-	<li class="key white a" data-note="A3" role="button" tabindex="0" aria-label="Piano key A">
+	</button>
+	<button class="key white a" data-note="A3" aria-label="Piano key A">
 		<p class="note" aria-label="Note A">A</p>
-	</li>
-	<li class="key black as" data-note="A#3/Bb3" role="button" tabindex="0" aria-label="Piano key A#">
+	</button>
+	<button class="key black as" data-note="A#3/Bb3" aria-label="Piano key A#">
 		<p class="note" aria-label="Note A#">A#</p>
 		<p class="note" aria-label="Note Bb">Bb</p>
-	</li>
-	<li class="key white b" data-note="B3" role="button" tabindex="0" aria-label="Piano key B">
+	</button>
+	<button class="key white b" data-note="B3" aria-label="Piano key B">
 		<p class="note" aria-label="Note B">B</p>
-	</li>
+	</button>
 
 	<!-- Octave 4 -->
-	<li class="key white c" data-note="C4" role="button" tabindex="0" aria-label="Piano key C">
+	<button class="key white c" data-note="C4" aria-label="Piano key C">
 		<p class="note" aria-label="Note C">C</p>
-	</li>
-	<li class="key black cs" data-note="C#4/Db4" role="button" tabindex="0" aria-label="Piano key C#">
+	</button>
+	<button class="key black cs" data-note="C#4/Db4" aria-label="Piano key C#">
 		<p class="note" aria-label="Note C#">C#</p>
 		<p class="note" aria-label="Note Db">Db</p>
-	</li>
-	<li class="key white d" data-note="D4" role="button" tabindex="0" aria-label="Piano key D">
+	</button>
+	<button class="key white d" data-note="D4" aria-label="Piano key D">
 		<p class="note" aria-label="Note D">D</p>
-	</li>
-	<li class="key black ds" data-note="D#4/Eb4" role="button" tabindex="0" aria-label="Piano key D#">
+	</button>
+	<button class="key black ds" data-note="D#4/Eb4" aria-label="Piano key D#">
 		<p class="note" aria-label="Note D#">D#</p>
 		<p class="note" aria-label="Note Eb">Eb</p>
-	</li>
-	<li class="key white e" data-note="E4" role="button" tabindex="0" aria-label="Piano key E">
+	</button>
+	<button class="key white e" data-note="E4" aria-label="Piano key E">
 		<p class="note" aria-label="Note E">E</p>
-	</li>
-	<li class="key white f" data-note="F4" role="button" tabindex="0" aria-label="Piano key F">
+	</button>
+	<button class="key white f" data-note="F4" aria-label="Piano key F">
 		<p class="note" aria-label="Note F">F</p>
-	</li>
-	<li class="key black fs" data-note="F#4/Gb4" role="button" tabindex="0" aria-label="Piano key F#">
+	</button>
+	<button class="key black fs" data-note="F#4/Gb4" aria-label="Piano key F#">
 		<p class="note" aria-label="Note F#">F#</p>
 		<p class="note" aria-label="Note Gb">Gb</p>
-	</li>
-	<li class="key white g" data-note="G4" role="button" tabindex="0" aria-label="Piano key G">
+	</button>
+	<button class="key white g" data-note="G4" aria-label="Piano key G">
 		<p class="note" aria-label="Note G">G</p>
-	</li>
-	<li class="key black gs" data-note="G#4/Ab4" role="button" tabindex="0" aria-label="Piano key G#">
+	</button>
+	<button class="key black gs" data-note="G#4/Ab4" aria-label="Piano key G#">
 		<p class="note" aria-label="Note G#">G#</p>
 		<p class="note" aria-label="Note Ab">Ab</p>
-	</li>
-	<li class="key white a" data-note="A4" role="button" tabindex="0" aria-label="Piano key A">
+	</button>
+	<button class="key white a" data-note="A4" aria-label="Piano key A">
 		<p class="note" aria-label="Note A">A</p>
-	</li>
-	<li class="key black as" data-note="A#4/Bb4" role="button" tabindex="0" aria-label="Piano key A#">
+	</button>
+	<button class="key black as" data-note="A#4/Bb4" aria-label="Piano key A#">
 		<p class="note" aria-label="Note A#">A#</p>
 		<p class="note" aria-label="Note Bb">Bb</p>
-	</li>
-	<li class="key white b" data-note="B4" role="button" tabindex="0" aria-label="Piano key B">
+	</button>
+	<button class="key white b" data-note="B4" aria-label="Piano key B">
 		<p class="note" aria-label="Note B">B</p>
-	</li>
-</ul>
+	</button>
+</div>
 
 <style>
   :root {
@@ -111,15 +111,15 @@
     border-radius: 1em;
     background: var(--bg-dark);
     box-shadow: 0 0 50px var(--shadow-dark) inset, 0 1px rgba(212,152,125,0.2) inset, 0 5px 15px var(--shadow-dark);
-    list-style: none;
+    display: flex;
   }
 
   .key {
     margin: 0;
     padding: 0;
-    list-style: none;
+    border: none;
+    background: none;
     position: relative;
-    float: left;
     cursor: pointer;
     transition: all 0.1s ease;
     outline: none;

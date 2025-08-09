@@ -1,5 +1,6 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
+  import MusicScore from '$lib/components/MusicScore.svelte';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -561,7 +562,6 @@
     padding: 8px 12px;
   }
 
-  /* Piano Section */
   .piano-section {
     padding: 0 0 120px;
   }
@@ -725,6 +725,11 @@
           </select>
         </div>
       </div>
+    </section>
+
+    <!-- Music Score Section -->
+    <section class="score-section">
+      <MusicScore {activeNotes} />
     </section>
 
     <!-- Piano Section -->
