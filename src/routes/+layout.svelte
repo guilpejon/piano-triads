@@ -7,12 +7,10 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen flex flex-col">
-    <main class="flex-1 flex justify-center items-center">
-        <slot />
-    </main>
+<div class="min-h-screen bg-white">
+    <slot />
 	
-    <footer class="bg-gray-800 text-white py-6">
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
 			<p class="text-sm">
 				Made with <span class="text-red-500">♥</span> by 

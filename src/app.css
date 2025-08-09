@@ -1,1 +1,126 @@
 @import 'tailwindcss';
+
+/* Design System - Shared Variables */
+:root {
+  /* Colors */
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #86868b;
+  --color-text-tertiary: #6e6e73;
+  --color-background: #ffffff;
+  --color-border-light: rgba(0, 0, 0, 0.06);
+  --color-border-medium: rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.12);
+  --color-accent: #007AFF;
+  --color-accent-hover: #0056CC;
+  
+  /* Gradients */
+  --gradient-text: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
+  --gradient-blue: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+  --gradient-green: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
+  --gradient-purple: linear-gradient(135deg, #AF52DE 0%, #8E44AD 100%);
+  --gradient-orange: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-gentle: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Shared Component Styles */
+.page-container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+.header-section {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.header-content {
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.main-title {
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--color-text-primary);
+  margin: 0 0 2rem;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.main-subtitle {
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 400;
+  line-height: 1.48;
+  color: var(--color-text-secondary);
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-border-light);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-gentle);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border-strong);
+}
+
+.btn-glass {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  background: rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+.btn-glass:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--color-border-medium);
+  transform: translateY(-1px);
+}
+
+/* Responsive containers */
+@media (max-width: 768px) {
+  .page-container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  
+  .header-section {
+    padding: 2rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

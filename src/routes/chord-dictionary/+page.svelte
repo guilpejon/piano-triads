@@ -436,110 +436,73 @@
 </script>
 
 <style>
-  .chord-dictionary-page {
-    background: #ffffff;
-    position: relative;
-    width: 100%;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-    width: 100%;
+  /* Chord dictionary wrapper */
+  .chord-dictionary-wrapper {
+    min-height: 100vh;
+    padding: 2rem 0;
+    header {
+			padding-bottom: 4rem;	
+    }
   }
 
   /* Navigation */
   .navigation {
-    padding: 32px 0 24px;
+    padding-bottom: 1.5rem;
   }
 
-  .back-button {
-    display: inline-flex;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 400;
-    color: #1d1d1f;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.02);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-  }
-
-  .back-button:hover {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
-  }
-
-  .back-icon {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    stroke-width: 1.5;
-  }
-
-  /* Header Section */
-  .header-section {
-    padding: 48px 0 40px 0;
-    text-align: center;
-  }
-  .score-section {
-    padding-bottom: 40px;
-  }
-  .header-content {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .main-title {
-    font-size: clamp(48px, 8vw, 80px);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    color: #1d1d1f;
-    margin: 0;
-    background: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .main-subtitle {
-    font-size: 21px;
-    font-weight: 400;
-    line-height: 1.48;
-    color: #6e6e73;
-    margin: 0;
-    max-width: 600px;
-    margin: 0 auto;
+  /* Controls section */
+  .controls-section {
+    padding-bottom: 2.5rem;
   }
 
   .controls-container {
     display: flex;
-    gap: 24px;
+    gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
-    max-width: 800px;
+    max-width: 48rem;
     margin: 0 auto;
   }
 
+  /* Piano section */
+  .piano-section {
+    padding-bottom: 5rem;
+  }
+
+  .piano-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 2rem;
+  }
+
+  /* Back button icon */
+  .back-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    stroke-width: 1.5;
+  }
+
+  /* Score section spacing */
+  .score-section {
+    padding-bottom: 2.5rem;
+  }
+
+  /* Select controls */
   .select-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    min-width: 160px;
+    gap: 0.5rem;
+    min-width: 10rem;
   }
 
   .select-label {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
-    color: #6e6e73;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-tertiary);
     letter-spacing: -0.01em;
-    margin-bottom: 4px;
   }
 
   .chord-select {
@@ -548,16 +511,16 @@
     -moz-appearance: none;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    padding: 12px 40px 12px 16px;
-    font-size: 16px;
+    border: 1px solid var(--color-border-medium);
+    border-radius: 0.75rem;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    font-size: 1rem;
     font-weight: 500;
-    color: #1d1d1f;
     cursor: pointer;
     outline: none;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    color: var(--color-text-primary);
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-sm);
     background-image: url('data:image/svg+xml;utf8,<svg fill="%23424245" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
     background-repeat: no-repeat;
     background-position: right 12px center;
@@ -565,35 +528,22 @@
   }
 
   .chord-select:hover {
-    border-color: rgba(0, 0, 0, 0.12);
+    border-color: var(--color-border-strong);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
   }
 
   .chord-select:focus {
-    border-color: #007AFF;
+    border-color: var(--color-accent);
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     transform: translateY(-1px);
   }
 
   .chord-select option {
     font-weight: 400;
-    color: #1d1d1f;
-    background: #ffffff;
-    padding: 8px 12px;
-  }
-
-  .piano-section {
-    padding: 0 0 120px;
-  }
-
-  .piano-container {
-    background: transparent;
-    padding: 48px 32px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text-primary);
+    background: var(--color-background);
   }
 
   /* Chord highlighting styles */
@@ -601,17 +551,17 @@
     box-shadow: 
       0 0 20px rgba(0, 122, 255, 0.4),
       0 4px 12px rgba(0, 122, 255, 0.3) !important;
-    border-color: #0056CC !important;
+    border-color: var(--color-accent-hover) !important;
   }
 
   :global(.key.white.chord-active) {
-    background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%) !important;
+    background: var(--gradient-blue) !important;
     transform: scaleY(0.99);
     color: white;
   }
 
   :global(.key.black.chord-active) {
-    background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%) !important;
+    background: var(--gradient-blue) !important;
     transform: translateY(-1px);
   }
 
@@ -623,63 +573,39 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-    .container {
-      padding: 0 20px;
-    }
-
-    .navigation {
-      padding: 24px 0 20px;
-    }
-
-    .header-section {
-      padding: 32px 0 48px;
-    }
-
-    .main-subtitle {
-      font-size: 19px;
-    }
-
     .controls-container {
-      gap: 16px;
+      gap: 1rem;
       flex-direction: column;
       align-items: center;
     }
-
+    
     .select-group {
-      min-width: 200px;
-      max-width: 280px;
+      min-width: 12rem;
+      max-width: 18rem;
       width: 100%;
     }
 
-    .chord-select {
-      font-size: 16px;
-    }
-
     .piano-container {
-      padding: 32px 20px;
+      padding: 2rem 1.25rem;
     }
 
     .piano-section {
-      padding: 0 0 80px;
+      padding-bottom: 3rem;
     }
   }
 
   @media (max-width: 480px) {
-    .container {
-      padding: 0 16px;
-    }
-
     .piano-container {
-      padding: 24px 16px;
+      padding: 1.5rem 1rem;
     }
   }
 </style>
 
-<div class="chord-dictionary-page">
-  <div class="container">
+<div class="chord-dictionary-wrapper">
+  <div class="page-container">
     <!-- Navigation -->
     <nav class="navigation">
-      <a href="/" class="back-button">
+      <a href="/" class="btn-glass">
         <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
