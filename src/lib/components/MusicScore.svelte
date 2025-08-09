@@ -1,5 +1,6 @@
 <script lang="ts">
   export let activeNotes: string[] = [];
+  export let chordName: string = '';
   
   // Note positions on the staff (middle C = 0)
   const notePositions: { [key: string]: number } = {
@@ -124,7 +125,153 @@
   });
 </script>
 
+<style>
+  .music-score {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    max-width: 500px;
+    margin: 0 auto;
+    width: fit-content;
+  }
+
+  .chord-name-display {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .chord-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .score-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+  
+  .staff {
+    position: relative;
+    width: 200px;
+    height: 80px;
+    margin-top: -20px;
+  }
+  
+  .clef-symbol {
+    position: absolute;
+    left: 5px;
+    bottom: 15px;
+    font-family: 'Times New Roman', serif;
+    color: #1d1d1f;
+    z-index: 2;
+  }
+  
+  .treble-clef {
+    top: -23px;
+    font-size: 100px;
+  }
+  
+  .bass-clef {
+    bottom: -18px;
+    font-size: 60px;
+  }
+  
+  .staff-lines {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+  }
+  
+  .staff-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #1d1d1f;
+    opacity: 0.8;
+  }
+  
+  .ledger-lines {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+  }
+  
+  .ledger-line {
+    position: absolute;
+    height: 1.6px;
+    background-color: #1d1d1f;
+    z-index: 1;
+  }
+  
+  .notes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+    top: 9px;
+  }
+  
+  .note-group {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    bottom: 0;
+  }
+  
+  .note-head {
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+  
+  .quarter-note {
+    transition: all 0.2s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+  
+  .quarter-note:hover {
+    transform: translateX(-50%) scale(1.3);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+  
+  .quarter-note ellipse {
+    transition: fill 0.2s ease;
+  }
+  
+  .quarter-note:hover ellipse {
+    fill: #000000;
+  }
+  
+  .accidental {
+    position: absolute;
+    font-size: 30px;
+    left: -5px;
+    color: #1d1d1f;
+    transform: translateX(-20px);
+    z-index: 2;
+  }
+  
+</style>
+
 <div class="music-score">
+  {#if chordName}
+    <div class="chord-name-display">
+      <h2 class="chord-name">{chordName}</h2>
+    </div>
+  {/if}
   <div class="score-container">
     <!-- Treble Clef Staff -->
     <div class="staff treble-staff">
@@ -231,129 +378,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .music-score {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 16px;
-    padding: 24px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-    max-width: 500px;
-    margin: 0 auto;
-    width: fit-content;
-  }
-  
-  .score-container {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    align-items: center;
-  }
-  
-  .staff {
-    position: relative;
-    width: 200px;
-    height: 80px;
-    margin-top: -20px;
-  }
-  
-  .clef-symbol {
-    position: absolute;
-    left: 5px;
-    bottom: 15px;
-    font-family: 'Times New Roman', serif;
-    color: #1d1d1f;
-    z-index: 2;
-  }
-  
-  .treble-clef {
-    top: -23px;
-    font-size: 100px;
-  }
-  
-  .bass-clef {
-    bottom: -18px;
-    font-size: 60px;
-  }
-  
-  .staff-lines {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100%;
-  }
-  
-  .staff-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: #1d1d1f;
-    opacity: 0.8;
-  }
-  
-  .ledger-lines {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100%;
-  }
-  
-  .ledger-line {
-    position: absolute;
-    height: 1.6px;
-    background-color: #1d1d1f;
-    z-index: 1;
-  }
-  
-  .notes {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100%;
-    top: 9px;
-  }
-  
-  .note-group {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    bottom: 0;
-  }
-  
-  .note-head {
-    position: absolute;
-    transform: translateX(-50%);
-    z-index: 3;
-  }
-  
-  .quarter-note {
-    transition: all 0.2s ease;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-  }
-  
-  .quarter-note:hover {
-    transform: translateX(-50%) scale(1.1);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  }
-  
-  .quarter-note ellipse {
-    transition: fill 0.2s ease;
-  }
-  
-  .quarter-note:hover ellipse {
-    fill: #000000;
-  }
-  
-  .accidental {
-    position: absolute;
-    font-size: 30px;
-    left: -5px;
-    color: #1d1d1f;
-    transform: translateX(-20px);
-    z-index: 2;
-  }
-  
-</style>

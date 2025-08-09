@@ -206,6 +206,25 @@
   let activeNotes: string[] = [];
   let isInitialLoad = true;
 
+  // Reactive chord name that updates when any chord parameter changes
+  $: fullChordName = (() => {
+    const chordTypeNames: { [key: string]: string } = {
+      'M': 'Major',
+      'm': 'Minor',
+      'dim': 'Diminished',
+      'sus4': 'Suspended 4th',
+      '7': 'Dominant 7th',
+      'maj7': 'Major 7th',
+      '9': '9th',
+      'm7': 'Minor 7th',
+      '11': '11th'
+    };
+
+    const chordTypeName = chordTypeNames[currentChordType] || currentChordType;
+
+    return `${currentNote} ${chordTypeName}`;
+  })();
+
   // Function to update URL based on current chord selection
   function updateURL() {
     if (isInitialLoad) return; // Don't update URL during initial load
@@ -284,7 +303,6 @@
     if (!isInitialLoad && activeNotes.length > 0) {
       playChord(activeNotes);
     }
-    
     // Update URL to reflect current chord selection
     updateURL();
   }
@@ -466,10 +484,12 @@
 
   /* Header Section */
   .header-section {
-    padding: 48px 0 80px;
+    padding: 48px 0 40px 0;
     text-align: center;
   }
-
+  .score-section {
+    padding-bottom: 40px;
+  }
   .header-content {
     max-width: 800px;
     margin: 0 auto;
@@ -496,11 +516,6 @@
     margin: 0;
     max-width: 600px;
     margin: 0 auto;
-  }
-
-  /* Controls Section */
-  .controls-section {
-    padding: 0 0 48px;
   }
 
   .controls-container {
@@ -680,6 +695,11 @@
       </div>
     </header>
 
+    <!-- Music Score Section -->
+    <section class="score-section">
+      <MusicScore {activeNotes} chordName={fullChordName} />
+    </section>
+
     <!-- Chord Controls -->
     <section class="controls-section">
       <div class="controls-container">
@@ -731,11 +751,6 @@
           </select>
         </div>
       </div>
-    </section>
-
-    <!-- Music Score Section -->
-    <section class="score-section">
-      <MusicScore {activeNotes} />
     </section>
 
     <!-- Piano Section -->
