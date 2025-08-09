@@ -1,24 +1,29 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import Navbar from '$lib/components/Navbar.svelte';
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="min-h-screen bg-white">
-    <slot />
+<div class="app-layout">
+	<Navbar />
 	
-    <footer class="bg-gray-800 text-white py-6 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-			<p class="text-sm">
-				Made with <span class="text-red-500">♥</span> by 
+	<main class="main-content">
+		<slot />
+	</main>
+	
+	<footer class="app-footer">
+		<div class="footer-container">
+			<p class="footer-text">
+				Made with <span class="heart">♥</span> by 
 				<a 
 					href="https://www.github.com/guilpejon" 
 					target="_blank" 
 					rel="noopener noreferrer"
-					class="text-blue-400 hover:text-blue-300 transition-colors underline"
+					class="footer-link"
 				>
 					guilpejon
 				</a>
@@ -26,3 +31,62 @@
 		</div>
 	</footer>
 </div>
+
+<style>
+	.app-layout {
+		min-height: 100vh;
+		background: var(--color-background);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.main-content {
+		flex: 1;
+		padding-top: 4rem; /* Account for fixed navbar height */
+	}
+
+	.app-footer {
+		background: #1f2937;
+		color: white;
+		padding: 1.5rem 0;
+		margin-top: auto;
+	}
+
+	.footer-container {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+		text-align: center;
+	}
+
+	.footer-text {
+		font-size: 0.875rem;
+		margin: 0;
+	}
+
+	.heart {
+		color: #ef4444;
+	}
+
+	.footer-link {
+		color: #60a5fa;
+		text-decoration: underline;
+		transition: var(--transition-smooth);
+	}
+
+	.footer-link:hover {
+		color: #93c5fd;
+	}
+
+	@media (max-width: 768px) {
+		.footer-container {
+			padding: 0 1.25rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.footer-container {
+			padding: 0 1rem;
+		}
+	}
+</style>

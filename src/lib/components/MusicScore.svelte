@@ -130,7 +130,7 @@
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
-    padding: 24px;
+    padding: 2rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     max-width: 500px;
@@ -162,7 +162,7 @@
   
   .staff {
     position: relative;
-    width: 200px;
+    width: 220px;
     height: 80px;
     margin-top: -20px;
   }
@@ -264,6 +264,11 @@
     z-index: 2;
   }
   
+  @media (max-width: 480px) {
+    .music-score {
+      padding: 1rem;
+    }
+  }
 </style>
 
 <div class="music-score">

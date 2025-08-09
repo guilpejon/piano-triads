@@ -438,16 +438,21 @@
 <style>
   /* Chord dictionary wrapper */
   .chord-dictionary-wrapper {
-    min-height: 100vh;
+    min-height: calc(100vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
-    header {
-			padding-bottom: 4rem;	
-    }
   }
 
   /* Navigation */
   .navigation {
     padding-bottom: 1.5rem;
+  }
+
+  /* Back button icon */
+  .back-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    stroke-width: 1.5;
   }
 
   /* Controls section */
@@ -474,14 +479,6 @@
     justify-content: center;
     align-items: center;
     padding: 3rem 2rem;
-  }
-
-  /* Back button icon */
-  .back-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    stroke-width: 1.5;
   }
 
   /* Score section spacing */

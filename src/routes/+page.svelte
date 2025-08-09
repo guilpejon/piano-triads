@@ -89,14 +89,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: calc(100vh - 4rem); /* Account for navbar */
     padding: 3rem 0;
-		header {
-			margin-bottom: 5rem;
-			h1 {
-				margin-bottom: 2rem;
-			}
-		}
   }
 
   /* Features section */
