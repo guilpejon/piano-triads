@@ -617,8 +617,30 @@
   }
 
   @media (max-width: 480px) {
+    .score-section {
+      padding-bottom: 1.5rem;
+    }
     .piano-container {
       padding: 1.5rem 1rem;
+    }
+
+    nav.navigation {
+      padding: 0;
+    }
+
+    .header-section {
+      padding: 2rem 0;
+      .main-title {
+        margin: 0;
+      }
+    }
+
+    .controls-section {
+      padding-bottom: 1rem;
+    }
+
+    .piano-section {
+      padding-bottom: 1rem;
     }
   }
 </style>
