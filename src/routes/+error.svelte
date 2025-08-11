@@ -158,13 +158,13 @@
 	}
 
 	.piano-key.active.white {
-		background: linear-gradient(to bottom, var(--color-accent) 0%, #0056CC 100%);
+		background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-accent-hover) 100%);
 		transform: translateY(2px);
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.piano-key.active.black {
-		background: linear-gradient(to bottom, var(--color-accent) 0%, #0056CC 100%);
+		background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-accent-hover) 100%);
 		transform: translateY(2px);
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 	}
@@ -256,74 +256,7 @@
 		align-items: center;
 	}
 
-	/* Quick Navigation */
-	.quick-nav {
-		border-top: 1px solid var(--color-border-light);
-		padding-top: 2rem;
-	}
 
-	.quick-nav-title {
-		font-size: 1rem;
-		font-weight: 500;
-		color: var(--color-text-secondary);
-		margin: 0 0 1.5rem;
-	}
-
-	.quick-nav-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 1rem;
-		max-width: 32rem;
-		margin: 0 auto;
-	}
-
-	.quick-nav-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 1rem;
-		background: rgba(255, 255, 255, 0.6);
-		border: 1px solid var(--color-border-light);
-		border-radius: 0.75rem;
-		text-decoration: none;
-		color: var(--color-text-primary);
-		font-size: 0.875rem;
-		font-weight: 500;
-		transition: var(--transition-smooth);
-	}
-
-	.quick-nav-item:hover {
-		background: rgba(255, 255, 255, 0.9);
-		border-color: var(--color-border-medium);
-		transform: translateY(-2px);
-	}
-
-	.nav-icon {
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 0.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		color: white;
-	}
-
-	.chord-icon {
-		background: var(--gradient-blue);
-	}
-
-	.practice-icon {
-		background: var(--gradient-green);
-	}
-
-	.scales-icon {
-		background: var(--gradient-purple);
-	}
-
-	.pitch-icon {
-		background: var(--gradient-orange);
-	}
 
 	/* Responsive Design */
 	@media (max-width: 768px) {
@@ -337,10 +270,7 @@
 			max-width: 280px;
 		}
 
-		.quick-nav-grid {
-			grid-template-columns: 1fr;
-			gap: 0.75rem;
-		}
+
 
 		.piano-keys {
 			transform: scale(0.8);
@@ -356,15 +286,7 @@
 			font-size: 1rem;
 		}
 
-		.quick-nav-item {
-			padding: 0.875rem;
-			gap: 0.5rem;
-		}
 
-		.nav-icon {
-			width: 2rem;
-			height: 2rem;
-		}
 
 		.piano-keys {
 			transform: scale(0.7);

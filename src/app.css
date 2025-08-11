@@ -10,12 +10,12 @@
   --color-border-light: rgba(0, 0, 0, 0.06);
   --color-border-medium: rgba(0, 0, 0, 0.08);
   --color-border-strong: rgba(0, 0, 0, 0.12);
-  --color-accent: #007AFF;
-  --color-accent-hover: #0056CC;
+  --color-accent: #3480f1;
+  --color-accent-hover: #2563eb;
   
   /* Gradients */
   --gradient-text: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
-  --gradient-blue: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+  --gradient-blue: linear-gradient(135deg, #3480f1 0%, #2563eb 100%);
   --gradient-green: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
   --gradient-purple: linear-gradient(135deg, #AF52DE 0%, #8E44AD 100%);
   --gradient-orange: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);

@@ -187,7 +187,7 @@
   
   .treble-clef {
     top: -23px;
-    font-size: 100px;
+    font-size: 100px !important;
   }
   
   .bass-clef {

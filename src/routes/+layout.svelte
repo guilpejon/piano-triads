@@ -69,13 +69,13 @@
 	}
 
 	.footer-link {
-		color: #60a5fa;
+		color: var(--color-accent);
 		text-decoration: underline;
 		transition: var(--transition-smooth);
 	}
 
 	.footer-link:hover {
-		color: #93c5fd;
+		color: var(--color-accent-hover);
 	}
 
 	@media (max-width: 768px) {
