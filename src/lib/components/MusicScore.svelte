@@ -271,6 +271,19 @@
     color: #1d1d1f;
     transform: translateX(-20px);
     z-index: 2;
+    /* Ensure consistent bold rendering across platforms */
+    font-weight: 700 !important;
+    font-family: 'Times New Roman', serif;
+    line-height: 1;
+    /* Android-specific font weight fixes */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variation-settings: 'wght' 700;
+    font-synthesis: weight;
+    /* Ensure proper vertical alignment */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   @media (max-width: 480px) {
@@ -308,7 +321,7 @@
             <!-- Below staff ledger lines -->
             {#each Array(Math.ceil((1 - note.treble) / 2)) as _, i}
               {#if (1 - note.treble) >= (i + 1) * 2}
-                <div class="ledger-line" style="bottom: {-13 - i * 12}px; left: {135 + noteIndex * 40}px; width: 30px;"></div>
+                <div class="ledger-line" style="bottom: {-13 - i * 12}px; left: {155 + noteIndex * 40}px; width: 30px;"></div>
               {/if}
             {/each}
           {/if}
@@ -316,7 +329,7 @@
             <!-- Above staff ledger lines -->
             {#each Array(Math.ceil((note.treble - 8) / 2)) as _, i}
               {#if note.treble >= 10 + i * 2}
-                <div class="ledger-line" style="bottom: {60 + i * 12}px; left: {135 + noteIndex * 40}px; width: 30px;"></div>
+                <div class="ledger-line" style="bottom: {60 + i * 12}px; left: {155 + noteIndex * 40}px; width: 30px;"></div>
               {/if}
             {/each}
           {/if}
@@ -329,12 +342,12 @@
           <div class="note-group" style="left: 150px;">
             <!-- Accidental -->
             {#if note.accidental}
-              <div class="accidental" style="bottom: {note.treble * 6 - 20}px; left: {noteIndex * 20 - 60}px;">
+              <div class="accidental" style="bottom: {note.treble * 6 - 10}px; left: {noteIndex * 20 - 60}px;">
                 {note.accidental === '#' ? '♯' : '♭'}
               </div>
             {/if}
             <!-- Note head -->
-            <svg class="note-head quarter-note" style="bottom: {note.treble * 6 - 3}px;" width="16" height="12" viewBox="0 0 16 12">
+            <svg class="note-head quarter-note" style="bottom: {note.treble * 6 - 3}px; left: 20px;" width="16" height="12" viewBox="0 0 16 12">
               <ellipse cx="8" cy="6" rx="7" ry="4.5" fill="#1d1d1f" stroke="white" stroke-width="0.5" transform="rotate(-20 8 6)"/>
             </svg>
           </div>
@@ -381,12 +394,12 @@
           <div class="note-group" style="left: 100px;">
             <!-- Accidental -->
             {#if note.accidental}
-              <div class="accidental" style="bottom: {note.bass * 6 - 13}px; left: {noteIndex * 15}px;">
+              <div class="accidental" style="bottom: {note.bass * 6 - 4}px; left: {noteIndex * 15}px;">
                 {note.accidental === '#' ? '♯' : '♭'}
               </div>
             {/if}
             <!-- Note head -->
-            <svg class="note-head quarter-note" style="bottom: {note.bass * 6 + 4.5}px; left: 50px;" width="16" height="12" viewBox="0 0 16 12">
+            <svg class="note-head quarter-note" style="bottom: {note.bass * 6 + 4.5}px; left: 70px;" width="16" height="12" viewBox="0 0 16 12">
               <ellipse cx="8" cy="6" rx="7" ry="4.5" fill="#1d1d1f" stroke="white" stroke-width="0.5" transform="rotate(-20 8 6)"/>
             </svg>
           </div>
