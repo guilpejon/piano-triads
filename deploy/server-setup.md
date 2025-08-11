@@ -204,32 +204,7 @@ In your Cloudflare dashboard:
    - Proxy status: Proxied (orange cloud)
 3. Repeat for more subdomains like www.piano-triads
 
-## Step 6: Create Application Start Script
-
-Create a script to start your SvelteKit app:
-
-```bash
-vi /var/www/piano-triads/start-app.sh
-```
-
-Add the following content:
-
-```bash
-#!/bin/bash
-cd /var/www/piano-triads
-export NODE_ENV=production
-export PORT=3000
-export HOST=0.0.0.0
-node build
-```
-
-Make it executable:
-
-```bash
-chmod +x /var/www/piano-triads/start-app.sh
-```
-
-## Step 7: Create Systemd Services
+## Step 6: Create Systemd Services
 
 ### Create service for the app
 
@@ -248,7 +223,7 @@ After=network.target
 Type=simple
 User=guilpejon
 WorkingDirectory=/var/www/piano-triads
-ExecStart=/var/www/piano-triads/start-app.sh
+ExecStart=/var/www/piano-triads/deploy/start-app.sh
 Restart=always
 RestartSec=10
 
@@ -280,7 +255,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-## Step 8: Enable and Start Services
+## Step 7: Enable and Start Services
 
 ```bash
 # Reload systemd

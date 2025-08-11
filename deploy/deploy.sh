@@ -28,6 +28,10 @@ fi
 echo "🎹 Updating Piano Triads on Raspberry Pi..."
 echo "📍 Target: $SSH_TARGET"
 
+# Pull latest changes from git
+echo "📥 Pulling latest changes from git..."
+git pull origin main --rebase
+
 # Build the application locally
 echo "🔨 Building latest version..."
 npm run build    # Build with @sveltejs/adapter-node
