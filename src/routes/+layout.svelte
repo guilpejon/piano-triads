@@ -1,11 +1,11 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/Navbar.svelte';
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<title>Piano Triads - Master Piano Chords, Scales & Ear Training</title>
+	<meta name="description" content="Master piano chords and scales" />
 </svelte:head>
 
 <div class="app-layout">

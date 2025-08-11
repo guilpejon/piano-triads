@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Pitch Training - Piano Triads</title>
+	<meta name="description" content="Develop perfect pitch" />
+</svelte:head>
+
 <div class="w-full min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 p-4">
     <div class="max-w-7xl mx-auto">
 		<div class="mb-8">

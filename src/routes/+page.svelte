@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Piano Triads - Master Piano Chords, Scales & Ear Training</title>
+	<meta name="description" content="Master piano chords and scales" />
+</svelte:head>
+
 <div class="home-wrapper">
   <div class="page-container">
     <!-- Header Section -->

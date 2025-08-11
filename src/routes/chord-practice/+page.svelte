@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Chord Practice - Piano Triads</title>
+	<meta name="description" content="Create chords" />
+</svelte:head>
+
 <div class="w-full min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
     <div class="max-w-7xl mx-auto">
 		<div class="mb-8">

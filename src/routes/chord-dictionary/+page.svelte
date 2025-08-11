@@ -452,6 +452,11 @@
   });
 </script>
 
+<svelte:head>
+	<title>Chord Dictionary - Piano Triads</title>
+	<meta name="description" content="Learn chords" />
+</svelte:head>
+
 <style>
   /* Chord dictionary wrapper */
   .chord-dictionary-wrapper {

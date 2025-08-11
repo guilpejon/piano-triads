@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Learn Scales - Piano Triads</title>
+	<meta name="description" content=" Learn scales" />
+</svelte:head>
+
 <div class="w-full min-h-screen bg-gradient-to-br from-purple-50 to-violet-100 p-4">
     <div class="max-w-7xl mx-auto">
 		<div class="mb-8">
