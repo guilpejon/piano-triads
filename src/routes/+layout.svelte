@@ -1,6 +1,16 @@
 <script lang="ts">
 	import '../app.css';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { preloadAudio } from '$lib/utils/audioUtils';
+	import { onMount } from 'svelte';
+
+	// Preload audio files when the app loads
+	onMount(() => {
+		// Start preloading audio files in the background
+		preloadAudio().catch(error => {
+			console.warn('Failed to preload some audio files:', error);
+		});
+	});
 </script>
 
 <svelte:head>
