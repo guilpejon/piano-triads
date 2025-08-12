@@ -588,6 +588,7 @@
   }
 
   :global(.key.chord-active .note) {
+    /* Note: display is controlled by JavaScript for selective showing */
     color: white !important;
     font-weight: 700;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);

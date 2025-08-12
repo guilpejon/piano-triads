@@ -111,7 +111,6 @@
 
 <style>
   :root {
-    --main-color: #4CAF50;
     --text-primary: #333;
     --text-light: #FFF;
     --bg-primary: #FFF;
@@ -208,6 +207,7 @@
   }
 
   .key .note {
+    display: none; /* Hidden by default, shown only when needed */
     color: var(--text-light);
     width: 40px;
     height: 40px;
