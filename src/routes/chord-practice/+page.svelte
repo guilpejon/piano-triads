@@ -2,6 +2,7 @@
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { getChord, getPracticeChords, getNoteNameOnly, areNotesEquivalent, normalizeNoteName, areAllChordNotesClicked, getChordToneRule } from '$lib/utils/chordUtils';
+  import { playChord } from '$lib/utils/audioUtils';
 
   // Game state
   let gameState: 'waiting' | 'playing' | 'completed' | 'failed' = 'waiting';
@@ -16,6 +17,7 @@
   let totalRounds = 0;
   let successfulRounds = 0;
   let failedRounds = 0;
+  let currentStreak = 0;
 
   // Get all available chords for practice
   let availableChords: string[] = getPracticeChords();
@@ -88,13 +90,19 @@
     if (success) {
       gameState = 'completed';
       successfulRounds++;
+      currentStreak++;
       // Change the correctly clicked keys from blue to green for success
       changeKeysToSuccess();
+      // Play the complete chord so user can hear what it sounds like
+      playChord(currentChordNotes);
     } else {
       gameState = 'failed';
       failedRounds++;
+      currentStreak = 0; // Reset streak on failure
       // Show correctly clicked notes in blue and missed notes in red
       updatePianoDisplay(false, false, true);
+      // Play the complete chord so user can hear what the correct answer sounds like
+      playChord(currentChordNotes);
     }
   }
 
@@ -457,7 +465,7 @@
 
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     text-align: center;
   }
@@ -480,6 +488,10 @@
 
   .stat-value.incorrect {
     color: #ef4444;
+  }
+
+  .stat-value.streak {
+    color: #8b5cf6;
   }
 
   .stat-label {
@@ -644,7 +656,7 @@
     }
 
     .stats-grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
     }
   }
@@ -830,6 +842,10 @@
             <div class="stat-item">
               <div class="stat-value incorrect">{failedRounds}</div>
               <div class="stat-label">Wrong</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value streak">{currentStreak}</div>
+              <div class="stat-label">Streak</div>
             </div>
           </div>
         </div>
