@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { getChordDictionary, type ChordDefinition } from '$lib/utils/chordUtils';
+  import { getChordDictionary, type ChordDefinition, getChordToneRule } from '$lib/utils/chordUtils';
 
   const chordDictionary = getChordDictionary();
   
@@ -35,21 +35,8 @@
   })();
 
   // Reactive chord tone rule that explains how to build the chord with semitone steps
-  $: chordToneRule = (() => {
-    const chordRules: { [key: string]: string } = {
-      'M': '1, 3, 5',
-      'm': '1, b3, 5',
-      'dim': '1, b3, b5',
-      'sus4': '1, 4, 5',
-      '7': '1, 3, 5, b7',
-      'maj7': '1, 3, 5, 7',
-      '9': '1, 3, 5, b7, 9',
-      'm7': '1, b3, 5, b7',
-      '11': '1, 3, 5, b7, 9, 11'
-    };
-
-    return chordRules[currentChordType] || 'Custom chord structure';
-  })();
+  // Use centralized chord tone rule function
+  $: chordToneRule = getChordToneRule(currentChordType);
 
   // Function to update URL based on current chord selection
   function updateURL() {

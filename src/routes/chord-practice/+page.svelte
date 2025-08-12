@@ -1,7 +1,7 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import { getChord, getPracticeChords, getNoteNameOnly, areNotesEquivalent, normalizeNoteName, areAllChordNotesClicked } from '$lib/utils/chordUtils';
+  import { getChord, getPracticeChords, getNoteNameOnly, areNotesEquivalent, normalizeNoteName, areAllChordNotesClicked, getChordToneRule } from '$lib/utils/chordUtils';
 
   // Game state
   let gameState: 'waiting' | 'playing' | 'completed' | 'failed' = 'waiting';
@@ -22,6 +22,17 @@
 
   // Reactive chord name display - just show the chord as it is from chordUtils
   $: chordDisplayName = currentChord || '';
+
+  // Extract chord type from current chord for tone rule calculation
+  $: currentChordType = (() => {
+    if (!currentChord) return '';
+    // Extract everything after the root note (e.g., "C#m7" -> "m7", "FM" -> "M")
+    const match = currentChord.match(/^[A-G][#b]?(.*)$/);
+    return match ? match[1] : '';
+  })();
+
+  // Reactive calculation of chord tone rule using centralized function
+  $: chordToneRule = getChordToneRule(currentChordType);
 
   // Reactive calculation of found notes count for progress display
   $: foundNotesCount = (() => {
@@ -327,6 +338,15 @@
     background-clip: text;
   }
 
+  .chord-tone-rule {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-top: -1.5rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
   .game-info {
     display: flex;
     justify-content: center;
@@ -581,6 +601,11 @@
       margin-bottom: 0.25rem;
     }
 
+    .chord-tone-rule {
+      font-size: 1rem;
+      margin-top: -1.5rem;
+    }
+
     .game-info {
       gap: 0.75rem;
       margin-bottom: 1rem;
@@ -648,6 +673,11 @@
 
     .chord-display {
       font-size: clamp(3rem, 3.5vw, 2rem);
+    }
+
+    .chord-tone-rule {
+      font-size: 1rem;
+      margin-top: -1.5rem;
     }
 
     .game-info {
@@ -753,6 +783,9 @@
         {#if gameState !== 'waiting'}
           <div class="game-header">
             <div class="chord-display">{chordDisplayName}</div>
+            {#if gameState === 'completed' || gameState === 'failed'}
+              <div class="chord-tone-rule">({chordToneRule})</div>
+            {/if}
             {#if gameState === 'playing'}
               <div class="game-info">
                 <div class="info-item">

@@ -232,9 +232,9 @@ export function getPracticeChords(): string[] {
     chord.endsWith('maj7') ||
     chord.endsWith('m7') ||
     chord.endsWith('dim') ||
-    chord.endsWith('sus4')
-    // chord.endsWith('9') ||
-    // chord.endsWith('11')
+    chord.endsWith('sus4') ||
+    chord.endsWith('9') ||
+    chord.endsWith('11')
   );
 }
 
@@ -275,4 +275,26 @@ export function areAllChordNotesClicked(clickedNotes: Set<string>, chordNotes: s
   return chordNoteNames.every(chordNoteName => {
     return clickedNoteNames.some(clickedNoteName => areNotesEquivalent(clickedNoteName + '3', chordNoteName + '3'));
   });
+}
+
+// Chord tone rules mapping for music theory display
+const chordToneRules: { [key: string]: string } = {
+  'M': '1, 3, 5',
+  'm': '1, b3, 5',
+  'dim': '1, b3, b5',
+  'sus4': '1, 4, 5',
+  '7': '1, 3, 5, b7',
+  'maj7': '1, 3, 5, 7',
+  '9': '1, 3, 5, b7, 9',
+  'm7': '1, b3, 5, b7',
+  '11': '1, 3, 5, b7, 9, 11'
+};
+
+/**
+ * Get the chord tone rule for a given chord type
+ * @param chordType - The chord type (e.g., 'M', 'm', '7', 'maj7', etc.)
+ * @returns The chord tone rule string (e.g., '1, 3, 5')
+ */
+export function getChordToneRule(chordType: string): string {
+  return chordToneRules[chordType] || 'Custom chord structure';
 }
