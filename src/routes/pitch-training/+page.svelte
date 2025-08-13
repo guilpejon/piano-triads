@@ -1,202 +1,1116 @@
+<script lang="ts">
+  import Piano from '$lib/components/Piano.svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import { playNote, playChord, isAudioReady } from '$lib/utils/audioUtils';
+  import { getPracticeChords, getChord, getNoteNameOnly, areNotesEquivalent } from '$lib/utils/chordUtils';
+
+  // Training modes
+  type TrainingMode = 'note' | 'chord';
+  let currentMode: TrainingMode = 'note';
+
+  // Game state
+  let gameState: 'waiting' | 'playing' | 'completed' | 'failed' = 'waiting';
+  let currentTarget: string = ''; // Current note or chord to identify
+  let currentTargetNotes: string[] = []; // Notes for chord mode
+  let correctNotesClicked: Set<string> = new Set(); // For chord mode - track found notes
+  let incorrectAttempts = 0; // For note mode - track wrong guesses
+  let chordMistakes = 0; // For chord mode - track wrong notes
+  let timeLeft = 15; // 15 seconds per round
+  let timer: number | null = null;
+
+  // Statistics
+  let totalRounds = 0;
+  let successfulRounds = 0;
+  let failedRounds = 0;
+  let currentStreak = 0;
+
+  // Available notes for note mode (single octave)
+  const availableNotes = ['C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'];
+  
+  // Available chords for chord mode - major, minor, maj7, and 7 chords
+  let availableChords: string[] = getPracticeChords().filter(chord => {
+    // Include: basic major, basic minor, maj7, and 7 chords
+    // Exclude: dim, sus4, 9, 11, etc.
+    const isBasicMajor = chord.endsWith('M') && !chord.includes('maj') && !chord.includes('9') && !chord.includes('11') && !chord.includes('dim');
+    const isBasicMinor = chord.endsWith('m') && !chord.includes('7') && !chord.includes('9') && !chord.includes('11') && !chord.includes('dim');
+    const ism7 = chord.endsWith('m7');
+    const isMaj7 = chord.endsWith('maj7');
+    const is7th = chord.endsWith('7') && !chord.includes('maj') && !chord.includes('m7');
+    const isValid = isBasicMajor || isBasicMinor || isMaj7 || is7th || ism7;
+    return isValid;
+  });
+
+  // Reactive accuracy calculation
+  $: accuracy = totalRounds > 0 ? Math.round((successfulRounds / totalRounds) * 100) : 0;
+
+  function startNewRound() {
+    // Set game state and reset counters
+    gameState = 'playing';
+    totalRounds++;
+    timeLeft = 15;
+    incorrectAttempts = 0;
+    chordMistakes = 0;
+    correctNotesClicked.clear();
+    
+    // Reset piano visual state
+    updatePianoDisplay();
+    
+    if (currentMode === 'note') {
+      // Pick a random note
+      currentTarget = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+      currentTargetNotes = [currentTarget];
+      // Play the note
+      setTimeout(() => {
+        playNote(currentTarget);
+      }, 500);
+    } else {
+      // Pick a random chord
+      currentTarget = availableChords[Math.floor(Math.random() * availableChords.length)];
+      const chordData = getChord(currentTarget);
+      currentTargetNotes = chordData ? chordData.root_position : [];
+      // Play the chord
+      setTimeout(() => {
+        playChord(currentTargetNotes);
+      }, 500);
+    }
+    
+    startTimer();
+  }
+
+  function startTimer() {
+    if (timer) clearInterval(timer);
+    
+    timer = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        endRound(false);
+      }
+    }, 1000);
+  }
+
+  function endRound(success: boolean) {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    
+    if (success) {
+      gameState = 'completed';
+      successfulRounds++;
+      currentStreak++;
+    } else {
+      gameState = 'failed';
+      failedRounds++;
+      currentStreak = 0;
+      
+      // Show correct notes in green when failing
+      if (currentMode === 'chord') {
+        // Only highlight notes that the user didn't find
+        currentTargetNotes.forEach(note => {
+          const noteName = getNoteNameOnly(note);
+          const wasFound = Array.from(correctNotesClicked).some(clickedNoteName => 
+            areNotesEquivalent(clickedNoteName + '3', noteName + '3')
+          );
+          
+          if (!wasFound) {
+            highlightKey(note, 'practice-success');
+          }
+        });
+      } else if (currentMode === 'note') {
+        // Show correct note in green when failing note mode
+        highlightKey(currentTarget, 'practice-success');
+      }
+    }
+    
+    // Play the target again so user can hear the correct answer
+    // Note mode: only play on failure (user already heard their correct click)
+    // Chord mode: play on both success and failure for confirmation
+    const shouldPlay = !success || currentMode === 'chord';
+    
+    if (shouldPlay) {
+      // Add delay to avoid overlap with user's key click
+      setTimeout(() => {
+        if (currentMode === 'note') {
+          playNote(currentTarget);
+        } else {
+          playChord(currentTargetNotes);
+        }
+      }, 500);
+    }
+  }
+
+  function handlePianoClick(clickedNote: string) {
+    if (gameState !== 'playing') return;
+    
+    if (currentMode === 'note') {
+      // Check if clicked note matches target exactly (including octave)
+      // Handle enharmonic equivalents but require same octave (e.g., C#3 === Db3, but C#3 !== C#4)
+      const isCorrect = clickedNote === currentTarget || 
+        (clickedNote.slice(-1) === currentTarget.slice(-1) && // Same octave
+         areNotesEquivalent(clickedNote, currentTarget)); // Same note name (handles enharmonics)
+      
+      if (isCorrect) {
+        // Correct note - show green feedback
+        highlightKey(clickedNote, 'practice-success');
+        endRound(true);
+      } else {
+        // Wrong note - show red feedback and increment attempts
+        incorrectAttempts++;
+        highlightKey(clickedNote, 'practice-failed');
+        playNote(clickedNote); // Play the clicked note for feedback
+        
+        // Fail immediately on first incorrect attempt
+        if (incorrectAttempts >= 1) {
+          endRound(false);
+        }
+      }
+    } else {
+      // Chord mode - check if clicked note is part of the target chord
+      const clickedNoteName = getNoteNameOnly(clickedNote);
+      const isPartOfChord = currentTargetNotes.some(note => 
+        areNotesEquivalent(clickedNote, note)
+      );
+      
+      if (isPartOfChord) {
+        // Correct chord note - add to found notes and show green feedback
+        correctNotesClicked.add(clickedNoteName);
+        highlightKey(clickedNote, 'practice-success');
+        playNote(clickedNote);
+        
+        // Check if all chord notes have been found
+        const allNotesFound = currentTargetNotes.every(chordNote => {
+          const chordNoteName = getNoteNameOnly(chordNote);
+          return Array.from(correctNotesClicked).some(clickedNoteName => 
+            areNotesEquivalent(clickedNoteName + '3', chordNoteName + '3')
+          );
+        });
+        
+        if (allNotesFound) {
+          endRound(true);
+        }
+      } else {
+        // Wrong note - show red feedback and increment mistakes
+        chordMistakes++;
+        highlightKey(clickedNote, 'practice-failed');
+        playNote(clickedNote);
+        
+        // Remove red highlighting after 800ms
+        setTimeout(() => {
+          removeKeyHighlight(clickedNote);
+        }, 500);
+        
+        // Fail after 3 wrong notes
+        if (chordMistakes >= 3) {
+          endRound(false);
+        }
+      }
+    }
+  }
+
+  function replayTarget() {
+    if (gameState !== 'playing') return;
+    
+    if (currentMode === 'note') {
+      playNote(currentTarget);
+    } else {
+      playChord(currentTargetNotes);
+    }
+  }
+
+  // Helper function to highlight a specific key and show the note name
+  function highlightKey(noteName: string, cssClass: string) {
+    const allPianoKeys = document.querySelectorAll('.key[data-note]');
+    
+    allPianoKeys.forEach(key => {
+      const dataNote = key.getAttribute('data-note');
+      if (dataNote) {
+        // Check all possible note names for this key (handles black keys with multiple names)
+        const keyNotes = dataNote.split('/');
+        
+        // Check if any of the key's notes match our note exactly (same octave)
+        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
+        
+        if (hasExactMatch) {
+          // Add the specified CSS class
+          key.classList.add(cssClass);
+          
+          // Show only the specific note name that matches our note
+          const noteElements = key.querySelectorAll('.note');
+          const noteWithoutOctave = getNoteNameOnly(noteName);
+          
+          noteElements.forEach(noteEl => {
+            const noteText = noteEl.textContent?.trim();
+            if (noteText) {
+              // Show this note label if it's enharmonically equivalent to our note
+              if (areNotesEquivalent(noteText + '3', noteWithoutOctave + '3')) {
+                (noteEl as HTMLElement).style.display = 'block';
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  function removeKeyHighlight(noteName: string) {
+    const allPianoKeys = document.querySelectorAll('.key[data-note]');
+    
+    allPianoKeys.forEach(key => {
+      const dataNote = key.getAttribute('data-note');
+      if (dataNote) {
+        // Check all possible note names for this key (handles black keys with multiple names)
+        const keyNotes = dataNote.split('/');
+        
+        // Check if any of the key's notes match our note exactly (same octave)
+        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
+        
+        if (hasExactMatch) {
+          // Remove practice-failed class but keep practice-success if it exists
+          key.classList.remove('practice-failed');
+          
+          // Hide the note name only if this key is not currently highlighted as correct
+          if (!key.classList.contains('practice-success')) {
+            const noteElements = key.querySelectorAll('.note');
+            noteElements.forEach(noteEl => {
+              (noteEl as HTMLElement).style.display = 'none';
+            });
+          }
+        }
+      }
+    });
+  }
+
+  // Function to reset piano display
+  function updatePianoDisplay() {
+    // Reset all keys
+    const allKeys = document.querySelectorAll('.key');
+    const allNotes = document.querySelectorAll('.note');
+    
+    allKeys.forEach(key => {
+      key.classList.remove('practice-failed', 'practice-success');
+    });
+    
+    // Hide all notes
+    allNotes.forEach(note => {
+      (note as HTMLElement).style.display = 'none';
+    });
+  }
+  
+  // Function to show note names for the current chord
+  function showChordNotes() {
+    currentTargetNotes.forEach(noteName => {
+      const noteNameWithoutOctave = getNoteNameOnly(noteName);
+      
+      const allKeys = document.querySelectorAll('.key[data-note]');
+      allKeys.forEach(key => {
+        const dataNote = key.getAttribute('data-note');
+        if (dataNote && dataNote.includes(noteName)) {
+          // Show the specific note name that matches our chord
+          const noteElements = key.querySelectorAll('.note');
+          noteElements.forEach(noteEl => {
+            if (noteEl.textContent && noteEl.textContent.trim() === noteNameWithoutOctave) {
+              (noteEl as HTMLElement).style.display = 'block';
+            }
+          });
+        }
+      });
+    });
+  }
+
+  function switchMode(mode: TrainingMode) {
+    currentMode = mode;
+    gameState = 'waiting';
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    correctNotesClicked.clear();
+    
+    // Reset statistics when switching modes
+    totalRounds = 0;
+    successfulRounds = 0;
+    failedRounds = 0;
+    currentStreak = 0;
+    
+    // Clear piano visual feedback when switching modes
+    updatePianoDisplay();
+  }
+
+  onMount(() => {
+    // Add event listeners to piano keys for click detection
+    const handleKeyClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const key = target.closest('.key') as HTMLElement;
+      if (!key) return;
+      
+      const noteData = key.getAttribute('data-note');
+      if (!noteData) return;
+      
+      // Handle enharmonic notes (e.g., "C#3/Db3")
+      const allNotes = noteData.split('/');
+      
+      // Use the first note name for simplicity
+      handlePianoClick(allNotes[0]);
+    };
+    
+    // Add click listeners to all piano keys
+    setTimeout(() => {
+      const pianoKeys = document.querySelectorAll('.key');
+      pianoKeys.forEach(key => {
+        key.addEventListener('click', handleKeyClick);
+      });
+    }, 100);
+    
+    return () => {
+      const pianoKeys = document.querySelectorAll('.key');
+      pianoKeys.forEach(key => {
+        key.removeEventListener('click', handleKeyClick);
+      });
+    };
+  });
+
+  onDestroy(() => {
+    if (timer) {
+      clearInterval(timer);
+    }
+  });
+</script>
+
 <svelte:head>
 	<title>Pitch Training - Piano Triads</title>
-	<meta name="description" content="Develop perfect pitch" />
+  <meta name="description" content="Develop perfect pitch and ear training skills" />
 </svelte:head>
 
-<div class="w-full min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 p-4">
-    <div class="max-w-7xl mx-auto">
-		<div class="mb-8">
-			<a href="/" class="inline-flex items-center text-orange-600 hover:text-orange-800 mb-4">
-				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+<style>
+  /* Base styles consistent with chord practice */
+  .pitch-training-wrapper {
+    min-height: 90vh;
+    background: var(--gradient-bg);
+    padding: 2rem 0;
+  }
+
+  .page-container {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  /* Navigation */
+  .navigation {
+    padding-bottom: 2rem;
+  }
+
+  .btn-glass {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.75rem;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    backdrop-filter: blur(20px);
+    transition: var(--transition-smooth);
+  }
+
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .back-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Header */
+  .header-section {
+    text-align: center;
+    padding-bottom: 2rem;
+  }
+
+  .main-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    max-width: 32rem;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Mode Selection */
+  .mode-section {
+    padding-bottom: 2rem;
+  }
+  .mode-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .mode-button {
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--color-border-medium);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+  }
+
+  .mode-button.active {
+    background: var(--gradient-blue);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--shadow-md);
+  }
+
+  .mode-button:hover:not(.active) {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+  }
+
+  /* Note Mode - subtle green tint */
+  .mode-button.note-mode:not(.active) {
+    background: rgba(240, 253, 244, 0.9);
+    border-color: rgba(34, 197, 94, 0.2);
+  }
+
+  .mode-button.note-mode:hover:not(.active) {
+    background: rgba(240, 253, 244, 1);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .mode-button.note-mode.active {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  }
+
+  /* Chord Mode - orange/red tint for difficulty */
+  .mode-button.chord-mode:not(.active) {
+    background: rgba(255, 247, 237, 0.9);
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  .mode-button.chord-mode:hover:not(.active) {
+    background: rgba(255, 247, 237, 1);
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+
+  .mode-button.chord-mode.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
+
+  /* Game Section */
+  .game-container {
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+
+  .game-header {
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  .game-info {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .info-item {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--color-border-light);
+    border-radius: 1rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .info-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  .info-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .info-value.timer {
+    color: var(--color-accent);
+  }
+
+  .info-value.mistakes {
+    color: #ef4444;
+  }
+  .replay-item {
+    background: transparent;
+    border: none;
+    padding: 0;
+    backdrop-filter: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .replay-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: rgba(0, 0, 0, 0.05);
+    color: #1d1d1f;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(20px);
+  }
+
+  .replay-button:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+  }
+
+  .replay-button:active {
+    background: rgba(0, 0, 0, 0.12);
+    transform: scale(0.98);
+  }
+
+  .replay-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: 2;
+    opacity: 0.8;
+  }
+
+  /* Piano Section */
+  .piano-section {
+    padding-bottom: 3rem;
+		padding-top: 2rem;
+  }
+
+  .piano-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  /* Controls */
+  .controls-section {
+		padding-top: 3rem;
+  }
+
+  .controls-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .game-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    border: 2px solid transparent;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .game-button.primary {
+    background: var(--gradient-blue);
+    color: white;
+    border: 1px solid transparent;
+  }
+
+  .game-button.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .game-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Statistics section */
+  .stats-section {
+    padding-bottom: 2rem;
+  }
+
+  .stats-container {
+    max-width: 32rem;
+    margin: 0 auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border-light);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .stat-item {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value.correct {
+    color: #10b981;
+  }
+
+  .stat-value.incorrect {
+    color: #ef4444;
+  }
+
+  .stat-value.streak {
+    color: #8b5cf6;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .page-container {
+      padding: 0 0.75rem;
+    }
+
+    .mode-container {
+      flex-direction: row;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .mode-button {
+      flex: 1;
+      max-width: 140px;
+    }
+
+    .piano-container {
+      padding: 1rem;
+    }
+
+    .piano-section {
+      padding-bottom: 1.5rem;
+    }
+
+    .stats-section {
+      padding-bottom: 1rem;
+    }
+
+    .stats-container {
+      padding: 1.5rem;
+      margin: 0 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .game-info {
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .info-item {
+      padding: 0.5rem 1rem;
+      min-width: 120px;
+    }
+
+    .replay-button {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .replay-icon {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+		.pitch-training-wrapper {
+      padding: 1.5rem 0;
+			.controls-section {
+				padding: 0;
+			}
+			.note-display {
+				padding: 0.6rem 1rem;
+				min-width: 80px;
+			}
+		}
+    .main-title {
+      font-size: clamp(28px, 5vw, 36px) !important;
+    }
+
+    .page-description {
+      font-size: 0.9rem;
+      margin: 0.75rem auto 0;
+    }
+
+    .navigation {
+      padding-bottom: 0.75rem;
+    }
+
+    .game-section {
+      padding-bottom: 1rem;
+    }
+
+    .controls-container {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .game-button {
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+    }
+
+    .game-info {
+      flex-direction: row;
+      justify-content: space-around;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .info-item {
+      padding: 0.5rem 0.75rem;
+      min-width: 100px;
+      flex: 1;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+    }
+
+    .info-value {
+      font-size: 1rem;
+    }
+
+    .replay-button {
+      width: 4.25rem;
+      height: 4.25rem;
+    }
+
+    .replay-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 360px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+
+  /* Piano highlighting for pitch training */
+  :global(.key.practice-correct) {
+    box-shadow: 
+      0 0 20px rgba(52, 128, 241, 0.4),
+      0 4px 12px rgba(52, 128, 241, 0.3) !important;
+    border-color: var(--color-accent-hover) !important;
+  }
+
+  :global(.key.white.practice-correct) {
+    background: var(--gradient-blue) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-correct) {
+    background: var(--gradient-blue) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-correct .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Failed practice styles (red) */
+  :global(.key.practice-failed) {
+    box-shadow: 
+      0 0 20px rgba(239, 68, 68, 0.4),
+      0 4px 12px rgba(239, 68, 68, 0.3) !important;
+    border-color: #dc2626 !important;
+  }
+
+  :global(.key.white.practice-failed) {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-failed) {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-failed .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Success practice styles (green) */
+  :global(.key.practice-success) {
+    box-shadow: 
+      0 0 20px rgba(34, 197, 94, 0.4),
+      0 4px 12px rgba(34, 197, 94, 0.3) !important;
+    border-color: #16a34a !important;
+  }
+
+  :global(.key.white.practice-success) {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-success) {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-success .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Blurred note display */
+  .note-reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    position: relative;
+  }
+
+  .note-display {
+		font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: var(--color-accent);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .note-display.success {
+    color: #4CAF50;
+  }
+
+  .note-display.failed {
+    color: #F44336;
+  }
+
+  @media (max-width: 768px) {
+    .note-display {
+      font-size: 2.5rem;
+      padding: 0.8rem 1.5rem;
+      min-width: 100px;
+    }
+  }
+</style>
+
+<div class="pitch-training-wrapper">
+  <div class="page-container">
+    <!-- Navigation -->
+    <nav class="navigation">
+      <a href="/" class="btn-glass">
+        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
 				</svg>
-				Back to Home
-			</a>
-    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Pitch Training</h1>
-    <p class="text-base sm:text-lg md:text-xl text-gray-600">Develop perfect pitch and interval recognition skills</p>
+        <span>Back to Home</span>
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="header-section">
+      <div class="header-content">
+        <h1 class="main-title">Pitch Training</h1>
+        <p class="page-description">
+					{#if currentMode === 'note'}
+						Identify the note by clicking its corresponding key.
+					{:else}
+						Identify the chord by clicking all its notes.
+					{/if}
+        </p>
 		</div>
+    </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
-        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
-				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Training Modules</h2>
-				
-				<div class="space-y-4">
-					<div class="border border-gray-200 rounded-lg p-4 hover:bg-orange-50 cursor-pointer transition-colors">
-						<div class="flex justify-between items-start mb-2">
-							<h3 class="text-lg font-medium text-gray-800">Interval Recognition</h3>
-							<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Active</span>
+    <!-- Mode Selection -->
+    <section class="mode-section">
+      <div class="mode-container">
+        <button 
+          class="mode-button note-mode" 
+          class:active={currentMode === 'note'}
+          on:click={() => switchMode('note')}
+        >
+          Note Mode
+        </button>
+        <button 
+          class="mode-button chord-mode" 
+          class:active={currentMode === 'chord'}
+          on:click={() => switchMode('chord')}
+        >
+          Chord Mode
+        </button>
 						</div>
-						<p class="text-gray-600 text-sm mb-3">Identify intervals between two notes</p>
-						<div class="flex items-center justify-between">
-							<div class="text-xs text-gray-500">
-								<span>Accuracy: 78%</span> • <span>Best Streak: 12</span>
-							</div>
-                    <button class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-3 py-1 rounded transition-colors">
-								Practice
+    </section>
+
+    <!-- Game Section -->
+    <section class="game-section">
+      <div class="game-container">
+        <!-- Game Header -->
+        {#if gameState !== 'waiting'}
+          <div class="game-header">
+            {#if gameState === 'completed' || gameState === 'failed'}
+              <div class="note-reveal">
+                <div class="note-display" 
+                     class:success={gameState === 'completed'}
+                     class:failed={gameState === 'failed'}>
+                  {currentTarget}
+						</div>
+					</div>
+            {/if}
+            {#if gameState === 'playing'}
+              <div class="game-info">
+                <div class="info-item">
+                  <div class="info-label">Time Left</div>
+                  <div class="info-value timer">{timeLeft}s</div>
+						</div>
+                <div class="info-item">
+                  <div class="info-label">Mistakes</div>
+                  <div class="info-value mistakes">
+                    {#if currentMode === 'note'}
+                      {incorrectAttempts}/1
+                    {:else}
+                      {chordMistakes}/3
+                    {/if}
+						</div>
+					</div>
+                <div class="info-item replay-item">
+                  <button on:click={replayTarget} class="replay-button" aria-label="Replay audio">
+                    <svg class="replay-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
 							</button>
 						</div>
 					</div>
+            {/if}
+				</div>
+        {/if}
+			</div>
+    </section>
 
-					<div class="border border-gray-200 rounded-lg p-4 hover:bg-orange-50 cursor-pointer transition-colors">
-						<div class="flex justify-between items-start mb-2">
-							<h3 class="text-lg font-medium text-gray-800">Perfect Pitch Training</h3>
-							<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Premium</span>
+    <!-- Controls Section -->
+    {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
+      <section class="controls-section">
+        <div class="controls-container">
+          <button on:click={startNewRound} class="game-button primary">
+            Start New Round
+          </button>
+        </div>
+      </section>
+    {/if}
+    <!-- Piano Section -->
+    <section class="piano-section">
+      <div class="piano-container">
+        <Piano chordNotes={currentTargetNotes} />
 						</div>
-						<p class="text-gray-600 text-sm mb-3">Identify individual notes without reference</p>
-						<div class="flex items-center justify-between">
-							<div class="text-xs text-gray-500">
-								<span>Accuracy: 45%</span> • <span>Best Streak: 5</span>
-							</div>
-							<button class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-3 py-1 rounded transition-colors">
-								Practice
-							</button>
-						</div>
+    </section>
+
+    <!-- Statistics Section -->
+    {#if totalRounds > 0}
+      <section class="stats-section">
+        <div class="stats-container">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{totalRounds}</div>
+              <div class="stat-label">Rounds</div>
 					</div>
-
-					<div class="border border-gray-200 rounded-lg p-4 hover:bg-orange-50 cursor-pointer transition-colors">
-						<div class="flex justify-between items-start mb-2">
-							<h3 class="text-lg font-medium text-gray-800">Chord Quality Recognition</h3>
-							<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">New</span>
-						</div>
-						<p class="text-gray-600 text-sm mb-3">Distinguish major, minor, and other chord types</p>
-						<div class="flex items-center justify-between">
-							<div class="text-xs text-gray-500">
-								<span>Accuracy: 62%</span> • <span>Best Streak: 8</span>
-							</div>
-							<button class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-3 py-1 rounded transition-colors">
-								Practice
-							</button>
-						</div>
-					</div>
-
-					<div class="border border-gray-200 rounded-lg p-4 hover:bg-orange-50 cursor-pointer transition-colors">
-						<div class="flex justify-between items-start mb-2">
-							<h3 class="text-lg font-medium text-gray-800">Scale Degree Recognition</h3>
-							<span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">Advanced</span>
-						</div>
-						<p class="text-gray-600 text-sm mb-3">Identify scale degrees in context</p>
-						<div class="flex items-center justify-between">
-							<div class="text-xs text-gray-500">
-								<span>Locked</span> • <span>Complete intervals first</span>
-							</div>
-							<button class="bg-gray-300 text-gray-500 text-sm px-3 py-1 rounded cursor-not-allowed">
-								Locked
-							</button>
-						</div>
+            <div class="stat-item">
+              <div class="stat-value correct">{successfulRounds}</div>
+              <div class="stat-label">Correct</div>
+				</div>
+            <div class="stat-item">
+              <div class="stat-value incorrect">{failedRounds}</div>
+              <div class="stat-label">Wrong</div>
+				</div>
+            <div class="stat-item">
+              <div class="stat-value streak">{currentStreak}</div>
+              <div class="stat-label">Streak</div>
 					</div>
 				</div>
 			</div>
+      </section>
+    {/if}
 
-        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
-				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Current Exercise</h2>
-				
-				<div class="text-center mb-6">
-					<div class="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-						<svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold text-gray-800 mb-2">Interval Recognition</h3>
-					<p class="text-gray-600">Listen and identify the interval</p>
-				</div>
-
-				<div class="bg-gray-50 rounded-lg p-6 mb-6">
-					<div class="text-center mb-4">
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg transition-colors text-base sm:text-lg font-medium">
-							Play Interval
-						</button>
-					</div>
-					<div class="text-center text-sm text-gray-600">
-						<p>Question 7 of 10</p>
-						<div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-							<div class="bg-orange-500 h-2 rounded-full" style="width: 70%"></div>
-						</div>
-					</div>
-				</div>
-
-                <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-6">
-					<button class="border border-gray-300 hover:border-orange-500 hover:bg-orange-50 py-3 px-4 rounded-lg transition-colors">
-						Perfect 4th
-					</button>
-					<button class="border border-gray-300 hover:border-orange-500 hover:bg-orange-50 py-3 px-4 rounded-lg transition-colors">
-						Perfect 5th
-					</button>
-					<button class="border border-gray-300 hover:border-orange-500 hover:bg-orange-50 py-3 px-4 rounded-lg transition-colors">
-						Major 3rd
-					</button>
-					<button class="border border-gray-300 hover:border-orange-500 hover:bg-orange-50 py-3 px-4 rounded-lg transition-colors">
-						Minor 3rd
-					</button>
-				</div>
-
-				<div class="text-center">
-					<div class="text-sm text-gray-600 mb-2">Current Streak: 4</div>
-					<div class="flex justify-center space-x-1">
-						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-						<div class="w-2 h-2 bg-gray-300 rounded-full"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
-			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistics & Progress</h2>
-			
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-				<div class="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-					<div class="text-3xl font-bold text-green-600 mb-2">156</div>
-					<div class="text-sm text-green-700 font-medium">Exercises Completed</div>
-					<div class="text-xs text-green-600 mt-1">This week: +23</div>
-				</div>
-				
-				<div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-					<div class="text-3xl font-bold text-blue-600 mb-2">68%</div>
-					<div class="text-sm text-blue-700 font-medium">Average Accuracy</div>
-					<div class="text-xs text-blue-600 mt-1">Improving: +5%</div>
-				</div>
-				
-				<div class="text-center p-6 bg-purple-50 rounded-lg border border-purple-200">
-					<div class="text-3xl font-bold text-purple-600 mb-2">12</div>
-					<div class="text-sm text-purple-700 font-medium">Best Streak</div>
-					<div class="text-xs text-purple-600 mt-1">Personal record!</div>
-				</div>
-			</div>
-
-			<div class="mt-8">
-				<h3 class="text-lg font-medium text-gray-800 mb-4">Weekly Progress</h3>
-				<div class="space-y-2">
-					<div class="flex items-center justify-between text-sm">
-						<span class="text-gray-600">Monday</span>
-						<div class="flex items-center">
-                    <div class="w-24 sm:w-32 bg-gray-200 rounded-full h-2 mr-3">
-								<div class="bg-orange-500 h-2 rounded-full" style="width: 80%"></div>
-							</div>
-							<span class="text-gray-700 font-medium">12 exercises</span>
-						</div>
-					</div>
-					<div class="flex items-center justify-between text-sm">
-						<span class="text-gray-600">Tuesday</span>
-						<div class="flex items-center">
-							<div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
-								<div class="bg-orange-500 h-2 rounded-full" style="width: 60%"></div>
-							</div>
-							<span class="text-gray-700 font-medium">9 exercises</span>
-						</div>
-					</div>
-					<div class="flex items-center justify-between text-sm">
-						<span class="text-gray-600">Today</span>
-						<div class="flex items-center">
-							<div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
-								<div class="bg-orange-500 h-2 rounded-full" style="width: 40%"></div>
-							</div>
-							<span class="text-gray-700 font-medium">6 exercises</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>

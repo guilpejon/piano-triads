@@ -91,8 +91,6 @@
       gameState = 'completed';
       successfulRounds++;
       currentStreak++;
-      // Change the correctly clicked keys from blue to green for success
-      changeKeysToSuccess();
       // Play the complete chord so user can hear what it sounds like
       playChord(currentChordNotes);
     } else {
@@ -104,15 +102,6 @@
       // Play the complete chord so user can hear what the correct answer sounds like
       playChord(currentChordNotes);
     }
-  }
-
-  // Function to change correctly clicked keys from blue to green for success
-  function changeKeysToSuccess() {
-    const allKeys = document.querySelectorAll('.key.practice-correct');
-    allKeys.forEach(key => {
-      key.classList.remove('practice-correct');
-      key.classList.add('practice-success');
-    });
   }
 
   // Function to find matching chord note for clicked note
@@ -136,7 +125,7 @@
     const matchingChordNote = findMatchingChordNote(clickedNote);
     
     if (matchingChordNote) {
-      // Correct note clicked - add the clicked note (not the chord note) so the right key turns blue
+      // Correct note clicked - add the clicked note (not the chord note) so the right key turns green
       correctNotesClicked.add(clickedNote);
       updatePianoDisplay();
       
@@ -145,8 +134,15 @@
         endRound(true); // Success!
       }
     } else {
-      // Incorrect note clicked
+      // Incorrect note clicked - show red feedback
       mistakes++;
+      highlightKey(clickedNote, 'practice-failed');
+      
+      // Remove red highlighting after 500ms
+      setTimeout(() => {
+        removeKeyHighlight(clickedNote);
+      }, 500);
+      
       if (mistakes >= 3) {
         endRound(false); // Too many mistakes
       }
@@ -179,9 +175,9 @@
         });
       });
       
-      // Show correctly clicked notes in blue
+      // Show correctly clicked notes in green
       clickedNotes.forEach(chordNoteName => {
-        highlightKey(chordNoteName, 'practice-correct');
+        highlightKey(chordNoteName, 'practice-success');
       });
       
       // Show missed notes in red
@@ -194,7 +190,7 @@
       
       // Highlight correct notes that have been clicked (or all if showing solution)
       notesToHighlight.forEach(chordNoteName => {
-        highlightKey(chordNoteName, showAsFailed ? 'practice-failed' : 'practice-correct');
+        highlightKey(chordNoteName, showAsFailed ? 'practice-failed' : 'practice-success');
       });
     }
   }
@@ -223,12 +219,40 @@
           noteElements.forEach(noteEl => {
             const noteText = noteEl.textContent?.trim();
             if (noteText) {
-              // Show this note label only if it exactly matches our chord note name
-              if (noteText === chordNoteWithoutOctave) {
+              // Show this note label if it's enharmonically equivalent to our chord note
+              if (areNotesEquivalent(noteText + '3', chordNoteWithoutOctave + '3')) {
                 (noteEl as HTMLElement).style.display = 'block';
               }
             }
           });
+        }
+      }
+    });
+  }
+
+  function removeKeyHighlight(noteName: string) {
+    const allPianoKeys = document.querySelectorAll('.key[data-note]');
+    
+    allPianoKeys.forEach(key => {
+      const dataNote = key.getAttribute('data-note');
+      if (dataNote) {
+        // Check all possible note names for this key (handles black keys with multiple names)
+        const keyNotes = dataNote.split('/');
+        
+        // Check if any of the key's notes match our note exactly (same octave)
+        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
+        
+        if (hasExactMatch) {
+          // Remove practice-failed class but keep practice-success if it exists
+          key.classList.remove('practice-failed');
+          
+          // Hide the note name only if this key is not currently highlighted as correct
+          if (!key.classList.contains('practice-success')) {
+            const noteElements = key.querySelectorAll('.note');
+            noteElements.forEach(noteEl => {
+              (noteEl as HTMLElement).style.display = 'none';
+            });
+          }
         }
       }
     });
@@ -293,7 +317,7 @@
 <style>
   /* Chord practice wrapper */
   .chord-practice-wrapper {
-    min-height: calc(100vh - 4rem);
+    min-height: calc(90vh - 4rem);
     padding: 2rem 0;
     .main-title {
       font-size: clamp(48px, 8vw, 70px);
@@ -331,7 +355,6 @@
 
   .game-header {
     text-align: center;
-    margin-bottom: 2rem;
   }
 
   .chord-display {
@@ -339,7 +362,7 @@
     font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 0.5rem;
-    padding-bottom: 1rem;
+    padding-bottom: 3rem;
     background: var(--gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -349,8 +372,7 @@
   .chord-tone-rule {
     font-size: 1.1rem;
     font-weight: 500;
-    color: var(--color-text-secondary);
-    margin-top: -1.5rem;
+    color: var(--color-text-secondary) !important;
     text-align: center;
     letter-spacing: 0.02em;
   }
@@ -359,7 +381,6 @@
     display: flex;
     justify-content: center;
     gap: 2rem;
-    margin-bottom: 2rem;
     flex-wrap: wrap;
   }
 
@@ -605,7 +626,7 @@
     }
 
     .game-section {
-      padding-bottom: 1.5rem;
+      padding-bottom: 0;
     }
 
     .chord-display {
@@ -663,7 +684,7 @@
 
   @media (max-width: 480px) {
     .chord-practice-wrapper {
-      padding: 0.5rem 0;
+      padding: 1.5rem 0;
     }
 
     .main-title {
@@ -794,10 +815,11 @@
         <!-- Game Header -->
         {#if gameState !== 'waiting'}
           <div class="game-header">
-            <div class="chord-display">{chordDisplayName}</div>
-            {#if gameState === 'completed' || gameState === 'failed'}
-              <div class="chord-tone-rule">({chordToneRule})</div>
-            {/if}
+            <div class="chord-display">{chordDisplayName}
+              {#if gameState === 'completed' || gameState === 'failed'}
+                <div class="chord-tone-rule">({chordToneRule})</div>
+              {/if}
+            </div>
             {#if gameState === 'playing'}
               <div class="game-info">
                 <div class="info-item">
@@ -818,6 +840,17 @@
         {/if}
       </div>
     </section>
+
+    <!-- Controls Section -->
+    {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
+      <section class="controls-section">
+        <div class="controls-container">
+          <button on:click={startNewRound} class="game-button primary">
+            Start New Round
+          </button>
+        </div>
+      </section>
+    {/if}
 
     <!-- Piano Section -->
     <section class="piano-section">
@@ -852,15 +885,5 @@
       </section>
     {/if}
 
-    <!-- Controls Section -->
-    <section class="controls-section">
-      <div class="controls-container">
-        {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
-          <button on:click={startNewRound} class="game-button primary">
-            Start New Round
-          </button>
-        {/if}
-      </div>
-    </section>
   </div>
 </div>

@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { playNote } from '$lib/utils/audioUtils';
 
+	// Props to control which enharmonic notation to show
+	export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
+
 	// Handle key press (click or keyboard)
 	function handleKeyPress(event: Event): void {
 		const target = event.target as HTMLElement;
@@ -19,6 +22,25 @@
 			handleKeyPress(event);
 		}
 	}
+
+	// Function to determine which notation to show for black keys
+	function getPreferredNotation(sharpNote: string, flatNote: string): string {
+		if (chordNotes.length === 0) {
+			// Default to sharp notation if no chord context
+			return sharpNote;
+		}
+		
+		// Check if any chord note matches the sharp or flat version
+		const hasSharp = chordNotes.some(note => note.includes(sharpNote.replace(/[0-9]/g, '')));
+		const hasFlat = chordNotes.some(note => note.includes(flatNote.replace(/[0-9]/g, '')));
+		
+		// Prefer the notation that matches the chord
+		if (hasSharp && !hasFlat) return sharpNote;
+		if (hasFlat && !hasSharp) return flatNote;
+		
+		// Default to sharp if both or neither match
+		return sharpNote;
+	}
 </script>
 
 <div class="piano">
@@ -27,15 +49,13 @@
 		<p class="note" aria-label="Note C">C</p>
 	</button>
 	<button class="key black cs" data-note="C#3/Db3" aria-label="Piano key C#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note C#">C#</p>
-		<p class="note" aria-label="Note Db">Db</p>
+		<p class="note" aria-label="Note {getPreferredNotation('C#', 'Db')}">{getPreferredNotation('C#', 'Db')}</p>
 	</button>
 	<button class="key white d" data-note="D3" aria-label="Piano key D" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note D">D</p>
 	</button>
 	<button class="key black ds" data-note="D#3/Eb3" aria-label="Piano key D#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note D#">D#</p>
-		<p class="note" aria-label="Note Eb">Eb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('D#', 'Eb')}">{getPreferredNotation('D#', 'Eb')}</p>
 	</button>
 	<button class="key white e" data-note="E3" aria-label="Piano key E" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note E">E</p>
@@ -44,22 +64,19 @@
 		<p class="note" aria-label="Note F">F</p>
 	</button>
 	<button class="key black fs" data-note="F#3/Gb3" aria-label="Piano key F#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note F#">F#</p>
-		<p class="note" aria-label="Note Gb">Gb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('F#', 'Gb')}">{getPreferredNotation('F#', 'Gb')}</p>
 	</button>
 	<button class="key white g" data-note="G3" aria-label="Piano key G" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note G">G</p>
 	</button>
 	<button class="key black gs" data-note="G#3/Ab3" aria-label="Piano key G#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note G#">G#</p>
-		<p class="note" aria-label="Note Ab">Ab</p>
+		<p class="note" aria-label="Note {getPreferredNotation('G#', 'Ab')}">{getPreferredNotation('G#', 'Ab')}</p>
 	</button>
 	<button class="key white a" data-note="A3" aria-label="Piano key A" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note A">A</p>
 	</button>
 	<button class="key black as" data-note="A#3/Bb3" aria-label="Piano key A#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note A#">A#</p>
-		<p class="note" aria-label="Note Bb">Bb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('A#', 'Bb')}">{getPreferredNotation('A#', 'Bb')}</p>
 	</button>
 	<button class="key white b" data-note="B3" aria-label="Piano key B" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note B">B</p>
@@ -70,15 +87,13 @@
 		<p class="note" aria-label="Note C">C</p>
 	</button>
 	<button class="key black cs" data-note="C#4/Db4" aria-label="Piano key C#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note C#">C#</p>
-		<p class="note" aria-label="Note Db">Db</p>
+		<p class="note" aria-label="Note {getPreferredNotation('C#', 'Db')}">{getPreferredNotation('C#', 'Db')}</p>
 	</button>
 	<button class="key white d" data-note="D4" aria-label="Piano key D" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note D">D</p>
 	</button>
 	<button class="key black ds" data-note="D#4/Eb4" aria-label="Piano key D#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note D#">D#</p>
-		<p class="note" aria-label="Note Eb">Eb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('D#', 'Eb')}">{getPreferredNotation('D#', 'Eb')}</p>
 	</button>
 	<button class="key white e" data-note="E4" aria-label="Piano key E" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note E">E</p>
@@ -87,22 +102,19 @@
 		<p class="note" aria-label="Note F">F</p>
 	</button>
 	<button class="key black fs" data-note="F#4/Gb4" aria-label="Piano key F#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note F#">F#</p>
-		<p class="note" aria-label="Note Gb">Gb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('F#', 'Gb')}">{getPreferredNotation('F#', 'Gb')}</p>
 	</button>
 	<button class="key white g" data-note="G4" aria-label="Piano key G" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note G">G</p>
 	</button>
 	<button class="key black gs" data-note="G#4/Ab4" aria-label="Piano key G#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note G#">G#</p>
-		<p class="note" aria-label="Note Ab">Ab</p>
+		<p class="note" aria-label="Note {getPreferredNotation('G#', 'Ab')}">{getPreferredNotation('G#', 'Ab')}</p>
 	</button>
 	<button class="key white a" data-note="A4" aria-label="Piano key A" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note A">A</p>
 	</button>
 	<button class="key black as" data-note="A#4/Bb4" aria-label="Piano key A#" on:click={handleKeyPress} on:keydown={handleKeyDown}>
-		<p class="note" aria-label="Note A#">A#</p>
-		<p class="note" aria-label="Note Bb">Bb</p>
+		<p class="note" aria-label="Note {getPreferredNotation('A#', 'Bb')}">{getPreferredNotation('A#', 'Bb')}</p>
 	</button>
 	<button class="key white b" data-note="B4" aria-label="Piano key B" on:click={handleKeyPress} on:keydown={handleKeyDown}>
 		<p class="note" aria-label="Note B">B</p>

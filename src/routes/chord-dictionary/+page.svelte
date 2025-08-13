@@ -254,7 +254,7 @@
 <style>
   /* Chord dictionary wrapper */
   .chord-dictionary-wrapper {
-    min-height: calc(100vh - 4rem); /* Account for navbar */
+    min-height: calc(90vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
     .main-title {
       font-size: clamp(48px, 8vw, 70px);
