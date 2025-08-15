@@ -275,10 +275,6 @@
   }
 
   /* Controls section */
-  .controls-section {
-    padding-bottom: 2.5rem;
-  }
-
   .controls-container {
     display: flex;
     gap: 1.5rem;

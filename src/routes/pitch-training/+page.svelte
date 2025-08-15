@@ -548,6 +548,10 @@
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .info-label {
@@ -614,7 +618,7 @@
 
   /* Piano Section */
   .piano-section {
-    padding-bottom: 3rem;
+    padding-bottom: 2rem;
 		padding-top: 2rem;
   }
 
@@ -791,6 +795,7 @@
 			.note-display {
 				padding: 0.6rem 1rem;
 				min-width: 80px;
+        padding-bottom: 2rem;
 			}
 		}
     .main-title {
@@ -806,8 +811,8 @@
       padding-bottom: 0.75rem;
     }
 
-    .game-section {
-      padding-bottom: 1rem;
+    .mode-section {
+      padding-bottom: 0.5rem;
     }
 
     .controls-container {

@@ -391,6 +391,10 @@
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .info-label {
@@ -415,7 +419,7 @@
 
   /* Piano section */
   .piano-section {
-    padding-bottom: 3rem;
+    padding-bottom: 2rem;
   }
 
   .piano-container {
