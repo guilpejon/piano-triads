@@ -163,7 +163,7 @@
   }
 
   .learn-scales-wrapper .main-title {
-    font-size: clamp(48px, 8vw, 70px);
+    font-size: clamp(38px, 8vw, 70px);
   }
 
   /* Navigation */

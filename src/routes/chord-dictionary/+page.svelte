@@ -257,7 +257,7 @@
     min-height: calc(90vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
     .main-title {
-      font-size: clamp(48px, 8vw, 70px);
+      font-size: clamp(38px, 8vw, 70px);
     }
   }
 

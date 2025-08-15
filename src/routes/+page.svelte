@@ -24,7 +24,7 @@
           </div>
           <div class="card-content">
             <h2 class="card-title">Chord Dictionary</h2>
-            <p class="card-description">Explore and learn piano chord fingerings and progressions</p>
+            <p class="card-description">Explore and learn the main piano chords</p>
           </div>
           <div class="card-arrow">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@
           </div>
           <div class="card-content">
             <h2 class="card-title">Chord Practice</h2>
-            <p class="card-description">Practice chord progressions and improve your playing skills</p>
+            <p class="card-description">Practice building chords note by note</p>
           </div>
           <div class="card-arrow">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,9 +95,9 @@
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 4rem); /* Account for navbar */
-    padding: 3rem 0;
+    padding: 1rem 0;
 		.header-section {
-			margin-bottom: 4rem;
+			margin-bottom: 1rem;
 			h1 {
 				margin-bottom: 2rem;
 			}

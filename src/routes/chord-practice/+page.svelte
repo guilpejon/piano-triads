@@ -320,7 +320,7 @@
     min-height: calc(90vh - 4rem);
     padding: 2rem 0;
     .main-title {
-      font-size: clamp(48px, 8vw, 70px);
+      font-size: clamp(38px, 8vw, 70px);
     }
   }
 
@@ -616,7 +616,7 @@
     }
 
     .main-title {
-      font-size: clamp(32px, 6vw, 48px) !important;
+      font-size: clamp(38px, 8vw, 70px);
     }
 
     .page-description {
@@ -692,7 +692,7 @@
     }
 
     .main-title {
-      font-size: clamp(28px, 5vw, 36px) !important;
+      font-size: clamp(38px, 5vw, 36px) !important;
     }
 
     .page-description {
@@ -710,11 +710,12 @@
 
     .chord-display {
       font-size: clamp(3rem, 3.5vw, 2rem);
+      padding-bottom: 2rem;
     }
 
     .chord-tone-rule {
       font-size: 1rem;
-      margin-top: -1.5rem;
+      margin-top: -0.5rem;
     }
 
     .game-info {
@@ -760,7 +761,7 @@
 
 		.chord-practice-wrapper{
 			.header-section{
-				padding: 1rem 0;
+				padding: 2rem 0;
 			}
 
 			.main-title{

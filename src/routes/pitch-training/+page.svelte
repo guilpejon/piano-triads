@@ -799,7 +799,7 @@
 			}
 		}
     .main-title {
-      font-size: clamp(28px, 5vw, 36px) !important;
+      font-size: clamp(38px, 5vw, 36px) !important;
     }
 
     .page-description {
@@ -851,8 +851,8 @@
     }
 
     .replay-button {
-      width: 4.25rem;
-      height: 4.25rem;
+      width: 3.25rem;
+      height: 3.25rem;
     }
 
     .replay-icon {
@@ -1017,14 +1017,14 @@
           class:active={currentMode === 'note'}
           on:click={() => switchMode('note')}
         >
-          Note Mode
+          Notes
         </button>
         <button 
           class="mode-button chord-mode" 
           class:active={currentMode === 'chord'}
           on:click={() => switchMode('chord')}
         >
-          Chord Mode
+          Chords
         </button>
 						</div>
     </section>
