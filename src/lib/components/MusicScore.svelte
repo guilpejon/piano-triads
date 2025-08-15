@@ -429,12 +429,12 @@
 
   .treble-clef {
     top: -22px;
-    font-size: 6rem !important;
+    font-size: 6rem;
   }
 
   .bass-clef {
     bottom: -18px;
-    font-size: 60px;
+    font-size: 4rem;
   }
 
   .staff-lines {
@@ -531,6 +531,17 @@
   @media (max-width: 480px) {
     .music-score {
       padding: 1rem;
+    }
+  }
+
+  @supports not (-webkit-overflow-scrolling: touch) {
+    .treble-clef {
+      top: 26px;
+      font-size: 2.7rem;
+    }
+    .bass-clef {
+      bottom: -14px;
+      font-size: 3rem;
     }
   }
 </style>
