@@ -759,19 +759,17 @@
       font-size: 1.5rem;
     }
 
-		.chord-practice-wrapper{
-			.header-section{
-				padding: 2rem 0;
-			}
+    .chord-practice-wrapper .header-section {
+      padding: 2rem 0;
+    }
 
-			.main-title{
-				margin: 0 0 0.5rem;
-			}
+    .chord-practice-wrapper .main-title {
+      margin: 0 0 0.5rem;
+    }
 
-			.game-section{
-				padding-bottom: 0;
-			}
-		}
+    .chord-practice-wrapper .game-section {
+      padding-bottom: 0;
+    }
   }
 
   /* Extra small screens */

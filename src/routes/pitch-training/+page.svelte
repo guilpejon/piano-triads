@@ -536,7 +536,8 @@
   .game-info {
     display: flex;
     justify-content: center;
-    gap: 2rem;
+    align-items: center;
+    gap: 1.5rem;
     margin-top: 2rem;
     flex-wrap: wrap;
   }
@@ -552,6 +553,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+
+  .info-item:not(.replay-item) {
+    min-width: 100px;
+    max-width: 120px;
   }
 
   .info-label {
@@ -570,9 +576,6 @@
     color: var(--color-accent);
   }
 
-  .info-value.mistakes {
-    color: #ef4444;
-  }
   .replay-item {
     background: transparent;
     border: none;
@@ -587,31 +590,34 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background: rgba(0, 0, 0, 0.05);
-    color: #1d1d1f;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 4rem;
+    height: 4rem;
+    background: var(--gradient-blue);
+    color: white;
+    border: 1px solid var(--color-accent);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
     backdrop-filter: blur(20px);
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
   }
 
   .replay-button:hover {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.15);
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
   }
 
   .replay-button:active {
-    background: rgba(0, 0, 0, 0.12);
+    background: var(--color-accent);
     transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0, 122, 255, 0.4);
   }
 
   .replay-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     stroke-width: 2;
     opacity: 0.8;
   }
@@ -619,7 +625,7 @@
   /* Piano Section */
   .piano-section {
     padding-bottom: 2rem;
-		padding-top: 2rem;
+    padding-top: 2rem;
   }
 
   .piano-container {
@@ -631,7 +637,7 @@
 
   /* Controls */
   .controls-section {
-		padding-top: 3rem;
+    padding-top: 3rem;
   }
 
   .controls-container {
@@ -766,13 +772,20 @@
     }
 
     .game-info {
-      gap: 0.75rem;
+      gap: 1rem;
       margin-top: 1.5rem;
+      justify-content: center;
+      align-items: center;
     }
 
     .info-item {
       padding: 0.5rem 1rem;
       min-width: 120px;
+    }
+
+    .info-item:not(.replay-item) {
+      min-width: 90px;
+      max-width: 110px;
     }
 
     .replay-button {
@@ -781,23 +794,25 @@
     }
 
     .replay-icon {
-      width: 1rem;
-      height: 1rem;
+      width: 1.25rem;
+      height: 1.25rem;
     }
   }
 
   @media (max-width: 480px) {
-		.pitch-training-wrapper {
+    .pitch-training-wrapper {
       padding: 1.5rem 0;
-			.controls-section {
-				padding: 0;
-			}
-			.note-display {
-				padding: 0.6rem 1rem;
-				min-width: 80px;
-        padding-bottom: 2rem;
-			}
-		}
+    }
+
+    .controls-section {
+      padding: 0;
+    }
+
+    .note-display {
+      padding: 0.6rem 1rem;
+      min-width: 80px;
+      padding-bottom: 2rem;
+    }
     .main-title {
       font-size: clamp(38px, 5vw, 36px) !important;
     }
@@ -831,15 +846,20 @@
 
     .game-info {
       flex-direction: row;
-      justify-content: space-around;
-      gap: 0.5rem;
+      justify-content: center;
+      gap: 1rem;
       margin-top: 1rem;
     }
 
     .info-item {
       padding: 0.5rem 0.75rem;
       min-width: 100px;
-      flex: 1;
+      flex: 0 0 auto;
+    }
+
+    .info-item:not(.replay-item) {
+      min-width: 80px;
+      max-width: 100px;
     }
 
     .info-label {
@@ -856,8 +876,8 @@
     }
 
     .replay-icon {
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
     }
   }
 
@@ -1044,30 +1064,20 @@
 						</div>
 					</div>
             {/if}
-            {#if gameState === 'playing'}
+                        {#if gameState === 'playing'}
               <div class="game-info">
                 <div class="info-item">
                   <div class="info-label">Time Left</div>
                   <div class="info-value timer">{timeLeft}s</div>
 						</div>
-                <div class="info-item">
-                  <div class="info-label">Mistakes</div>
-                  <div class="info-value mistakes">
-                    {#if currentMode === 'note'}
-                      {incorrectAttempts}/1
-                    {:else}
-                      {chordMistakes}/3
-                    {/if}
-						</div>
-					</div>
                 <div class="info-item replay-item">
-                  <button on:click={replayTarget} class="replay-button" aria-label="Replay audio">
-                    <svg class="replay-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <button on:click={replayTarget} class="replay-button" aria-label="Play audio">
+                    <svg class="replay-icon" fill="currentColor" stroke="none" viewBox="0 0 24 24">
+                      <polygon points="8,5 19,12 8,19" />
                     </svg>
 							</button>
 						</div>
-					</div>
+              </div>
             {/if}
 				</div>
         {/if}

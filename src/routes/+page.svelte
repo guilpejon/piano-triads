@@ -96,12 +96,14 @@
     justify-content: center;
     min-height: calc(100vh - 4rem); /* Account for navbar */
     padding: 1rem 0;
-		.header-section {
-			margin-bottom: 1rem;
-			h1 {
-				margin-bottom: 2rem;
-			}
-		}
+  }
+
+  .home-wrapper .header-section {
+    margin-bottom: 1rem;
+  }
+
+  .home-wrapper .header-section h1 {
+    margin-bottom: 2rem;
   }
 
   /* Features section */

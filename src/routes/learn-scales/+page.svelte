@@ -178,40 +178,6 @@
     stroke-width: 1.5;
   }
 
-  /* Scale info section */
-  .scale-info-section {
-    padding-bottom: 2rem;
-  }
-
-  .scale-info-container {
-    max-width: 48rem;
-    margin: 0 auto;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--color-border-light);
-    border-radius: 1.5rem;
-    backdrop-filter: blur(20px);
-    text-align: center;
-  }
-
-  .scale-name {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
-    background: var(--gradient-text);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .scale-description {
-    font-size: 1.1rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-  }
-
   .scale-pattern {
     font-size: 1rem;
     color: var(--color-text-tertiary);
@@ -444,11 +410,6 @@
 
     .piano-section {
       padding-bottom: 2rem;
-    }
-
-    .scale-info-container {
-      padding: 1.5rem;
-      margin: 0 1rem;
     }
 
     .scale-notes-container {
