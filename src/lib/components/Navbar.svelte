@@ -265,10 +265,6 @@
     .mobile-menu-btn {
       display: flex;
     }
-
-    .nav-brand-text {
-      display: none;
-    }
   }
 
   @media (max-width: 480px) {

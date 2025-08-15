@@ -1,186 +1,627 @@
+<script lang="ts">
+  import Piano from '$lib/components/Piano.svelte';
+  import { onMount } from 'svelte';
+  import { playChord, playNote } from '$lib/utils/audioUtils';
+  import { 
+    generateScale, 
+    getScaleDefinition, 
+    getPracticeScales, 
+    getScalePattern, 
+    getScaleDegreeNames,
+    getNoteNameOnly,
+    areNotesEquivalent 
+  } from '$lib/utils/chordUtils';
+
+  // Current scale state
+  let currentRootNote = 'C';
+  let currentScaleType = 'major';
+  let currentScaleNotes: string[] = [];
+  let isInitialLoad = true;
+
+  // Available root notes
+  const availableRootNotes = [
+    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 
+    'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'
+  ];
+
+  // Available scale types for practice
+  const availableScaleTypes = getPracticeScales();
+
+  // Reactive scale information
+  $: scaleDefinition = getScaleDefinition(currentScaleType);
+  $: fullScaleName = scaleDefinition ? `${currentRootNote} ${scaleDefinition.name}` : '';
+  $: scalePattern = getScalePattern(currentScaleType);
+  $: scaleDegrees = getScaleDegreeNames(currentScaleType);
+  $: scaleDescription = scaleDefinition?.description || '';
+
+  // Function to update the current scale
+  function updateScale() {
+    // Use octave 3 for lower notes to avoid going into octave 5
+    // This ensures all scale notes stay within the available audio range (3-4)
+    const startingOctave = ['C', 'C#', 'Db', 'D', 'D#', 'Eb'].includes(currentRootNote) ? 3 : 3;
+    currentScaleNotes = generateScale(currentRootNote, currentScaleType, startingOctave);
+    updatePianoDisplay();
+    
+    // Play scale on update (skip on initial load)
+    if (!isInitialLoad && currentScaleNotes.length > 0) {
+      playScaleAscending();
+    }
+  }
+
+  // Function to update piano display
+  function updatePianoDisplay() {
+    // Reset all keys
+    const allKeys = document.querySelectorAll('.key');
+    const allNotes = document.querySelectorAll('.note');
+    
+    allKeys.forEach(key => {
+      key.classList.remove('scale-active');
+    });
+    
+    allNotes.forEach(note => {
+      (note as HTMLElement).style.display = 'none';
+    });
+    
+    // Highlight scale notes
+    currentScaleNotes.forEach(noteName => {
+      highlightScaleKey(noteName, 'scale-active');
+    });
+  }
+
+  // Helper function to highlight a specific key and show the correct note name
+  function highlightScaleKey(noteName: string, cssClass: string) {
+    const allPianoKeys = document.querySelectorAll('.key[data-note]');
+    
+    allPianoKeys.forEach(key => {
+      const dataNote = key.getAttribute('data-note');
+      if (dataNote) {
+        // Check all possible note names for this key (handles black keys with multiple names)
+        const keyNotes = dataNote.split('/');
+        
+        // Check if any of the key's notes match our scale note exactly (same octave)
+        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
+        
+        if (hasExactMatch) {
+          // Add the specified CSS class
+          key.classList.add(cssClass);
+          
+          // Show the note name - the Piano component has already determined the correct enharmonic spelling
+          const noteElements = key.querySelectorAll('.note');
+          const scaleNoteWithoutOctave = getNoteNameOnly(noteName);
+          
+          noteElements.forEach(noteEl => {
+            const noteText = noteEl.textContent?.trim();
+            if (noteText) {
+              // Use enharmonic equivalence to check if this note element should be shown
+              // This handles cases where the Piano component shows "Eb" but our scale has "D#"
+              if (areNotesEquivalent(noteText + '3', scaleNoteWithoutOctave + '3')) {
+                (noteEl as HTMLElement).style.display = 'block';
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  // Function to play scale ascending
+  function playScaleAscending() {
+    currentScaleNotes.forEach((note, index) => {
+      setTimeout(() => {
+        playNote(note);
+      }, index * 300); // 300ms delay between notes
+    });
+  }
+
+  // Function to play scale descending
+  function playScaleDescending() {
+    const reversedNotes = [...currentScaleNotes].reverse();
+    reversedNotes.forEach((note, index) => {
+      setTimeout(() => {
+        playNote(note);
+      }, index * 300); // 300ms delay between notes
+    });
+  }
+
+  // Function to play scale as chord
+  function playScaleAsChord() {
+    playChord(currentScaleNotes);
+  }
+
+  // Event handlers
+  function handleRootNoteChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    currentRootNote = target.value;
+    updateScale();
+  }
+
+  function handleScaleTypeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    currentScaleType = target.value;
+    updateScale();
+  }
+
+  // Initialize on mount
+  onMount(() => {
+    setTimeout(() => {
+      isInitialLoad = false;
+      updateScale();
+    }, 100); // Small delay to ensure piano and DOM are rendered
+  });
+</script>
+
 <svelte:head>
-	<title>Learn Scales - Piano Triads</title>
-	<meta name="description" content=" Learn scales" />
+  <title>Learn Scales - Piano Triads</title>
+  <meta name="description" content="Learn and practice piano scales with interactive lessons" />
 </svelte:head>
 
-<div class="w-full min-h-screen bg-gradient-to-br from-purple-50 to-violet-100 p-4">
-    <div class="max-w-7xl mx-auto">
-		<div class="mb-8">
-			<a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-800 mb-4">
-				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-				</svg>
-				Back to Home
-			</a>
-    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Learn Scales</h1>
-    <p class="text-base sm:text-lg md:text-xl text-gray-600">Master major, minor, and exotic scales with interactive lessons</p>
-		</div>
+<style>
+  /* Learn scales wrapper */
+  .learn-scales-wrapper {
+    min-height: calc(90vh - 4rem);
+    padding: 2rem 0;
+  }
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
-				<div class="text-center mb-4">
-					<div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-white font-bold text-lg">M</span>
-					</div>
-					<h3 class="text-xl font-semibold text-gray-800">Major Scales</h3>
-				</div>
-				<p class="text-gray-600 text-sm mb-4">The foundation of Western music theory</p>
-				<ul class="space-y-2 text-sm text-gray-700 mb-4">
-					<li>• C Major (no sharps/flats)</li>
-					<li>• G Major (1 sharp)</li>
-					<li>• D Major (2 sharps)</li>
-					<li>• A Major (3 sharps)</li>
-					<li>• E Major (4 sharps)</li>
-				</ul>
-				<button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">
-					Start Learning
-				</button>
-			</div>
+  .learn-scales-wrapper .main-title {
+    font-size: clamp(48px, 8vw, 70px);
+  }
 
-            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
-				<div class="text-center mb-4">
-					<div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-white font-bold text-lg">m</span>
-					</div>
-					<h3 class="text-xl font-semibold text-gray-800">Minor Scales</h3>
-				</div>
-				<p class="text-gray-600 text-sm mb-4">Express emotion with minor tonalities</p>
-				<ul class="space-y-2 text-sm text-gray-700 mb-4">
-					<li>• Natural Minor</li>
-					<li>• Harmonic Minor</li>
-					<li>• Melodic Minor</li>
-					<li>• Dorian Mode</li>
-					<li>• Aeolian Mode</li>
-				</ul>
-				<button class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
-					Explore Minor
-				</button>
-			</div>
+  /* Navigation */
+  .navigation {
+    padding-bottom: 1.5rem;
+  }
 
-            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
-				<div class="text-center mb-4">
-					<div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-white font-bold text-lg">×</span>
-					</div>
-					<h3 class="text-xl font-semibold text-gray-800">Exotic Scales</h3>
-				</div>
-				<p class="text-gray-600 text-sm mb-4">Unique sounds from around the world</p>
-				<ul class="space-y-2 text-sm text-gray-700 mb-4">
-					<li>• Pentatonic Scales</li>
-					<li>• Blues Scale</li>
-					<li>• Whole Tone Scale</li>
-					<li>• Chromatic Scale</li>
-					<li>• Modal Scales</li>
-				</ul>
-				<button class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors">
-					Discover Exotic
-				</button>
-			</div>
-		</div>
+  .back-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    stroke-width: 1.5;
+  }
 
-        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8 mb-8">
-			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Interactive Scale Trainer</h2>
-			
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-				<div>
-					<h3 class="text-lg font-medium text-gray-800 mb-4">Current Scale: C Major</h3>
-					<div class="bg-gray-100 rounded-lg p-4 mb-4">
-						<div class="flex justify-between items-center text-sm text-gray-600 mb-2">
-							<span>Notes:</span>
-							<span>Degrees:</span>
-						</div>
-						<div class="flex justify-between items-center">
-							<div class="space-x-2">
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">C</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">D</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">E</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">F</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">G</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">A</span>
-								<span class="inline-block bg-white px-2 py-1 rounded text-sm font-medium">B</span>
-							</div>
-							<div class="space-x-2 text-xs">
-								<span>1</span>
-								<span>2</span>
-								<span>3</span>
-								<span>4</span>
-								<span>5</span>
-								<span>6</span>
-								<span>7</span>
-							</div>
-						</div>
-					</div>
-					
-					<div class="space-y-3">
-						<button class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors">
-							Play Scale Ascending
-						</button>
-						<button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors">
-							Play Scale Descending
-						</button>
-						<button class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors">
-							Practice Mode
-						</button>
-					</div>
-				</div>
+  /* Scale info section */
+  .scale-info-section {
+    padding-bottom: 2rem;
+  }
 
-				<div>
-					<h3 class="text-lg font-medium text-gray-800 mb-4">Scale Patterns</h3>
-					<div class="space-y-3">
-						<div class="border border-gray-200 rounded-lg p-3">
-							<h4 class="font-medium text-gray-800 mb-2">Pattern 1: Root Position</h4>
-							<p class="text-sm text-gray-600">Start with thumb on root note</p>
-							<div class="mt-2 text-xs text-gray-500">Fingering: 1-2-3-1-2-3-4-5</div>
-						</div>
-						<div class="border border-gray-200 rounded-lg p-3">
-							<h4 class="font-medium text-gray-800 mb-2">Pattern 2: Two Octaves</h4>
-							<p class="text-sm text-gray-600">Extended scale practice</p>
-							<div class="mt-2 text-xs text-gray-500">Fingering: 1-2-3-1-2-3-4-1-2-3-1-2-3-4-5</div>
-						</div>
-						<div class="border border-gray-200 rounded-lg p-3">
-							<h4 class="font-medium text-gray-800 mb-2">Pattern 3: Contrary Motion</h4>
-							<p class="text-sm text-gray-600">Both hands moving opposite</p>
-							<div class="mt-2 text-xs text-gray-500">Advanced coordination exercise</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+  .scale-info-container {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border-light);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(20px);
+    text-align: center;
+  }
 
-        <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6 md:p-8">
-			<h2 class="text-2xl font-semibold text-gray-800 mb-6">Learning Path</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
-				<div class="text-center">
-					<div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-						</svg>
-					</div>
-					<h3 class="font-medium text-gray-800">1. Basic Scales</h3>
-					<p class="text-sm text-gray-600 mt-1">C, G, F Major</p>
-				</div>
-				<div class="text-center">
-					<div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-white font-bold">2</span>
-					</div>
-					<h3 class="font-medium text-gray-800">2. Sharp Scales</h3>
-					<p class="text-sm text-gray-600 mt-1">D, A, E Major</p>
-				</div>
-				<div class="text-center">
-					<div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-gray-600 font-bold">3</span>
-					</div>
-					<h3 class="font-medium text-gray-800">3. Flat Scales</h3>
-					<p class="text-sm text-gray-600 mt-1">Bb, Eb, Ab Major</p>
-				</div>
-				<div class="text-center">
-					<div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
-						<span class="text-gray-600 font-bold">4</span>
-					</div>
-					<h3 class="font-medium text-gray-800">4. Minor Scales</h3>
-					<p class="text-sm text-gray-600 mt-1">All forms</p>
-				</div>
-			</div>
-		</div>
-	</div>
+  .scale-name {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .scale-description {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .scale-pattern {
+    font-size: 1rem;
+    color: var(--color-text-tertiary);
+    font-family: 'Monaco', 'Menlo', monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+  }
+
+  /* Controls section */
+  .controls-section {
+    padding-bottom: 2.5rem;
+  }
+
+  .controls-container {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+
+  .select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 10rem;
+  }
+
+  .select-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-tertiary);
+    letter-spacing: -0.01em;
+  }
+
+  .scale-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border-medium);
+    border-radius: 0.75rem;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    color: var(--color-text-primary);
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-sm);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23424245" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+  }
+
+  .scale-select:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .scale-select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .scale-select optgroup {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    padding: 0.5rem 0;
+  }
+
+  .scale-select option {
+    font-weight: 400;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text-primary);
+    background: var(--color-background);
+  }
+
+  /* Scale notes display */
+  .scale-notes-section {
+    padding-bottom: 2rem;
+  }
+
+  .scale-notes-container {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--color-border-light);
+    border-radius: 1rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .notes-grid {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem;
+    min-width: 3rem;
+  }
+
+  .note-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .note-degree {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* Action buttons */
+  .actions-section {
+    padding-bottom: 2rem;
+  }
+
+  .actions-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .action-button.primary {
+    background: var(--gradient-blue);
+    color: white;
+  }
+
+  .action-button.secondary {
+    background: var(--gradient-green);
+    color: white;
+  }
+
+  .action-button.tertiary {
+    background: var(--gradient-purple);
+    color: white;
+  }
+
+  .action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Piano section */
+  .piano-section {
+    padding-bottom: 3rem;
+  }
+
+  .piano-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  /* Scale highlighting styles */
+  :global(.key.scale-active) {
+    box-shadow: 
+      0 0 20px rgba(52, 211, 153, 0.4),
+      0 4px 12px rgba(52, 211, 153, 0.3) !important;
+    border-color: #10b981 !important;
+  }
+
+  :global(.key.white.scale-active) {
+    background: var(--gradient-green) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.scale-active) {
+    background: var(--gradient-green) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.scale-active .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .controls-container {
+      gap: 1rem;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .select-group {
+      min-width: 12rem;
+      max-width: 18rem;
+      width: 100%;
+    }
+
+    .piano-container {
+      padding: 2rem 1.25rem;
+    }
+
+    .piano-section {
+      padding-bottom: 2rem;
+    }
+
+    .scale-info-container {
+      padding: 1.5rem;
+      margin: 0 1rem;
+    }
+
+    .scale-notes-container {
+      margin: 0 1rem;
+    }
+
+    .actions-container {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .action-button {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .piano-container {
+      padding: 1.5rem 1rem;
+    }
+
+    .navigation {
+      padding-bottom: 1rem;
+    }
+
+    .header-section {
+      padding: 2rem 0;
+    }
+
+    .controls-section {
+      padding-bottom: 1.5rem;
+    }
+
+    .piano-section {
+      padding-bottom: 1.5rem;
+    }
+
+    .notes-grid {
+      gap: 0.25rem;
+    }
+
+    .note-item {
+      padding: 0.5rem;
+      min-width: 2.5rem;
+    }
+
+    .note-name {
+      font-size: 1rem;
+    }
+
+    .note-degree {
+      font-size: 0.7rem;
+    }
+  }
+</style>
+
+<div class="learn-scales-wrapper">
+  <div class="page-container">
+    <!-- Navigation -->
+    <nav class="navigation">
+      <a href="/" class="btn-glass">
+        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Back to Home</span>
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="header-section">
+      <div class="header-content">
+        <h1 class="main-title">Learn Scales</h1>
+        <p class="main-subtitle">
+          Learn the most common scales and practice them on the piano
+        </p>
+      </div>
+    </header>
+
+    <!-- Scale Controls -->
+    <section class="controls-section">
+      <div class="controls-container">
+        <div class="select-group">
+          <label for="root-note-select" class="select-label">Root Note</label>
+          <select id="root-note-select" class="scale-select" on:change={handleRootNoteChange} bind:value={currentRootNote}>
+            {#each availableRootNotes as rootNote}
+              <option value={rootNote}>{rootNote}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div class="select-group">
+          <label for="scale-type-select" class="select-label">Scale Type</label>
+          <select id="scale-type-select" class="scale-select" on:change={handleScaleTypeChange} bind:value={currentScaleType}>
+            <optgroup label="Basic Scales">
+              <option value="major">Major Scale</option>
+              <option value="natural_minor">Natural Minor Scale</option>
+            </optgroup>
+            <optgroup label="Minor Scale Variations">
+              <option value="harmonic_minor">Harmonic Minor Scale</option>
+              <option value="melodic_minor">Melodic Minor Scale</option>
+            </optgroup>
+            <optgroup label="Modal Scales">
+              <option value="dorian">Dorian Mode</option>
+              <option value="mixolydian">Mixolydian Mode</option>
+            </optgroup>
+            <optgroup label="Pentatonic Scales">
+              <option value="pentatonic_major">Major Pentatonic Scale</option>
+              <option value="pentatonic_minor">Minor Pentatonic Scale</option>
+            </optgroup>
+            <optgroup label="Specialty Scales">
+              <option value="blues">Blues Scale</option>
+              <option value="whole_tone">Whole Tone Scale</option>
+              <option value="chromatic">Chromatic Scale</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scale Information -->
+    {#if scaleDefinition}
+      <section class="scale-info-section">
+        <div class="scale-info-container">
+          <h2 class="scale-name">{fullScaleName}</h2>
+          <p class="scale-description">{scaleDescription}</p>
+          <div class="scale-pattern">Pattern: {scalePattern}</div>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Scale Notes Display -->
+    {#if currentScaleNotes.length > 0}
+      <section class="scale-notes-section">
+        <div class="scale-notes-container">
+          <div class="notes-grid">
+            {#each currentScaleNotes as note, index}
+              <div class="note-item">
+                <div class="note-name">{getNoteNameOnly(note)}</div>
+                <div class="note-degree">{scaleDegrees[index]}</div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Action Buttons -->
+    <section class="actions-section">
+      <div class="actions-container">
+        <button on:click={playScaleAscending} class="action-button primary">
+          Play Ascending
+        </button>
+        <button on:click={playScaleDescending} class="action-button secondary">
+          Play Descending
+        </button>
+        <button on:click={playScaleAsChord} class="action-button tertiary">
+          Play as Chord
+        </button>
+      </div>
+    </section>
+
+    <!-- Piano Section -->
+    <section class="piano-section">
+      <div class="piano-container">
+        <Piano chordNotes={currentScaleNotes} />
+      </div>
+    </section>
+  </div>
 </div>

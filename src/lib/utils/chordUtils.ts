@@ -298,3 +298,174 @@ const chordToneRules: { [key: string]: string } = {
 export function getChordToneRule(chordType: string): string {
   return chordToneRules[chordType] || 'Custom chord structure';
 }
+
+// Scale definitions and utilities
+export interface ScaleDefinition {
+  name: string;
+  intervals: number[]; // Semitone intervals from root
+  description: string;
+}
+
+// Scale dictionary with various scale types
+const scaleDefinitions: { [key: string]: ScaleDefinition } = {
+  'major': {
+    name: 'Major Scale',
+    intervals: [0, 2, 4, 5, 7, 9, 11],
+    description: 'The foundation of Western music - bright and happy'
+  },
+  'natural_minor': {
+    name: 'Natural Minor Scale',
+    intervals: [0, 2, 3, 5, 7, 8, 10],
+    description: 'The natural minor scale - melancholic and emotional'
+  },
+  'harmonic_minor': {
+    name: 'Harmonic Minor Scale',
+    intervals: [0, 2, 3, 5, 7, 8, 11],
+    description: 'Minor scale with raised 7th - exotic and dramatic'
+  },
+  'melodic_minor': {
+    name: 'Melodic Minor Scale',
+    intervals: [0, 2, 3, 5, 7, 9, 11],
+    description: 'Minor scale with raised 6th and 7th - smooth and flowing'
+  },
+  'dorian': {
+    name: 'Dorian Mode',
+    intervals: [0, 2, 3, 5, 7, 9, 10],
+    description: 'Minor mode with raised 6th - jazzy and sophisticated'
+  },
+  'mixolydian': {
+    name: 'Mixolydian Mode',
+    intervals: [0, 2, 4, 5, 7, 9, 10],
+    description: 'Major mode with lowered 7th - bluesy and rock-oriented'
+  },
+  'pentatonic_major': {
+    name: 'Major Pentatonic Scale',
+    intervals: [0, 2, 4, 7, 9],
+    description: 'Five-note scale - simple and universally pleasing'
+  },
+  'pentatonic_minor': {
+    name: 'Minor Pentatonic Scale',
+    intervals: [0, 3, 5, 7, 10],
+    description: 'Five-note minor scale - perfect for blues and rock'
+  },
+  'blues': {
+    name: 'Blues Scale',
+    intervals: [0, 3, 5, 6, 7, 10],
+    description: 'Minor pentatonic with added blue note - soulful and expressive'
+  },
+  'whole_tone': {
+    name: 'Whole Tone Scale',
+    intervals: [0, 2, 4, 6, 8, 10],
+    description: 'All whole steps - dreamy and impressionistic'
+  },
+  'chromatic': {
+    name: 'Chromatic Scale',
+    intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    description: 'All twelve notes - complete tonal palette'
+  }
+};
+
+// Note names in chromatic order
+const chromaticNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const chromaticNotesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+/**
+ * Get the scale definition for a given scale type
+ */
+export function getScaleDefinition(scaleType: string): ScaleDefinition | undefined {
+  return scaleDefinitions[scaleType];
+}
+
+/**
+ * Get all available scale types
+ */
+export function getAllScaleTypes(): string[] {
+  return Object.keys(scaleDefinitions);
+}
+
+/**
+ * Generate scale notes for a given root note and scale type
+ */
+export function generateScale(rootNote: string, scaleType: string, octave: number = 4): string[] {
+  const scaleDefinition = scaleDefinitions[scaleType];
+  if (!scaleDefinition) return [];
+
+  // Determine if we should use sharps or flats based on the root note
+  const useFlats = rootNote.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(rootNote);
+  const noteArray = useFlats ? chromaticNotesFlat : chromaticNotes;
+  
+  // Find the root note index
+  const rootIndex = noteArray.findIndex(note => note === rootNote);
+  if (rootIndex === -1) return [];
+
+  // Generate scale notes
+  const scaleNotes: string[] = [];
+  
+  scaleDefinition.intervals.forEach(interval => {
+    const noteIndex = (rootIndex + interval) % 12;
+    const noteName = noteArray[noteIndex];
+    
+    // Calculate octave (handle octave changes when going past B)
+    let noteOctave = octave;
+    if (rootIndex + interval >= 12) {
+      noteOctave = octave + Math.floor((rootIndex + interval) / 12);
+    }
+    
+    // Ensure we don't go beyond octave 4 (since audio files only go up to octave 4)
+    // If we would go to octave 5, use octave 4 instead
+    if (noteOctave > 4) {
+      noteOctave = 4;
+    }
+    
+    scaleNotes.push(`${noteName}${noteOctave}`);
+  });
+
+  return scaleNotes;
+}
+
+/**
+ * Get scale degree names for display
+ */
+export function getScaleDegreeNames(scaleType: string): string[] {
+  const scaleDefinition = scaleDefinitions[scaleType];
+  if (!scaleDefinition) return [];
+
+  const degreeNames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+  return scaleDefinition.intervals.map((_, index) => degreeNames[index]);
+}
+
+/**
+ * Get a formatted scale pattern description
+ */
+export function getScalePattern(scaleType: string): string {
+  const scaleDefinition = scaleDefinitions[scaleType];
+  if (!scaleDefinition) return '';
+
+  // Convert intervals to steps (W = whole step, H = half step)
+  const steps: string[] = [];
+  for (let i = 1; i < scaleDefinition.intervals.length; i++) {
+    const interval = scaleDefinition.intervals[i] - scaleDefinition.intervals[i - 1];
+    steps.push(interval === 2 ? 'W' : 'H');
+  }
+  
+  return steps.join(' - ');
+}
+
+/**
+ * Get practice scales for the learn scales page
+ */
+export function getPracticeScales(): string[] {
+  return [
+    'major',
+    'natural_minor',
+    'harmonic_minor',
+    'melodic_minor',
+    'dorian',
+    'mixolydian',
+    'pentatonic_major',
+    'pentatonic_minor',
+    'blues',
+    'whole_tone',
+    'chromatic'
+  ];
+}
