@@ -21,7 +21,7 @@ sudo apt install -y \
     curl \
     wget \
     git \
-    ufw 
+    ufw
 
 # Clean up
 sudo apt autoremove -y
@@ -97,7 +97,7 @@ npm run build    # Build with @sveltejs/adapter-node
 
 # This creates the production server in the build/ directory:
 # - build/index.js (standalone server)
-# - build/handler.js (for custom servers) 
+# - build/handler.js (for custom servers)
 # - build/client/ (static assets)
 # - build/server/ (server components)
 ```
@@ -134,7 +134,7 @@ sudo ufw allow 3000
 
 # Run the production server (adapter-node way)
 node build
- 
+
 # Remember to block port 3000 again after the test
 sudo ufw deny 3000
 ```
@@ -285,6 +285,7 @@ sudo journalctl -u piano-triads -f
 # Cloudflare tunnel logs
 sudo journalctl -u cloudflared -f
 ```
+
 ## Updating Your Application
 
 ### Method 1: Build Locally and Transfer (Recommended)

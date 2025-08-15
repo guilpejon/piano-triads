@@ -2,7 +2,12 @@
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { playNote, playChord, isAudioReady } from '$lib/utils/audioUtils';
-  import { getPracticeChords, getChord, getNoteNameOnly, areNotesEquivalent } from '$lib/utils/chordUtils';
+  import {
+    getPracticeChords,
+    getChord,
+    getNoteNameOnly,
+    areNotesEquivalent
+  } from '$lib/utils/chordUtils';
 
   // Training modes
   type TrainingMode = 'note' | 'chord';
@@ -25,14 +30,37 @@
   let currentStreak = 0;
 
   // Available notes for note mode (single octave)
-  const availableNotes = ['C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'];
-  
+  const availableNotes = [
+    'C4',
+    'C#4',
+    'D4',
+    'D#4',
+    'E4',
+    'F4',
+    'F#4',
+    'G4',
+    'G#4',
+    'A4',
+    'A#4',
+    'B4'
+  ];
+
   // Available chords for chord mode - major, minor, maj7, and 7 chords
-  let availableChords: string[] = getPracticeChords().filter(chord => {
+  let availableChords: string[] = getPracticeChords().filter((chord) => {
     // Include: basic major, basic minor, maj7, and 7 chords
     // Exclude: dim, sus4, 9, 11, etc.
-    const isBasicMajor = chord.endsWith('M') && !chord.includes('maj') && !chord.includes('9') && !chord.includes('11') && !chord.includes('dim');
-    const isBasicMinor = chord.endsWith('m') && !chord.includes('7') && !chord.includes('9') && !chord.includes('11') && !chord.includes('dim');
+    const isBasicMajor =
+      chord.endsWith('M') &&
+      !chord.includes('maj') &&
+      !chord.includes('9') &&
+      !chord.includes('11') &&
+      !chord.includes('dim');
+    const isBasicMinor =
+      chord.endsWith('m') &&
+      !chord.includes('7') &&
+      !chord.includes('9') &&
+      !chord.includes('11') &&
+      !chord.includes('dim');
     const ism7 = chord.endsWith('m7');
     const isMaj7 = chord.endsWith('maj7');
     const is7th = chord.endsWith('7') && !chord.includes('maj') && !chord.includes('m7');
@@ -51,10 +79,10 @@
     incorrectAttempts = 0;
     chordMistakes = 0;
     correctNotesClicked.clear();
-    
+
     // Reset piano visual state
     updatePianoDisplay();
-    
+
     if (currentMode === 'note') {
       // Pick a random note
       currentTarget = availableNotes[Math.floor(Math.random() * availableNotes.length)];
@@ -73,13 +101,13 @@
         playChord(currentTargetNotes);
       }, 500);
     }
-    
+
     startTimer();
   }
 
   function startTimer() {
     if (timer) clearInterval(timer);
-    
+
     timer = setInterval(() => {
       timeLeft--;
       if (timeLeft <= 0) {
@@ -93,7 +121,7 @@
       clearInterval(timer);
       timer = null;
     }
-    
+
     if (success) {
       gameState = 'completed';
       successfulRounds++;
@@ -102,16 +130,16 @@
       gameState = 'failed';
       failedRounds++;
       currentStreak = 0;
-      
+
       // Show correct notes in green when failing
       if (currentMode === 'chord') {
         // Only highlight notes that the user didn't find
-        currentTargetNotes.forEach(note => {
+        currentTargetNotes.forEach((note) => {
           const noteName = getNoteNameOnly(note);
-          const wasFound = Array.from(correctNotesClicked).some(clickedNoteName => 
+          const wasFound = Array.from(correctNotesClicked).some((clickedNoteName) =>
             areNotesEquivalent(clickedNoteName + '3', noteName + '3')
           );
-          
+
           if (!wasFound) {
             highlightKey(note, 'practice-success');
           }
@@ -121,12 +149,12 @@
         highlightKey(currentTarget, 'practice-success');
       }
     }
-    
+
     // Play the target again so user can hear the correct answer
     // Note mode: only play on failure (user already heard their correct click)
     // Chord mode: play on both success and failure for confirmation
     const shouldPlay = !success || currentMode === 'chord';
-    
+
     if (shouldPlay) {
       // Add delay to avoid overlap with user's key click
       setTimeout(() => {
@@ -141,14 +169,15 @@
 
   function handlePianoClick(clickedNote: string) {
     if (gameState !== 'playing') return;
-    
+
     if (currentMode === 'note') {
       // Check if clicked note matches target exactly (including octave)
       // Handle enharmonic equivalents but require same octave (e.g., C#3 === Db3, but C#3 !== C#4)
-      const isCorrect = clickedNote === currentTarget || 
+      const isCorrect =
+        clickedNote === currentTarget ||
         (clickedNote.slice(-1) === currentTarget.slice(-1) && // Same octave
-         areNotesEquivalent(clickedNote, currentTarget)); // Same note name (handles enharmonics)
-      
+          areNotesEquivalent(clickedNote, currentTarget)); // Same note name (handles enharmonics)
+
       if (isCorrect) {
         // Correct note - show green feedback
         highlightKey(clickedNote, 'practice-success');
@@ -158,7 +187,7 @@
         incorrectAttempts++;
         highlightKey(clickedNote, 'practice-failed');
         playNote(clickedNote); // Play the clicked note for feedback
-        
+
         // Fail immediately on first incorrect attempt
         if (incorrectAttempts >= 1) {
           endRound(false);
@@ -167,24 +196,24 @@
     } else {
       // Chord mode - check if clicked note is part of the target chord
       const clickedNoteName = getNoteNameOnly(clickedNote);
-      const isPartOfChord = currentTargetNotes.some(note => 
+      const isPartOfChord = currentTargetNotes.some((note) =>
         areNotesEquivalent(clickedNote, note)
       );
-      
+
       if (isPartOfChord) {
         // Correct chord note - add to found notes and show green feedback
         correctNotesClicked.add(clickedNoteName);
         highlightKey(clickedNote, 'practice-success');
         playNote(clickedNote);
-        
+
         // Check if all chord notes have been found
-        const allNotesFound = currentTargetNotes.every(chordNote => {
+        const allNotesFound = currentTargetNotes.every((chordNote) => {
           const chordNoteName = getNoteNameOnly(chordNote);
-          return Array.from(correctNotesClicked).some(clickedNoteName => 
+          return Array.from(correctNotesClicked).some((clickedNoteName) =>
             areNotesEquivalent(clickedNoteName + '3', chordNoteName + '3')
           );
         });
-        
+
         if (allNotesFound) {
           endRound(true);
         }
@@ -193,12 +222,12 @@
         chordMistakes++;
         highlightKey(clickedNote, 'practice-failed');
         playNote(clickedNote);
-        
+
         // Remove red highlighting after 800ms
         setTimeout(() => {
           removeKeyHighlight(clickedNote);
         }, 500);
-        
+
         // Fail after 3 wrong notes
         if (chordMistakes >= 3) {
           endRound(false);
@@ -209,7 +238,7 @@
 
   function replayTarget() {
     if (gameState !== 'playing') return;
-    
+
     if (currentMode === 'note') {
       playNote(currentTarget);
     } else {
@@ -220,25 +249,25 @@
   // Helper function to highlight a specific key and show the note name
   function highlightKey(noteName: string, cssClass: string) {
     const allPianoKeys = document.querySelectorAll('.key[data-note]');
-    
-    allPianoKeys.forEach(key => {
+
+    allPianoKeys.forEach((key) => {
       const dataNote = key.getAttribute('data-note');
       if (dataNote) {
         // Check all possible note names for this key (handles black keys with multiple names)
         const keyNotes = dataNote.split('/');
-        
+
         // Check if any of the key's notes match our note exactly (same octave)
-        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
-        
+        const hasExactMatch = keyNotes.some((keyNote) => keyNote === noteName);
+
         if (hasExactMatch) {
           // Add the specified CSS class
           key.classList.add(cssClass);
-          
+
           // Show only the specific note name that matches our note
           const noteElements = key.querySelectorAll('.note');
           const noteWithoutOctave = getNoteNameOnly(noteName);
-          
-          noteElements.forEach(noteEl => {
+
+          noteElements.forEach((noteEl) => {
             const noteText = noteEl.textContent?.trim();
             if (noteText) {
               // Show this note label if it's enharmonically equivalent to our note
@@ -254,24 +283,24 @@
 
   function removeKeyHighlight(noteName: string) {
     const allPianoKeys = document.querySelectorAll('.key[data-note]');
-    
-    allPianoKeys.forEach(key => {
+
+    allPianoKeys.forEach((key) => {
       const dataNote = key.getAttribute('data-note');
       if (dataNote) {
         // Check all possible note names for this key (handles black keys with multiple names)
         const keyNotes = dataNote.split('/');
-        
+
         // Check if any of the key's notes match our note exactly (same octave)
-        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
-        
+        const hasExactMatch = keyNotes.some((keyNote) => keyNote === noteName);
+
         if (hasExactMatch) {
           // Remove practice-failed class but keep practice-success if it exists
           key.classList.remove('practice-failed');
-          
+
           // Hide the note name only if this key is not currently highlighted as correct
           if (!key.classList.contains('practice-success')) {
             const noteElements = key.querySelectorAll('.note');
-            noteElements.forEach(noteEl => {
+            noteElements.forEach((noteEl) => {
               (noteEl as HTMLElement).style.display = 'none';
             });
           }
@@ -285,29 +314,29 @@
     // Reset all keys
     const allKeys = document.querySelectorAll('.key');
     const allNotes = document.querySelectorAll('.note');
-    
-    allKeys.forEach(key => {
+
+    allKeys.forEach((key) => {
       key.classList.remove('practice-failed', 'practice-success');
     });
-    
+
     // Hide all notes
-    allNotes.forEach(note => {
+    allNotes.forEach((note) => {
       (note as HTMLElement).style.display = 'none';
     });
   }
-  
+
   // Function to show note names for the current chord
   function showChordNotes() {
-    currentTargetNotes.forEach(noteName => {
+    currentTargetNotes.forEach((noteName) => {
       const noteNameWithoutOctave = getNoteNameOnly(noteName);
-      
+
       const allKeys = document.querySelectorAll('.key[data-note]');
-      allKeys.forEach(key => {
+      allKeys.forEach((key) => {
         const dataNote = key.getAttribute('data-note');
         if (dataNote && dataNote.includes(noteName)) {
           // Show the specific note name that matches our chord
           const noteElements = key.querySelectorAll('.note');
-          noteElements.forEach(noteEl => {
+          noteElements.forEach((noteEl) => {
             if (noteEl.textContent && noteEl.textContent.trim() === noteNameWithoutOctave) {
               (noteEl as HTMLElement).style.display = 'block';
             }
@@ -325,13 +354,13 @@
       timer = null;
     }
     correctNotesClicked.clear();
-    
+
     // Reset statistics when switching modes
     totalRounds = 0;
     successfulRounds = 0;
     failedRounds = 0;
     currentStreak = 0;
-    
+
     // Clear piano visual feedback when switching modes
     updatePianoDisplay();
   }
@@ -342,28 +371,28 @@
       const target = event.target as HTMLElement;
       const key = target.closest('.key') as HTMLElement;
       if (!key) return;
-      
+
       const noteData = key.getAttribute('data-note');
       if (!noteData) return;
-      
+
       // Handle enharmonic notes (e.g., "C#3/Db3")
       const allNotes = noteData.split('/');
-      
+
       // Use the first note name for simplicity
       handlePianoClick(allNotes[0]);
     };
-    
+
     // Add click listeners to all piano keys
     setTimeout(() => {
       const pianoKeys = document.querySelectorAll('.key');
-      pianoKeys.forEach(key => {
+      pianoKeys.forEach((key) => {
         key.addEventListener('click', handleKeyClick);
       });
     }, 100);
-    
+
     return () => {
       const pianoKeys = document.querySelectorAll('.key');
-      pianoKeys.forEach(key => {
+      pianoKeys.forEach((key) => {
         key.removeEventListener('click', handleKeyClick);
       });
     };
@@ -377,9 +406,140 @@
 </script>
 
 <svelte:head>
-	<title>Pitch Training - Piano Triads</title>
+  <title>Pitch Training - Piano Triads</title>
   <meta name="description" content="Develop perfect pitch and ear training skills" />
 </svelte:head>
+
+<div class="pitch-training-wrapper">
+  <div class="page-container">
+    <!-- Navigation -->
+    <nav class="navigation">
+      <a href="/" class="btn-glass">
+        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        <span>Back to Home</span>
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="header-section">
+      <div class="header-content">
+        <h1 class="main-title">Pitch Training</h1>
+        <p class="page-description">
+          {#if currentMode === 'note'}
+            Identify the note by clicking its corresponding key.
+          {:else}
+            Identify the chord by clicking all its notes.
+          {/if}
+        </p>
+      </div>
+    </header>
+
+    <!-- Mode Selection -->
+    <section class="mode-section">
+      <div class="mode-container">
+        <button
+          class="mode-button note-mode"
+          class:active={currentMode === 'note'}
+          on:click={() => switchMode('note')}
+        >
+          Notes
+        </button>
+        <button
+          class="mode-button chord-mode"
+          class:active={currentMode === 'chord'}
+          on:click={() => switchMode('chord')}
+        >
+          Chords
+        </button>
+      </div>
+    </section>
+
+    <!-- Game Section -->
+    <section class="game-section">
+      <div class="game-container">
+        <!-- Game Header -->
+        {#if gameState !== 'waiting'}
+          <div class="game-header">
+            {#if gameState === 'completed' || gameState === 'failed'}
+              <div class="note-reveal">
+                <div
+                  class="note-display"
+                  class:success={gameState === 'completed'}
+                  class:failed={gameState === 'failed'}
+                >
+                  {currentTarget}
+                </div>
+              </div>
+            {/if}
+            {#if gameState === 'playing'}
+              <div class="game-info">
+                <div class="info-item">
+                  <div class="info-label">Time Left</div>
+                  <div class="info-value timer">{timeLeft}s</div>
+                </div>
+                <div class="info-item replay-item">
+                  <button on:click={replayTarget} class="replay-button" aria-label="Play audio">
+                    <svg class="replay-icon" fill="currentColor" stroke="none" viewBox="0 0 24 24">
+                      <polygon points="8,5 19,12 8,19" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </section>
+
+    <!-- Controls Section -->
+    {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
+      <section class="controls-section">
+        <div class="controls-container">
+          <button on:click={startNewRound} class="game-button primary"> Start New Round </button>
+        </div>
+      </section>
+    {/if}
+    <!-- Piano Section -->
+    <section class="piano-section">
+      <div class="piano-container">
+        <Piano chordNotes={currentTargetNotes} />
+      </div>
+    </section>
+
+    <!-- Statistics Section -->
+    {#if totalRounds > 0}
+      <section class="stats-section">
+        <div class="stats-container">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{totalRounds}</div>
+              <div class="stat-label">Rounds</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value correct">{successfulRounds}</div>
+              <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value incorrect">{failedRounds}</div>
+              <div class="stat-label">Wrong</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value streak">{currentStreak}</div>
+              <div class="stat-label">Streak</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    {/if}
+  </div>
+</div>
 
 <style>
   /* Base styles consistent with chord practice */
@@ -811,7 +971,7 @@
     .note-display {
       padding: 0.6rem 1rem;
       min-width: 80px;
-      padding-bottom: 2rem;
+      padding-bottom: 2.5rem !important;
     }
     .main-title {
       font-size: clamp(38px, 5vw, 36px) !important;
@@ -891,7 +1051,7 @@
 
   /* Piano highlighting for pitch training */
   :global(.key.practice-correct) {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(52, 128, 241, 0.4),
       0 4px 12px rgba(52, 128, 241, 0.3) !important;
     border-color: var(--color-accent-hover) !important;
@@ -916,7 +1076,7 @@
 
   /* Failed practice styles (red) */
   :global(.key.practice-failed) {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(239, 68, 68, 0.4),
       0 4px 12px rgba(239, 68, 68, 0.3) !important;
     border-color: #dc2626 !important;
@@ -941,7 +1101,7 @@
 
   /* Success practice styles (green) */
   :global(.key.practice-success) {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(34, 197, 94, 0.4),
       0 4px 12px rgba(34, 197, 94, 0.3) !important;
     border-color: #16a34a !important;
@@ -974,7 +1134,7 @@
   }
 
   .note-display {
-		font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 800;
     color: var(--color-accent);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -987,11 +1147,11 @@
   }
 
   .note-display.success {
-    color: #4CAF50;
+    color: #4caf50;
   }
 
   .note-display.failed {
-    color: #F44336;
+    color: #f44336;
   }
 
   @media (max-width: 768px) {
@@ -1002,130 +1162,3 @@
     }
   }
 </style>
-
-<div class="pitch-training-wrapper">
-  <div class="page-container">
-    <!-- Navigation -->
-    <nav class="navigation">
-      <a href="/" class="btn-glass">
-        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-				</svg>
-        <span>Back to Home</span>
-      </a>
-    </nav>
-
-    <!-- Header Section -->
-    <header class="header-section">
-      <div class="header-content">
-        <h1 class="main-title">Pitch Training</h1>
-        <p class="page-description">
-					{#if currentMode === 'note'}
-						Identify the note by clicking its corresponding key.
-					{:else}
-						Identify the chord by clicking all its notes.
-					{/if}
-        </p>
-		</div>
-    </header>
-
-    <!-- Mode Selection -->
-    <section class="mode-section">
-      <div class="mode-container">
-        <button 
-          class="mode-button note-mode" 
-          class:active={currentMode === 'note'}
-          on:click={() => switchMode('note')}
-        >
-          Notes
-        </button>
-        <button 
-          class="mode-button chord-mode" 
-          class:active={currentMode === 'chord'}
-          on:click={() => switchMode('chord')}
-        >
-          Chords
-        </button>
-						</div>
-    </section>
-
-    <!-- Game Section -->
-    <section class="game-section">
-      <div class="game-container">
-        <!-- Game Header -->
-        {#if gameState !== 'waiting'}
-          <div class="game-header">
-            {#if gameState === 'completed' || gameState === 'failed'}
-              <div class="note-reveal">
-                <div class="note-display" 
-                     class:success={gameState === 'completed'}
-                     class:failed={gameState === 'failed'}>
-                  {currentTarget}
-						</div>
-					</div>
-            {/if}
-                        {#if gameState === 'playing'}
-              <div class="game-info">
-                <div class="info-item">
-                  <div class="info-label">Time Left</div>
-                  <div class="info-value timer">{timeLeft}s</div>
-						</div>
-                <div class="info-item replay-item">
-                  <button on:click={replayTarget} class="replay-button" aria-label="Play audio">
-                    <svg class="replay-icon" fill="currentColor" stroke="none" viewBox="0 0 24 24">
-                      <polygon points="8,5 19,12 8,19" />
-                    </svg>
-							</button>
-						</div>
-              </div>
-            {/if}
-				</div>
-        {/if}
-			</div>
-    </section>
-
-    <!-- Controls Section -->
-    {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
-      <section class="controls-section">
-        <div class="controls-container">
-          <button on:click={startNewRound} class="game-button primary">
-            Start New Round
-          </button>
-        </div>
-      </section>
-    {/if}
-    <!-- Piano Section -->
-    <section class="piano-section">
-      <div class="piano-container">
-        <Piano chordNotes={currentTargetNotes} />
-						</div>
-    </section>
-
-    <!-- Statistics Section -->
-    {#if totalRounds > 0}
-      <section class="stats-section">
-        <div class="stats-container">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-value">{totalRounds}</div>
-              <div class="stat-label">Rounds</div>
-					</div>
-            <div class="stat-item">
-              <div class="stat-value correct">{successfulRounds}</div>
-              <div class="stat-label">Correct</div>
-				</div>
-            <div class="stat-item">
-              <div class="stat-value incorrect">{failedRounds}</div>
-              <div class="stat-label">Wrong</div>
-				</div>
-            <div class="stat-item">
-              <div class="stat-value streak">{currentStreak}</div>
-              <div class="stat-label">Streak</div>
-					</div>
-				</div>
-			</div>
-      </section>
-    {/if}
-
-	</div>
-</div>

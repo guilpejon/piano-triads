@@ -2,14 +2,14 @@
   import Piano from '$lib/components/Piano.svelte';
   import { onMount } from 'svelte';
   import { playChord, playNote } from '$lib/utils/audioUtils';
-  import { 
-    generateScale, 
-    getScaleDefinition, 
-    getPracticeScales, 
-    getScalePattern, 
+  import {
+    generateScale,
+    getScaleDefinition,
+    getPracticeScales,
+    getScalePattern,
     getScaleDegreeNames,
     getNoteNameOnly,
-    areNotesEquivalent 
+    areNotesEquivalent
   } from '$lib/utils/chordUtils';
 
   // Current scale state
@@ -20,8 +20,23 @@
 
   // Available root notes
   const availableRootNotes = [
-    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 
-    'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'
+    'C',
+    'C#',
+    'Db',
+    'D',
+    'D#',
+    'Eb',
+    'E',
+    'F',
+    'F#',
+    'Gb',
+    'G',
+    'G#',
+    'Ab',
+    'A',
+    'A#',
+    'Bb',
+    'B'
   ];
 
   // Available scale types for practice
@@ -41,7 +56,7 @@
     const startingOctave = ['C', 'C#', 'Db', 'D', 'D#', 'Eb'].includes(currentRootNote) ? 3 : 3;
     currentScaleNotes = generateScale(currentRootNote, currentScaleType, startingOctave);
     updatePianoDisplay();
-    
+
     // Play scale on update (skip on initial load)
     if (!isInitialLoad && currentScaleNotes.length > 0) {
       playScaleAscending();
@@ -53,17 +68,17 @@
     // Reset all keys
     const allKeys = document.querySelectorAll('.key');
     const allNotes = document.querySelectorAll('.note');
-    
-    allKeys.forEach(key => {
+
+    allKeys.forEach((key) => {
       key.classList.remove('scale-active');
     });
-    
-    allNotes.forEach(note => {
+
+    allNotes.forEach((note) => {
       (note as HTMLElement).style.display = 'none';
     });
-    
+
     // Highlight scale notes
-    currentScaleNotes.forEach(noteName => {
+    currentScaleNotes.forEach((noteName) => {
       highlightScaleKey(noteName, 'scale-active');
     });
   }
@@ -71,25 +86,25 @@
   // Helper function to highlight a specific key and show the correct note name
   function highlightScaleKey(noteName: string, cssClass: string) {
     const allPianoKeys = document.querySelectorAll('.key[data-note]');
-    
-    allPianoKeys.forEach(key => {
+
+    allPianoKeys.forEach((key) => {
       const dataNote = key.getAttribute('data-note');
       if (dataNote) {
         // Check all possible note names for this key (handles black keys with multiple names)
         const keyNotes = dataNote.split('/');
-        
+
         // Check if any of the key's notes match our scale note exactly (same octave)
-        const hasExactMatch = keyNotes.some(keyNote => keyNote === noteName);
-        
+        const hasExactMatch = keyNotes.some((keyNote) => keyNote === noteName);
+
         if (hasExactMatch) {
           // Add the specified CSS class
           key.classList.add(cssClass);
-          
+
           // Show the note name - the Piano component has already determined the correct enharmonic spelling
           const noteElements = key.querySelectorAll('.note');
           const scaleNoteWithoutOctave = getNoteNameOnly(noteName);
-          
-          noteElements.forEach(noteEl => {
+
+          noteElements.forEach((noteEl) => {
             const noteText = noteEl.textContent?.trim();
             if (noteText) {
               // Use enharmonic equivalence to check if this note element should be shown
@@ -154,6 +169,121 @@
   <title>Learn Scales - Piano Triads</title>
   <meta name="description" content="Learn and practice piano scales with interactive lessons" />
 </svelte:head>
+
+<div class="learn-scales-wrapper">
+  <div class="page-container">
+    <!-- Navigation -->
+    <nav class="navigation">
+      <a href="/" class="btn-glass">
+        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        <span>Back to Home</span>
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="header-section">
+      <div class="header-content">
+        <h1 class="main-title">Learn Scales</h1>
+        <p class="main-subtitle">Learn the most common scales and practice them on the piano</p>
+      </div>
+    </header>
+
+    <!-- Scale Controls -->
+    <section class="controls-section">
+      <div class="controls-container">
+        <div class="select-group">
+          <label for="root-note-select" class="select-label">Root Note</label>
+          <select
+            id="root-note-select"
+            class="scale-select"
+            on:change={handleRootNoteChange}
+            bind:value={currentRootNote}
+          >
+            {#each availableRootNotes as rootNote}
+              <option value={rootNote}>{rootNote}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div class="select-group">
+          <label for="scale-type-select" class="select-label">Scale Type</label>
+          <select
+            id="scale-type-select"
+            class="scale-select"
+            on:change={handleScaleTypeChange}
+            bind:value={currentScaleType}
+          >
+            <optgroup label="Basic Scales">
+              <option value="major">Major Scale</option>
+              <option value="natural_minor">Natural Minor Scale</option>
+            </optgroup>
+            <optgroup label="Minor Scale Variations">
+              <option value="harmonic_minor">Harmonic Minor Scale</option>
+              <option value="melodic_minor">Melodic Minor Scale</option>
+            </optgroup>
+            <optgroup label="Modal Scales">
+              <option value="dorian">Dorian Mode</option>
+              <option value="mixolydian">Mixolydian Mode</option>
+            </optgroup>
+            <optgroup label="Pentatonic Scales">
+              <option value="pentatonic_major">Major Pentatonic Scale</option>
+              <option value="pentatonic_minor">Minor Pentatonic Scale</option>
+            </optgroup>
+            <optgroup label="Specialty Scales">
+              <option value="blues">Blues Scale</option>
+              <option value="whole_tone">Whole Tone Scale</option>
+              <option value="chromatic">Chromatic Scale</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scale Notes Display -->
+    {#if currentScaleNotes.length > 0}
+      <section class="scale-notes-section">
+        <div class="scale-notes-container">
+          <div class="notes-grid">
+            {#each currentScaleNotes as note, index}
+              <div class="note-item">
+                <div class="note-name">{getNoteNameOnly(note)}</div>
+                <div class="note-degree">{scaleDegrees[index]}</div>
+              </div>
+            {/each}
+          </div>
+          <div class="scale-pattern">{scalePattern}</div>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Action Buttons -->
+    <section class="actions-section">
+      <div class="actions-container">
+        <button on:click={playScaleAscending} class="action-button primary">
+          Play Ascending
+        </button>
+        <button on:click={playScaleDescending} class="action-button secondary">
+          Play Descending
+        </button>
+        <button on:click={playScaleAsChord} class="action-button tertiary"> Play as Chord </button>
+      </div>
+    </section>
+
+    <!-- Piano Section -->
+    <section class="piano-section">
+      <div class="piano-container">
+        <Piano chordNotes={currentScaleNotes} />
+      </div>
+    </section>
+  </div>
+</div>
 
 <style>
   /* Learn scales wrapper */
@@ -367,7 +497,7 @@
 
   /* Scale highlighting styles */
   :global(.key.scale-active) {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(0, 122, 255, 0.4),
       0 4px 12px rgba(0, 122, 255, 0.3) !important;
     border-color: var(--color-accent-hover) !important;
@@ -397,7 +527,7 @@
       flex-direction: column;
       align-items: center;
     }
-    
+
     .select-group {
       min-width: 12rem;
       max-width: 18rem;
@@ -466,107 +596,3 @@
     }
   }
 </style>
-
-<div class="learn-scales-wrapper">
-  <div class="page-container">
-    <!-- Navigation -->
-    <nav class="navigation">
-      <a href="/" class="btn-glass">
-        <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        <span>Back to Home</span>
-      </a>
-    </nav>
-
-    <!-- Header Section -->
-    <header class="header-section">
-      <div class="header-content">
-        <h1 class="main-title">Learn Scales</h1>
-        <p class="main-subtitle">
-          Learn the most common scales and practice them on the piano
-        </p>
-      </div>
-    </header>
-
-    <!-- Scale Controls -->
-    <section class="controls-section">
-      <div class="controls-container">
-        <div class="select-group">
-          <label for="root-note-select" class="select-label">Root Note</label>
-          <select id="root-note-select" class="scale-select" on:change={handleRootNoteChange} bind:value={currentRootNote}>
-            {#each availableRootNotes as rootNote}
-              <option value={rootNote}>{rootNote}</option>
-            {/each}
-          </select>
-        </div>
-
-        <div class="select-group">
-          <label for="scale-type-select" class="select-label">Scale Type</label>
-          <select id="scale-type-select" class="scale-select" on:change={handleScaleTypeChange} bind:value={currentScaleType}>
-            <optgroup label="Basic Scales">
-              <option value="major">Major Scale</option>
-              <option value="natural_minor">Natural Minor Scale</option>
-            </optgroup>
-            <optgroup label="Minor Scale Variations">
-              <option value="harmonic_minor">Harmonic Minor Scale</option>
-              <option value="melodic_minor">Melodic Minor Scale</option>
-            </optgroup>
-            <optgroup label="Modal Scales">
-              <option value="dorian">Dorian Mode</option>
-              <option value="mixolydian">Mixolydian Mode</option>
-            </optgroup>
-            <optgroup label="Pentatonic Scales">
-              <option value="pentatonic_major">Major Pentatonic Scale</option>
-              <option value="pentatonic_minor">Minor Pentatonic Scale</option>
-            </optgroup>
-            <optgroup label="Specialty Scales">
-              <option value="blues">Blues Scale</option>
-              <option value="whole_tone">Whole Tone Scale</option>
-              <option value="chromatic">Chromatic Scale</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-    </section>
-
-    <!-- Scale Notes Display -->
-    {#if currentScaleNotes.length > 0}
-      <section class="scale-notes-section">
-        <div class="scale-notes-container">
-          <div class="notes-grid">
-            {#each currentScaleNotes as note, index}
-              <div class="note-item">
-                <div class="note-name">{getNoteNameOnly(note)}</div>
-                <div class="note-degree">{scaleDegrees[index]}</div>
-              </div>
-            {/each}
-          </div>
-          <div class="scale-pattern">{scalePattern}</div>
-        </div>
-      </section>
-    {/if}
-
-    <!-- Action Buttons -->
-    <section class="actions-section">
-      <div class="actions-container">
-        <button on:click={playScaleAscending} class="action-button primary">
-          Play Ascending
-        </button>
-        <button on:click={playScaleDescending} class="action-button secondary">
-          Play Descending
-        </button>
-        <button on:click={playScaleAsChord} class="action-button tertiary">
-          Play as Chord
-        </button>
-      </div>
-    </section>
-
-    <!-- Piano Section -->
-    <section class="piano-section">
-      <div class="piano-container">
-        <Piano chordNotes={currentScaleNotes} />
-      </div>
-    </section>
-  </div>
-</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  
+
   // Navigation items
   const navItems = [
     { href: '/', label: 'Home' },
@@ -9,18 +9,18 @@
     { href: '/learn-scales', label: 'Scales' },
     { href: '/pitch-training', label: 'Ear Training' }
   ];
-  
+
   // Mobile menu state
   let mobileMenuOpen = false;
-  
+
   function toggleMobileMenu() {
     mobileMenuOpen = !mobileMenuOpen;
   }
-  
+
   function closeMobileMenu() {
     mobileMenuOpen = false;
   }
-  
+
   // Reactive statement to get current path
   $: currentPath = $page.url.pathname;
 </script>
@@ -29,27 +29,35 @@
   <div class="nav-container">
     <!-- Logo/Brand -->
     <a href="/" class="nav-brand" on:click={closeMobileMenu}>
-      <svg class="nav-logo" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      <svg
+        class="nav-logo"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+        />
       </svg>
       <span class="nav-brand-text">Piano Triads</span>
     </a>
-    
+
     <!-- Desktop Navigation -->
     <div class="nav-links">
       {#each navItems as item}
-        <a 
-          href={item.href} 
-          class="nav-link"
-          class:active={currentPath === item.href}
-        >
+        <a href={item.href} class="nav-link" class:active={currentPath === item.href}>
           {item.label}
         </a>
       {/each}
     </div>
-    
+
     <!-- Mobile Menu Button -->
-    <button 
+    <button
       class="mobile-menu-btn"
       class:active={mobileMenuOpen}
       on:click={toggleMobileMenu}
@@ -60,24 +68,24 @@
       <span class="hamburger-line"></span>
     </button>
   </div>
-  
+
   <!-- Mobile Menu -->
   {#if mobileMenuOpen}
     <!-- Overlay -->
-    <div 
-      class="mobile-menu-overlay" 
+    <div
+      class="mobile-menu-overlay"
       on:click={closeMobileMenu}
       on:keydown={(e) => e.key === 'Escape' && closeMobileMenu()}
       role="button"
       tabindex="0"
     ></div>
-    
+
     <!-- Menu -->
     <div class="mobile-menu">
       <div class="mobile-nav-links">
         {#each navItems as item}
-          <a 
-            href={item.href} 
+          <a
+            href={item.href}
             class="mobile-nav-link"
             class:active={currentPath === item.href}
             on:click={closeMobileMenu}

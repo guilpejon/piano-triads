@@ -12,19 +12,19 @@
   --color-border-strong: rgba(0, 0, 0, 0.12);
   --color-accent: #3480f1;
   --color-accent-hover: #2563eb;
-  
+
   /* Gradients */
   --gradient-text: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
   --gradient-blue: linear-gradient(135deg, #3480f1 0%, #2563eb 100%);
-  --gradient-green: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
-  --gradient-purple: linear-gradient(135deg, #AF52DE 0%, #8E44AD 100%);
-  --gradient-orange: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
-  
+  --gradient-green: linear-gradient(135deg, #34c759 0%, #248a3d 100%);
+  --gradient-purple: linear-gradient(135deg, #af52de 0%, #8e44ad 100%);
+  --gradient-orange: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
+
   /* Shadows */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
-  
+
   /* Transitions */
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition-gentle: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -112,7 +112,7 @@
     padding-left: 1.25rem;
     padding-right: 1.25rem;
   }
-  
+
   .header-section {
     padding: 2rem 0;
   }
