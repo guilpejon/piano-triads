@@ -52,7 +52,6 @@
 
 	.main-content {
 		flex: 1;
-		padding-top: 4rem; /* Account for fixed navbar height */
 	}
 
 	.app-footer {
