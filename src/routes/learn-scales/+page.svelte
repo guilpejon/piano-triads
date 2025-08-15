@@ -216,10 +216,9 @@
     font-size: 1rem;
     color: var(--color-text-tertiary);
     font-family: 'Monaco', 'Menlo', monospace;
-    background: rgba(0, 0, 0, 0.05);
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    display: inline-block;
+    padding-top: 1rem;
+    justify-content: center;
+    display: flex;
   }
 
   /* Controls section */
@@ -305,7 +304,7 @@
   }
 
   .scale-notes-container {
-    max-width: 48rem;
+    max-width: 46rem;
     margin: 0 auto;
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.9);
@@ -319,7 +318,6 @@
     justify-content: center;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 1rem;
   }
 
   .note-item {
@@ -346,10 +344,6 @@
   }
 
   /* Action buttons */
-  .actions-section {
-    padding-bottom: 2rem;
-  }
-
   .actions-container {
     display: flex;
     gap: 1rem;
@@ -408,19 +402,19 @@
   /* Scale highlighting styles */
   :global(.key.scale-active) {
     box-shadow: 
-      0 0 20px rgba(52, 211, 153, 0.4),
-      0 4px 12px rgba(52, 211, 153, 0.3) !important;
-    border-color: #10b981 !important;
+      0 0 20px rgba(0, 122, 255, 0.4),
+      0 4px 12px rgba(0, 122, 255, 0.3) !important;
+    border-color: var(--color-accent-hover) !important;
   }
 
   :global(.key.white.scale-active) {
-    background: var(--gradient-green) !important;
+    background: var(--gradient-blue) !important;
     transform: scaleY(0.99);
     color: white;
   }
 
   :global(.key.black.scale-active) {
-    background: var(--gradient-green) !important;
+    background: var(--gradient-blue) !important;
     transform: translateY(-1px);
   }
 
@@ -575,17 +569,6 @@
       </div>
     </section>
 
-    <!-- Scale Information -->
-    {#if scaleDefinition}
-      <section class="scale-info-section">
-        <div class="scale-info-container">
-          <h2 class="scale-name">{fullScaleName}</h2>
-          <p class="scale-description">{scaleDescription}</p>
-          <div class="scale-pattern">Pattern: {scalePattern}</div>
-        </div>
-      </section>
-    {/if}
-
     <!-- Scale Notes Display -->
     {#if currentScaleNotes.length > 0}
       <section class="scale-notes-section">
@@ -598,6 +581,7 @@
               </div>
             {/each}
           </div>
+          <div class="scale-pattern">{scalePattern}</div>
         </div>
       </section>
     {/if}
