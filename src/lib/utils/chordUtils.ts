@@ -758,11 +758,11 @@ export function getPracticeChords(): string[] {
       chord.endsWith('m') ||
       chord.endsWith('7') ||
       chord.endsWith('maj7') ||
-      chord.endsWith('m7') ||
-      chord.endsWith('dim') ||
-      chord.endsWith('sus4') ||
-      chord.endsWith('9') ||
-      chord.endsWith('11')
+      chord.endsWith('m7') //||
+      // chord.endsWith('dim') ||
+      // chord.endsWith('sus4') ||
+      // chord.endsWith('9') ||
+      // chord.endsWith('11')
   );
 }
 

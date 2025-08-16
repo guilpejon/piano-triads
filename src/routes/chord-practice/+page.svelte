@@ -1,6 +1,9 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
+
+  // Reference to Piano component for auto-scroll
+  let pianoComponent: Piano;
   import {
     getChord,
     getPracticeChords,
@@ -111,6 +114,11 @@
       updatePianoDisplay(false, false, true);
       // Play the complete chord so user can hear what the correct answer sounds like
       playChord(currentChordNotes);
+
+      // Scroll to show the correct answer on mobile
+      setTimeout(() => {
+        pianoComponent?.scrollToActiveKey();
+      }, 100);
     }
   }
 
@@ -402,7 +410,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano />
+        <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} />
       </div>
     </section>
 

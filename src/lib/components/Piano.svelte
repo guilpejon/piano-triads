@@ -1,8 +1,10 @@
 <script lang="ts">
   import { playNote } from '$lib/utils/audioUtils';
+  import { onMount, afterUpdate } from 'svelte';
 
   // Props to control which enharmonic notation to show
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
+  export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
 
   // Handle key press (click or keyboard)
   function handleKeyPress(event: Event): void {
@@ -23,23 +25,100 @@
     }
   }
 
-  // Function to determine which notation to show for black keys
-  function getPreferredNotation(sharpNote: string, flatNote: string): string {
+  // Reactive function to determine which notation to show for black keys
+  $: getPreferredNotation = (sharpNote: string, flatNote: string): string => {
     if (chordNotes.length === 0) {
       // Default to sharp notation if no chord context
       return sharpNote;
     }
 
-    // Check if any chord note matches the sharp or flat version
-    const hasSharp = chordNotes.some((note) => note.includes(sharpNote.replace(/[0-9]/g, '')));
-    const hasFlat = chordNotes.some((note) => note.includes(flatNote.replace(/[0-9]/g, '')));
+    // Extract note names without octave numbers
+    const sharpNoteName = sharpNote.replace(/[0-9]/g, '');
+    const flatNoteName = flatNote.replace(/[0-9]/g, '');
+
+    // Check if any chord note matches the sharp or flat version (more precise matching)
+    const hasSharp = chordNotes.some((note) => {
+      const noteName = note.replace(/[0-9]/g, '');
+      return noteName === sharpNoteName;
+    });
+
+    const hasFlat = chordNotes.some((note) => {
+      const noteName = note.replace(/[0-9]/g, '');
+      return noteName === flatNoteName;
+    });
 
     // Prefer the notation that matches the chord
-    if (hasSharp && !hasFlat) return sharpNote;
     if (hasFlat && !hasSharp) return flatNote;
+    if (hasSharp && !hasFlat) return sharpNote;
 
-    // Default to sharp if both or neither match
+    // If both or neither match, use music theory rules for common chord contexts
+    // Check the root note of the chord to determine key signature preference
+    if (chordNotes.length > 0) {
+      const rootNote = chordNotes[0].replace(/[0-9]/g, '');
+
+      // Flat keys prefer flat notation: F, Bb, Eb, Ab, Db, Gb, Cb
+      const flatKeys = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'];
+      if (flatKeys.includes(rootNote)) {
+        return flatNote;
+      }
+
+      // Sharp keys prefer sharp notation: G, D, A, E, B, F#, C#
+      const sharpKeys = ['G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
+      if (sharpKeys.includes(rootNote)) {
+        return sharpNote;
+      }
+    }
+
+    // Default to sharp if no clear preference
     return sharpNote;
+  };
+
+  // Function to scroll to the first active key
+  function scrollToFirstActiveKey() {
+    if (!autoScrollToActiveKey || typeof window === 'undefined') return;
+
+    // Only scroll on mobile/tablet devices
+    if (window.innerWidth > 1100) return;
+
+    const pianoContainer = document.querySelector('.piano') as HTMLElement;
+    if (!pianoContainer) return;
+
+    // Find the first active key (with chord-active, scale-active, or practice-correct class)
+    const firstActiveKey = pianoContainer.querySelector(
+      '.key.chord-active, .key.scale-active, .key.practice-correct, .key.practice-failed'
+    ) as HTMLElement;
+
+    if (firstActiveKey) {
+      // Calculate the scroll position to center the first active key
+      const containerWidth = pianoContainer.clientWidth;
+      const keyPosition = firstActiveKey.offsetLeft;
+      const keyWidth = firstActiveKey.offsetWidth;
+
+      // Center the key in the viewport, but don't scroll past the beginning
+      const scrollPosition = Math.max(0, keyPosition - containerWidth / 2 + keyWidth / 2);
+
+      pianoContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  // Scroll to active key when component mounts or updates
+  onMount(() => {
+    // Small delay to ensure DOM is fully rendered and CSS classes are applied
+    setTimeout(scrollToFirstActiveKey, 100);
+  });
+
+  // Scroll when chordNotes change (when new chord/scale is selected)
+  afterUpdate(() => {
+    // Small delay to ensure CSS classes are updated
+    setTimeout(scrollToFirstActiveKey, 50);
+  });
+
+  // Expose function to parent components for manual triggering
+  export function scrollToActiveKey() {
+    scrollToFirstActiveKey();
   }
 </script>
 

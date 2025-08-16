@@ -178,15 +178,13 @@
       key.classList.remove('chord-active');
     });
 
+    // Hide all note names first
     allNotes.forEach((note) => {
       (note as HTMLElement).style.display = 'none';
     });
 
-    // Highlight active chord notes
+    // Highlight active chord notes and show their names
     activeNotes.forEach((noteName) => {
-      // Extract note name without octave (e.g., "C#3" -> "C#")
-      const noteNameWithoutOctave = noteName.slice(0, -1);
-
       // Find the key that contains this note
       const allPianoKeys = document.querySelectorAll('.key[data-note]');
 
@@ -195,14 +193,12 @@
         if (dataNote && dataNote.includes(noteName)) {
           // Highlight the key
           key.classList.add('chord-active');
-
-          // Show the specific note name that matches our chord
-          const noteElements = key.querySelectorAll('.note');
-          noteElements.forEach((noteEl) => {
-            if (noteEl.textContent && noteEl.textContent.trim() === noteNameWithoutOctave) {
-              (noteEl as HTMLElement).style.display = 'block';
-            }
-          });
+          
+          // Show the note name for this active key
+          const noteElement = key.querySelector('.note');
+          if (noteElement) {
+            (noteElement as HTMLElement).style.display = 'block';
+          }
         }
       });
     });
@@ -355,7 +351,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano />
+        <Piano chordNotes={activeNotes} />
       </div>
     </section>
   </div>

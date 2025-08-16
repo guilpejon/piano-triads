@@ -2,6 +2,9 @@
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { playNote, playChord, isAudioReady } from '$lib/utils/audioUtils';
+
+  // Reference to Piano component for auto-scroll
+  let pianoComponent: Piano;
   import {
     getPracticeChords,
     getChord,
@@ -148,6 +151,11 @@
         // Show correct note in green when failing note mode
         highlightKey(currentTarget, 'practice-success');
       }
+
+      // Scroll to show the correct answer on mobile
+      setTimeout(() => {
+        pianoComponent?.scrollToActiveKey();
+      }, 100);
     }
 
     // Play the target again so user can hear the correct answer
@@ -484,6 +492,16 @@
                   <div class="info-label">Time Left</div>
                   <div class="info-value timer">{timeLeft}s</div>
                 </div>
+                <div class="info-item">
+                  <div class="info-label">Mistakes</div>
+                  <div class="info-value mistakes">
+                    {#if currentMode === 'note'}
+                      {incorrectAttempts}/1
+                    {:else}
+                      {chordMistakes}/3
+                    {/if}
+                  </div>
+                </div>
                 <div class="info-item replay-item">
                   <button on:click={replayTarget} class="replay-button" aria-label="Play audio">
                     <svg class="replay-icon" fill="currentColor" stroke="none" viewBox="0 0 24 24">
@@ -509,7 +527,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={currentTargetNotes} />
+        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} />
       </div>
     </section>
 
@@ -736,6 +754,10 @@
     color: var(--color-accent);
   }
 
+  .info-value.mistakes {
+    color: #ef4444;
+  }
+
   .replay-item {
     background: transparent;
     border: none;
@@ -944,8 +966,8 @@
     }
 
     .info-item:not(.replay-item) {
-      min-width: 90px;
-      max-width: 110px;
+      min-width: 80px;
+      max-width: 100px;
     }
 
     .replay-button {
