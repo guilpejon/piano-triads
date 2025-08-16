@@ -351,7 +351,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={activeNotes} />
+        <Piano chordNotes={activeNotes} stickyOnMobile={true} />
       </div>
     </section>
   </div>

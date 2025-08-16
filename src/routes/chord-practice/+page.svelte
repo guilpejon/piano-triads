@@ -410,7 +410,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} />
+        <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} stickyOnMobile={true} />
       </div>
     </section>
 

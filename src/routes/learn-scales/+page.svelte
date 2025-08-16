@@ -1,7 +1,7 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import { onMount } from 'svelte';
-  import { playChord, playNote } from '$lib/utils/audioUtils';
+  import { playNote } from '$lib/utils/audioUtils';
   import {
     generateScale,
     getScaleDefinition,
@@ -138,11 +138,6 @@
     });
   }
 
-  // Function to play scale as chord
-  function playScaleAsChord() {
-    playChord(currentScaleNotes);
-  }
-
   // Event handlers
   function handleRootNoteChange(event: Event) {
     const target = event.target as HTMLSelectElement;
@@ -272,14 +267,13 @@
         <button on:click={playScaleDescending} class="action-button secondary">
           Play Descending
         </button>
-        <button on:click={playScaleAsChord} class="action-button tertiary"> Play as Chord </button>
       </div>
     </section>
 
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={currentScaleNotes} />
+        <Piano chordNotes={currentScaleNotes} stickyOnMobile={true} />
       </div>
     </section>
   </div>

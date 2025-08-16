@@ -5,6 +5,7 @@
   // Props to control which enharmonic notation to show
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
   export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
+  export let stickyOnMobile: boolean = false; // Enable sticky positioning on mobile devices
 
   // Handle key press (click or keyboard)
   function handleKeyPress(event: Event): void {
@@ -122,7 +123,7 @@
   }
 </script>
 
-<div class="piano">
+<div class="piano" class:sticky-mobile={stickyOnMobile}>
   <!-- Octave 3 -->
   <button
     class="key white c"
@@ -434,11 +435,7 @@
     border-bottom: 1px solid #999;
     background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
   }
-  .g,
-  .a,
-  .b,
-  .d,
-  .e {
+  .g, .a, .b, .d, .e {
     margin: 0 0 0 -1em;
   }
   .key.black {
@@ -544,17 +541,20 @@
 
       .key.white {
         height: 14rem;
+        width: 3.6rem;
         p.note {
-          margin-left: 20px !important;
-          bottom: 5px;
+          margin-left: 12px !important;
+          font-size: 22px;
+          bottom: 10px;
         }
       }
     }
     .key.black {
-      width: 2rem;
+      width: 1.9rem;
       height: 8rem;
 
       p.note {
+        font-size: 19px;
         margin-bottom: 0;
       }
     }
@@ -567,6 +567,33 @@
 
     .key.white .note {
       font-size: 20px;
+    }
+
+    /* Sticky mobile piano positioning */
+    .piano.sticky-mobile {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--bg-dark);
+      border-top: 2px solid var(--border-dark);
+      border-radius: 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      height: 13rem;
+    }
+
+    .piano.sticky-mobile .key.white {
+      height: 13rem;
+    }
+
+    .piano.sticky-mobile .key.black {
+      height: 7.5rem;
+    }
+
+    /* Add body padding when sticky piano is present */
+    :global(body:has(.piano.sticky-mobile)) {
+      padding-bottom: 13rem;
     }
   }
 </style>

@@ -527,7 +527,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} />
+        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} stickyOnMobile={true} />
       </div>
     </section>
 
@@ -997,6 +997,14 @@
     }
     .main-title {
       font-size: clamp(38px, 5vw, 36px) !important;
+    }
+
+    .piano-section {
+      padding: 0;
+    }
+
+    .piano-container {
+      padding-bottom: 2rem;
     }
 
     .page-description {
