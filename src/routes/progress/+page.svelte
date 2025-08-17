@@ -29,7 +29,7 @@
       // Create all achievements array with locked/unlocked status
       const unlockedIds = new Set(progress.achievements.map(a => a.id));
       allAchievements = ACHIEVEMENTS.map(achievement => {
-        const unlocked = progress.achievements.find(a => a.id === achievement.id);
+        const unlocked = progress?.achievements.find(a => a.id === achievement.id);
         if (unlocked) {
           return unlocked;
         } else {
@@ -57,11 +57,7 @@
   $: pitchTrainingNotesRate = progress ? getSuccessRate(progress.modules.pitchTraining.notes) : 0;
   $: pitchTrainingChordsRate = progress ? getSuccessRate(progress.modules.pitchTraining.chords) : 0;
   
-  // Get activity status
-  $: isActiveToday = progress ? new Date(progress.lastActive).toDateString() === new Date().toDateString() : false;
-  
-  // Calculate days since account creation
-  $: daysSinceStart = progress ? Math.floor((new Date().getTime() - new Date(progress.accountCreated).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
 </script>
 
 <svelte:head>
@@ -150,29 +146,7 @@
         </div>
       </section>
 
-      <!-- Daily Streak Section -->
-      <section class="streak-section">
-        <div class="glass-card streak-card">
-          <div class="streak-header">
-            <div class="streak-icon-large">
-              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
-              </svg>
-            </div>
-            <div class="streak-content">
-              <div class="streak-number">{progress.dailyStreak}</div>
-              <div class="streak-label">Day Streak</div>
-              <div class="streak-status {isActiveToday ? 'active' : 'inactive'}">
-                {isActiveToday ? '🔥 Active today!' : '💤 Practice today to continue'}
-              </div>
-            </div>
-          </div>
-          <div class="streak-best">
-            <span class="streak-best-label">Best streak:</span>
-            <span class="streak-best-number">{progress.longestDailyStreak} days</span>
-          </div>
-        </div>
-      </section>
+
 
       <!-- Module Progress Section -->
       <section class="modules-section">
@@ -210,8 +184,8 @@
             </div>
           </div>
 
-          <!-- Pitch Training -->
-          <div class="glass-card module-card pitch-training-card">
+          <!-- Pitch Training - Note Training -->
+          <div class="glass-card module-card">
             <div class="module-header">
               <div class="module-icon pitch-training-icon">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,51 +193,58 @@
                 </svg>
               </div>
               <div class="module-info">
-                <h3 class="module-title">Pitch Training</h3>
-                <p class="module-subtitle">Develop your ear</p>
+                <h3 class="module-title">Note Training</h3>
+                <p class="module-subtitle">Identify individual notes</p>
               </div>
             </div>
-            
-            <!-- Notes Training Stats -->
-            <div class="pitch-mode-section">
-              <h4 class="pitch-mode-title">Note Training</h4>
-              <div class="module-stats">
-                <div class="module-stat">
-                  <span class="module-stat-number">{progress.modules.pitchTraining.notes.totalRounds}</span>
-                  <span class="module-stat-label">Rounds</span>
-                </div>
-                <div class="module-stat">
-                  <span class="module-stat-number">{pitchTrainingNotesRate}%</span>
-                  <span class="module-stat-label">Success</span>
-                </div>
-                <div class="module-stat">
-                  <span class="module-stat-number">{progress.modules.pitchTraining.notes.bestStreak}</span>
-                  <span class="module-stat-label">Best Streak</span>
-                </div>
+            <div class="module-stats">
+              <div class="module-stat">
+                <span class="module-stat-number">{progress.modules.pitchTraining.notes.totalRounds}</span>
+                <span class="module-stat-label">Rounds</span>
+              </div>
+              <div class="module-stat">
+                <span class="module-stat-number">{pitchTrainingNotesRate}%</span>
+                <span class="module-stat-label">Success</span>
+              </div>
+              <div class="module-stat">
+                <span class="module-stat-number">{progress.modules.pitchTraining.notes.bestStreak}</span>
+                <span class="module-stat-label">Best Streak</span>
               </div>
             </div>
-
-            <!-- Chord Training Stats -->
-            <div class="pitch-mode-section">
-              <h4 class="pitch-mode-title">Chord Training</h4>
-              <div class="module-stats">
-                <div class="module-stat">
-                  <span class="module-stat-number">{progress.modules.pitchTraining.chords.totalRounds}</span>
-                  <span class="module-stat-label">Rounds</span>
-                </div>
-                <div class="module-stat">
-                  <span class="module-stat-number">{pitchTrainingChordsRate}%</span>
-                  <span class="module-stat-label">Success</span>
-                </div>
-                <div class="module-stat">
-                  <span class="module-stat-number">{progress.modules.pitchTraining.chords.bestStreak}</span>
-                  <span class="module-stat-label">Best Streak</span>
-                </div>
-              </div>
-            </div>
-
             <div class="module-last-played">
-              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)} ({progress.modules.pitchTraining.lastMode} mode)
+              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)} {progress.modules.pitchTraining.lastMode === 'note' ? '(last mode)' : ''}
+            </div>
+          </div>
+
+          <!-- Pitch Training - Chord Training -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-icon pitch-training-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                </svg>
+              </div>
+              <div class="module-info">
+                <h3 class="module-title">Chord Training</h3>
+                <p class="module-subtitle">Identify chord progressions</p>
+              </div>
+            </div>
+            <div class="module-stats">
+              <div class="module-stat">
+                <span class="module-stat-number">{progress.modules.pitchTraining.chords.totalRounds}</span>
+                <span class="module-stat-label">Rounds</span>
+              </div>
+              <div class="module-stat">
+                <span class="module-stat-number">{pitchTrainingChordsRate}%</span>
+                <span class="module-stat-label">Success</span>
+              </div>
+              <div class="module-stat">
+                <span class="module-stat-number">{progress.modules.pitchTraining.chords.bestStreak}</span>
+                <span class="module-stat-label">Best Streak</span>
+              </div>
+            </div>
+            <div class="module-last-played">
+              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)} {progress.modules.pitchTraining.lastMode === 'chord' ? '(last mode)' : ''}
             </div>
           </div>
         </div>
@@ -296,26 +277,7 @@
         </div>
       </section>
 
-      <!-- Account Info Section -->
-      <section class="account-section">
-        <div class="glass-card account-card">
-          <h2 class="section-title">Account Summary</h2>
-          <div class="account-stats">
-            <div class="account-stat">
-              <span class="account-stat-label">Member since:</span>
-              <span class="account-stat-value">{formatDate(progress.accountCreated)}</span>
-            </div>
-            <div class="account-stat">
-              <span class="account-stat-label">Days learning:</span>
-              <span class="account-stat-value">{daysSinceStart} days</span>
-            </div>
-            <div class="account-stat">
-              <span class="account-stat-label">Last active:</span>
-              <span class="account-stat-value">{formatDate(progress.lastActive)}</span>
-            </div>
-          </div>
-        </div>
-      </section>
+
     {:else}
       <!-- Loading state -->
       <div class="loading-state">
@@ -459,77 +421,7 @@
     margin-top: 0.25rem;
   }
 
-  /* Streak Section */
-  .streak-section {
-    margin-bottom: 3rem;
-  }
 
-  .streak-card {
-    text-align: center;
-  }
-
-  .streak-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .streak-icon-large {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #fa709a, #fee140);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .streak-icon-large svg {
-    color: white;
-  }
-
-  .streak-number {
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
-
-  .streak-label {
-    font-size: 1.2rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.5rem;
-  }
-
-  .streak-status {
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    display: inline-block;
-  }
-
-  .streak-status.active {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-  }
-
-  .streak-status.inactive {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-  }
-
-  .streak-best {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    color: var(--color-text-secondary);
-  }
-
-  .streak-best-number {
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
 
   /* Modules Section */
   .modules-section {
@@ -571,8 +463,8 @@
     flex-shrink: 0;
   }
 
-  .chord-practice-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
-  .pitch-training-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .chord-practice-icon { background: var(--gradient-green); }
+  .pitch-training-icon { background: var(--gradient-orange); }
 
   .module-icon svg {
     color: white;
@@ -621,27 +513,7 @@
     border-top: 1px solid var(--color-border-light);
   }
 
-  /* Pitch Training Specific Styles */
-  .pitch-training-card {
-    padding: 2rem;
-  }
 
-  .pitch-mode-section {
-    margin-bottom: 1.5rem;
-  }
-
-  .pitch-mode-section:last-of-type {
-    margin-bottom: 1rem;
-  }
-
-  .pitch-mode-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--color-border-light);
-  }
 
   /* Achievements Section */
   .achievements-section {
@@ -713,38 +585,7 @@
 
 
 
-  /* Account Section */
-  .account-section {
-    margin-bottom: 3rem;
-  }
 
-  .account-card {
-    text-align: center;
-  }
-
-  .account-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .account-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .account-stat-label {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-  }
-
-  .account-stat-value {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
 
   /* Loading State */
   .loading-state {
@@ -786,18 +627,13 @@
       grid-template-columns: 1fr;
     }
 
-    .streak-header {
-      flex-direction: column;
-      gap: 1rem;
-    }
+
 
     .module-stats {
       grid-template-columns: repeat(2, 1fr);
     }
 
-    .account-stats {
-      grid-template-columns: 1fr;
-    }
+
   }
 
   @media (max-width: 480px) {

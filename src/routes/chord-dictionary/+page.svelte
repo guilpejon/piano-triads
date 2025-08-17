@@ -9,7 +9,7 @@
     loadProgress,
     saveProgress,
     trackChordViewed,
-    updateDailyStreak,
+
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -256,7 +256,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
-    userProgress = updateDailyStreak(userProgress);
+
     
     // Parse URL and set initial chord state
     parseURLAndSetChord();

@@ -36,10 +36,7 @@ export interface UserProgress {
   modules: ModuleProgress;
   achievements: Achievement[];
   totalPlayTime: number; // in minutes
-  accountCreated: string; // ISO date string
   lastActive: string; // ISO date string
-  dailyStreak: number;
-  longestDailyStreak: number;
 }
 
 export interface Achievement {
@@ -102,10 +99,7 @@ export function getDefaultProgress(): UserProgress {
     },
     achievements: [],
     totalPlayTime: 0,
-    accountCreated: now,
-    lastActive: now,
-    dailyStreak: 0,
-    longestDailyStreak: 0
+    lastActive: now
   };
 }
 
@@ -171,6 +165,55 @@ export function updateSessionStats(
   return newStats;
 }
 
+// Update total play time for a user
+export function updateTotalPlayTime(progress: UserProgress, timeSpentMinutes: number): UserProgress {
+  const newProgress = { ...progress };
+  newProgress.totalPlayTime += timeSpentMinutes;
+  return newProgress;
+}
+
+// Complete practice session - updates both session stats and total play time
+export function completePracticeSession(
+  progress: UserProgress,
+  module: 'chordPractice' | 'pitchTraining',
+  subModule: 'notes' | 'chords' | null,
+  wasSuccessful: boolean,
+  timeSpentSeconds: number
+): UserProgress {
+  const newProgress = { ...progress };
+  const timeSpentMinutes = timeSpentSeconds / 60;
+  
+  // Update total play time
+  newProgress.totalPlayTime += timeSpentMinutes;
+  
+  // Update specific module stats
+  if (module === 'chordPractice') {
+    newProgress.modules.chordPractice = updateSessionStats(
+      newProgress.modules.chordPractice,
+      wasSuccessful,
+      timeSpentSeconds
+    );
+  } else if (module === 'pitchTraining' && subModule) {
+    if (subModule === 'notes') {
+      newProgress.modules.pitchTraining.notes = updateSessionStats(
+        newProgress.modules.pitchTraining.notes,
+        wasSuccessful,
+        timeSpentSeconds
+      );
+    } else if (subModule === 'chords') {
+      newProgress.modules.pitchTraining.chords = updateSessionStats(
+        newProgress.modules.pitchTraining.chords,
+        wasSuccessful,
+        timeSpentSeconds
+      );
+    }
+    newProgress.modules.pitchTraining.lastMode = subModule === 'notes' ? 'note' : 'chord';
+    newProgress.modules.pitchTraining.lastPlayed = new Date().toISOString();
+  }
+  
+  return newProgress;
+}
+
 // Track chord dictionary usage
 export function trackChordViewed(progress: UserProgress, chordName: string): UserProgress {
   const newProgress = { ...progress };
@@ -228,7 +271,7 @@ export function getOverallStats(progress: UserProgress) {
     scalesLearned: learnScales.scalesLearned.length,
     chordsViewed: chordDictionary.chordsViewed.length,
     totalPlayTime: progress.totalPlayTime,
-    dailyStreak: progress.dailyStreak,
+
     pitchTraining: {
       notes: pitchTraining.notes,
       chords: pitchTraining.chords,
@@ -242,28 +285,7 @@ export function getOverallStats(progress: UserProgress) {
   };
 }
 
-// Update daily streak
-export function updateDailyStreak(progress: UserProgress): UserProgress {
-  const now = new Date();
-  const lastActive = new Date(progress.lastActive);
-  const daysDiff = Math.floor((now.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
-  
-  const newProgress = { ...progress };
-  
-  if (daysDiff === 0) {
-    // Same day, no change
-    return newProgress;
-  } else if (daysDiff === 1) {
-    // Next day, increment streak
-    newProgress.dailyStreak++;
-    newProgress.longestDailyStreak = Math.max(newProgress.longestDailyStreak, newProgress.dailyStreak);
-  } else {
-    // More than one day, reset streak
-    newProgress.dailyStreak = 1;
-  }
-  
-  return newProgress;
-}
+
 
 // Predefined achievements
 export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
@@ -295,13 +317,7 @@ export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
     icon: '🎼',
     category: 'learning'
   },
-  {
-    id: 'daily-practice',
-    name: 'Daily Practice',
-    description: 'Practice for 7 days in a row',
-    icon: '🔥',
-    category: 'streak'
-  },
+
   {
     id: 'chord-encyclopedia',
     name: 'Chord Encyclopedia',
@@ -316,13 +332,7 @@ export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
     icon: '⚡',
     category: 'practice'
   },
-  {
-    id: 'persistent',
-    name: 'Persistent',
-    description: 'Practice for 30 days in a row',
-    icon: '💪',
-    category: 'streak'
-  }
+
 ];
 
 // Check and unlock achievements
@@ -355,18 +365,14 @@ export function checkAchievements(progress: UserProgress): UserProgress {
       case 'scale-explorer':
         shouldUnlock = progress.modules.learnScales.scalesLearned.length >= 10;
         break;
-      case 'daily-practice':
-        shouldUnlock = progress.dailyStreak >= 7;
-        break;
+
       case 'chord-encyclopedia':
         shouldUnlock = progress.modules.chordDictionary.chordsViewed.length >= 25;
         break;
       case 'speed-demon':
         shouldUnlock = (progress.modules.chordPractice.averageTime || Infinity) < 10;
         break;
-      case 'persistent':
-        shouldUnlock = progress.longestDailyStreak >= 30;
-        break;
+
     }
     
     if (shouldUnlock) {

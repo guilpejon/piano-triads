@@ -6,7 +6,7 @@
     loadProgress,
     saveProgress,
     trackScaleLearned,
-    updateDailyStreak,
+
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -174,7 +174,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
-    userProgress = updateDailyStreak(userProgress);
+
     
     setTimeout(() => {
       isInitialLoad = false;

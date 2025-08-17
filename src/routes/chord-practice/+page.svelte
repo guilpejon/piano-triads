@@ -17,8 +17,7 @@
   import {
     loadProgress,
     saveProgress,
-    updateSessionStats,
-    updateDailyStreak,
+    completePracticeSession,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -133,8 +132,10 @@
 
     // Update progress tracking
     const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
-    userProgress.modules.chordPractice = updateSessionStats(
-      userProgress.modules.chordPractice,
+    userProgress = completePracticeSession(
+      userProgress,
+      'chordPractice',
+      null,
       success,
       roundTime
     );
@@ -320,7 +321,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
-    userProgress = updateDailyStreak(userProgress);
+
     
     // Load existing stats from progress
     const chordStats = userProgress.modules.chordPractice;

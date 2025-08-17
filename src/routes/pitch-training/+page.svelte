@@ -5,8 +5,7 @@
   import {
     loadProgress,
     saveProgress,
-    updateSessionStats,
-    updateDailyStreak,
+    completePracticeSession,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -152,23 +151,14 @@
 
     // Update progress tracking for the specific mode
     const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
-    if (currentMode === 'note') {
-      userProgress.modules.pitchTraining.notes = updateSessionStats(
-        userProgress.modules.pitchTraining.notes,
-        success,
-        roundTime
-      );
-    } else {
-      userProgress.modules.pitchTraining.chords = updateSessionStats(
-        userProgress.modules.pitchTraining.chords,
-        success,
-        roundTime
-      );
-    }
-    
-    // Update general pitch training info
-    userProgress.modules.pitchTraining.lastMode = currentMode;
-    userProgress.modules.pitchTraining.lastPlayed = new Date().toISOString();
+    const subModule = currentMode === 'note' ? 'notes' : 'chords';
+    userProgress = completePracticeSession(
+      userProgress,
+      'pitchTraining',
+      subModule,
+      success,
+      roundTime
+    );
     
     // Check for achievements
     userProgress = checkAchievements(userProgress);
@@ -431,7 +421,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
-    userProgress = updateDailyStreak(userProgress);
+
     
     // Load existing stats from progress based on current mode
     const pitchStats = currentMode === 'note' 
