@@ -121,6 +121,20 @@
   export function scrollToActiveKey() {
     scrollToFirstActiveKey();
   }
+
+  // Handle body padding for sticky piano (client-side only)
+  onMount(() => {
+    if (stickyOnMobile && window.innerWidth <= 600) {
+      document.body.style.paddingBottom = '13rem';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (document.body.style.paddingBottom === '13rem') {
+        document.body.style.paddingBottom = '';
+      }
+    };
+  });
 </script>
 
 <div class="piano" class:sticky-mobile={stickyOnMobile}>
@@ -592,6 +606,7 @@
     }
 
     /* Add body padding when sticky piano is present */
+    /* Note: :has() selector has limited browser support, fallback handled via JS */
     :global(body:has(.piano.sticky-mobile)) {
       padding-bottom: 13rem;
     }

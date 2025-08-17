@@ -467,10 +467,7 @@
     color: white;
   }
 
-  .action-button.tertiary {
-    background: var(--gradient-purple);
-    color: white;
-  }
+
 
   .action-button:hover {
     transform: translateY(-2px);

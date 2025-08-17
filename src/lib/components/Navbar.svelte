@@ -21,8 +21,8 @@
     mobileMenuOpen = false;
   }
 
-  // Reactive statement to get current path
-  $: currentPath = $page.url.pathname;
+  // Reactive statement to get current path (SSR-safe)
+  $: currentPath = typeof window !== 'undefined' ? $page.url.pathname : '/';
 </script>
 
 <nav class="navbar">
@@ -213,8 +213,8 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(4px);
     z-index: 999;
+    height: 100vh;
   }
 
   /* Mobile menu */
