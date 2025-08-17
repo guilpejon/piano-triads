@@ -6,6 +6,14 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import {
+    loadProgress,
+    saveProgress,
+    trackChordViewed,
+    updateDailyStreak,
+    checkAchievements,
+    type UserProgress
+  } from '$lib/utils/progressUtils';
+  import {
     getChordDictionary,
     type ChordDefinition,
     getChordToneRule
@@ -18,6 +26,9 @@
   let currentInversion = 'root_position';
   let activeNotes: string[] = [];
   let isInitialLoad = true;
+
+  // Progress tracking
+  let userProgress: UserProgress;
 
   // Reactive chord name that updates when any chord parameter changes
   $: fullChordName = (() => {
@@ -120,6 +131,15 @@
     if (!isInitialLoad && activeNotes.length > 0) {
       playChord(activeNotes);
     }
+    
+    // Track chord viewed for progress (skip on initial load)
+    if (!isInitialLoad && userProgress) {
+      const chordName = currentNote + currentChordType;
+      userProgress = trackChordViewed(userProgress, chordName);
+      userProgress = checkAchievements(userProgress);
+      saveProgress(userProgress);
+    }
+    
     // Update URL to reflect current chord selection
     updateURL();
   }
@@ -234,6 +254,10 @@
   }
 
   onMount(() => {
+    // Load user progress
+    userProgress = loadProgress();
+    userProgress = updateDailyStreak(userProgress);
+    
     // Parse URL and set initial chord state
     parseURLAndSetChord();
 

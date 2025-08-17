@@ -14,6 +14,14 @@
     getChordToneRule
   } from '$lib/utils/chordUtils';
   import { playChord } from '$lib/utils/audioUtils';
+  import {
+    loadProgress,
+    saveProgress,
+    updateSessionStats,
+    updateDailyStreak,
+    checkAchievements,
+    type UserProgress
+  } from '$lib/utils/progressUtils';
 
   // Game state
   let gameState: 'waiting' | 'playing' | 'completed' | 'failed' = 'waiting';
@@ -29,6 +37,10 @@
   let successfulRounds = 0;
   let failedRounds = 0;
   let currentStreak = 0;
+
+  // Progress tracking
+  let userProgress: UserProgress;
+  let roundStartTime: number;
 
   // Get all available chords for practice
   let availableChords: string[] = getPracticeChords();
@@ -66,6 +78,9 @@
     mistakes = 0;
     timeLeft = 30;
     correctNotesClicked.clear();
+    
+    // Track round start time
+    roundStartTime = Date.now();
 
     // Select random chord
     currentChord = availableChords[Math.floor(Math.random() * availableChords.length)];
@@ -114,8 +129,24 @@
       updatePianoDisplay(false, false, true);
       // Play the complete chord so user can hear what the correct answer sounds like
       playChord(currentChordNotes);
+    }
 
-      // Scroll to show the correct answer on mobile
+    // Update progress tracking
+    const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
+    userProgress.modules.chordPractice = updateSessionStats(
+      userProgress.modules.chordPractice,
+      success,
+      roundTime
+    );
+    
+    // Check for achievements
+    userProgress = checkAchievements(userProgress);
+    
+    // Save progress
+    saveProgress(userProgress);
+
+    // Scroll to show the correct answer on mobile (only on failure)
+    if (!success) {
       setTimeout(() => {
         pianoComponent?.scrollToActiveKey();
       }, 100);
@@ -287,6 +318,16 @@
 
   // Setup piano click listener
   onMount(() => {
+    // Load user progress
+    userProgress = loadProgress();
+    userProgress = updateDailyStreak(userProgress);
+    
+    // Load existing stats from progress
+    const chordStats = userProgress.modules.chordPractice;
+    totalRounds = chordStats.totalRounds;
+    successfulRounds = chordStats.successfulRounds;
+    failedRounds = chordStats.failedRounds;
+    currentStreak = chordStats.currentStreak;
     // Add custom event listener for piano clicks
     const handleKeyClick = (e: Event) => {
       const target = e.target as HTMLElement;

@@ -3,6 +3,14 @@
   import { onMount } from 'svelte';
   import { playNote } from '$lib/utils/audioUtils';
   import {
+    loadProgress,
+    saveProgress,
+    trackScaleLearned,
+    updateDailyStreak,
+    checkAchievements,
+    type UserProgress
+  } from '$lib/utils/progressUtils';
+  import {
     generateScale,
     getScaleDefinition,
     getPracticeScales,
@@ -17,6 +25,9 @@
   let currentScaleType = 'major';
   let currentScaleNotes: string[] = [];
   let isInitialLoad = true;
+
+  // Progress tracking
+  let userProgress: UserProgress;
 
   // Available root notes
   const availableRootNotes = [
@@ -60,6 +71,14 @@
     // Play scale on update (skip on initial load)
     if (!isInitialLoad && currentScaleNotes.length > 0) {
       playScaleAscending();
+    }
+    
+    // Track scale learned for progress (skip on initial load)
+    if (!isInitialLoad && userProgress) {
+      const scaleName = `${currentRootNote} ${currentScaleType}`;
+      userProgress = trackScaleLearned(userProgress, scaleName);
+      userProgress = checkAchievements(userProgress);
+      saveProgress(userProgress);
     }
   }
 
@@ -153,6 +172,10 @@
 
   // Initialize on mount
   onMount(() => {
+    // Load user progress
+    userProgress = loadProgress();
+    userProgress = updateDailyStreak(userProgress);
+    
     setTimeout(() => {
       isInitialLoad = false;
       updateScale();

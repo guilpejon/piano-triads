@@ -3,11 +3,11 @@
 
   // Navigation items
   const navItems = [
-    { href: '/', label: 'Home' },
     { href: '/chord-dictionary', label: 'Chords' },
     { href: '/chord-practice', label: 'Practice' },
     { href: '/learn-scales', label: 'Scales' },
-    { href: '/pitch-training', label: 'Ear Training' }
+    { href: '/pitch-training', label: 'Ear Training' },
+    { href: '/progress', label: 'Progress' }
   ];
 
   // Mobile menu state

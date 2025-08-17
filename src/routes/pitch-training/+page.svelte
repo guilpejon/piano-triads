@@ -2,6 +2,14 @@
   import Piano from '$lib/components/Piano.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { playNote, playChord, isAudioReady } from '$lib/utils/audioUtils';
+  import {
+    loadProgress,
+    saveProgress,
+    updateSessionStats,
+    updateDailyStreak,
+    checkAchievements,
+    type UserProgress
+  } from '$lib/utils/progressUtils';
 
   // Reference to Piano component for auto-scroll
   let pianoComponent: Piano;
@@ -31,6 +39,10 @@
   let successfulRounds = 0;
   let failedRounds = 0;
   let currentStreak = 0;
+
+  // Progress tracking
+  let userProgress: UserProgress;
+  let roundStartTime: number;
 
   // Available notes for note mode (single octave)
   const availableNotes = [
@@ -82,6 +94,9 @@
     incorrectAttempts = 0;
     chordMistakes = 0;
     correctNotesClicked.clear();
+    
+    // Track round start time
+    roundStartTime = Date.now();
 
     // Reset piano visual state
     updatePianoDisplay();
@@ -133,6 +148,35 @@
       gameState = 'failed';
       failedRounds++;
       currentStreak = 0;
+    }
+
+    // Update progress tracking for the specific mode
+    const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
+    if (currentMode === 'note') {
+      userProgress.modules.pitchTraining.notes = updateSessionStats(
+        userProgress.modules.pitchTraining.notes,
+        success,
+        roundTime
+      );
+    } else {
+      userProgress.modules.pitchTraining.chords = updateSessionStats(
+        userProgress.modules.pitchTraining.chords,
+        success,
+        roundTime
+      );
+    }
+    
+    // Update general pitch training info
+    userProgress.modules.pitchTraining.lastMode = currentMode;
+    userProgress.modules.pitchTraining.lastPlayed = new Date().toISOString();
+    
+    // Check for achievements
+    userProgress = checkAchievements(userProgress);
+    
+    // Save progress
+    saveProgress(userProgress);
+
+    if (!success) {
 
       // Show correct notes in green when failing
       if (currentMode === 'chord') {
@@ -363,17 +407,40 @@
     }
     correctNotesClicked.clear();
 
-    // Reset statistics when switching modes
-    totalRounds = 0;
-    successfulRounds = 0;
-    failedRounds = 0;
-    currentStreak = 0;
+    // Load stats for the new mode from progress
+    if (userProgress) {
+      const pitchStats = currentMode === 'note' 
+        ? userProgress.modules.pitchTraining.notes 
+        : userProgress.modules.pitchTraining.chords;
+      totalRounds = pitchStats.totalRounds;
+      successfulRounds = pitchStats.successfulRounds;
+      failedRounds = pitchStats.failedRounds;
+      currentStreak = pitchStats.currentStreak;
+    } else {
+      // Fallback if progress not loaded yet
+      totalRounds = 0;
+      successfulRounds = 0;
+      failedRounds = 0;
+      currentStreak = 0;
+    }
 
     // Clear piano visual feedback when switching modes
     updatePianoDisplay();
   }
 
   onMount(() => {
+    // Load user progress
+    userProgress = loadProgress();
+    userProgress = updateDailyStreak(userProgress);
+    
+    // Load existing stats from progress based on current mode
+    const pitchStats = currentMode === 'note' 
+      ? userProgress.modules.pitchTraining.notes 
+      : userProgress.modules.pitchTraining.chords;
+    totalRounds = pitchStats.totalRounds;
+    successfulRounds = pitchStats.successfulRounds;
+    failedRounds = pitchStats.failedRounds;
+    currentStreak = pitchStats.currentStreak;
     // Add event listeners to piano keys for click detection
     const handleKeyClick = (event: Event) => {
       const target = event.target as HTMLElement;
