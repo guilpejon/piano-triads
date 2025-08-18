@@ -386,9 +386,7 @@
   .chord-dictionary-wrapper {
     min-height: calc(90vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
-    .main-title {
-      font-size: clamp(38px, 8vw, 70px);
-    }
+
   }
 
   /* Navigation */
@@ -551,9 +549,7 @@
 
     .header-section {
       padding: 2rem 0;
-      .main-title {
-        margin: 0;
-      }
+
     }
 
     .controls-section {

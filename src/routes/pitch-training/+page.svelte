@@ -498,9 +498,9 @@
         <h1 class="main-title">Pitch Training</h1>
         <p class="page-description">
           {#if currentMode === 'note'}
-            Identify the note by clicking its corresponding key.
+            Identify the note by clicking its corresponding key
           {:else}
-            Identify the chord by clicking all its notes.
+            Identify the chord by clicking all its notes
           {/if}
         </p>
       </div>
@@ -667,24 +667,7 @@
     padding-bottom: 2rem;
   }
 
-  .main-title {
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    font-weight: 800;
-    margin-bottom: 1rem;
-    background: var(--gradient-text);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.1;
-  }
 
-  .page-description {
-    font-size: 1.125rem;
-    color: var(--color-text-secondary);
-    max-width: 32rem;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
 
   /* Mode Selection */
   .mode-section {
@@ -1052,9 +1035,7 @@
       min-width: 80px;
       padding-bottom: 2.5rem !important;
     }
-    .main-title {
-      font-size: clamp(38px, 5vw, 36px) !important;
-    }
+
 
     .piano-section {
       padding: 0;
@@ -1064,10 +1045,7 @@
       padding-bottom: 2rem;
     }
 
-    .page-description {
-      font-size: 0.9rem;
-      margin: 0.75rem auto 0;
-    }
+
 
     .navigation {
       padding-bottom: 0.75rem;

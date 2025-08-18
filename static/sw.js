@@ -45,15 +45,12 @@ const STATIC_CACHE_URLS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_CACHE_URLS);
       })
       .then(() => {
-        console.log('Service Worker: Installation complete');
         return self.skipWaiting();
       })
       .catch((error) => {
@@ -64,21 +61,18 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
-              console.log('Service Worker: Deleting old cache', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        console.log('Service Worker: Activation complete');
         return self.clients.claim();
       })
   );
@@ -101,12 +95,10 @@ self.addEventListener('fetch', (event) => {
       .then((cachedResponse) => {
         // Return cached version if available
         if (cachedResponse) {
-          console.log('Service Worker: Serving from cache', event.request.url);
           return cachedResponse;
         }
 
         // Otherwise fetch from network
-        console.log('Service Worker: Fetching from network', event.request.url);
         return fetch(event.request)
           .then((response) => {
             // Don't cache non-successful responses
@@ -145,20 +137,15 @@ self.addEventListener('fetch', (event) => {
 
 // Background sync for when the app comes back online
 self.addEventListener('sync', (event) => {
-  console.log('Service Worker: Background sync', event.tag);
-  
   if (event.tag === 'background-sync') {
     event.waitUntil(
       // Perform any background sync tasks here
-      console.log('Service Worker: Performing background sync')
     );
   }
 });
 
 // Push notification support (for future features)
 self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push message received', event);
-  
   const options = {
     body: event.data ? event.data.text() : 'New update available!',
     icon: '/icons/icon-192x192.png',
@@ -189,8 +176,6 @@ self.addEventListener('push', (event) => {
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification click received', event);
-  
   event.notification.close();
 
   if (event.action === 'explore') {

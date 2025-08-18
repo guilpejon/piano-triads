@@ -405,3 +405,16 @@ export function formatDate(isoString: string): string {
     year: 'numeric'
   });
 }
+
+// Reset all progress data
+export function resetAllProgress(): UserProgress {
+  if (typeof window === 'undefined') return getDefaultProgress();
+  
+  try {
+    localStorage.removeItem(PROGRESS_KEY);
+  } catch (error) {
+    console.warn('Failed to clear progress from localStorage:', error);
+  }
+  
+  return getDefaultProgress();
+}

@@ -209,7 +209,7 @@
     <header class="header-section">
       <div class="header-content">
         <h1 class="main-title">Learn Scales</h1>
-        <p class="main-subtitle">Learn the most common scales and practice them on the piano</p>
+        <p class="page-description">Learn the most common scales and practice them on the piano</p>
       </div>
     </header>
 
@@ -309,9 +309,7 @@
     padding: 2rem 0;
   }
 
-  .learn-scales-wrapper .main-title {
-    font-size: clamp(38px, 8vw, 70px);
-  }
+
 
   /* Navigation */
   .navigation {

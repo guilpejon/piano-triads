@@ -489,19 +489,6 @@
   .chord-practice-wrapper {
     min-height: calc(90vh - 4rem);
     padding: 2rem 0;
-    .main-title {
-      font-size: clamp(38px, 8vw, 70px);
-    }
-  }
-
-  /* Page description */
-  .page-description {
-    max-width: 42rem;
-    margin: 1.5rem auto 0;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-    text-align: center;
   }
 
   /* Navigation */
@@ -785,15 +772,7 @@
       padding: 1rem 0;
     }
 
-    .main-title {
-      font-size: clamp(38px, 8vw, 70px);
-    }
 
-    .page-description {
-      font-size: 1rem;
-      margin: 1rem auto 0;
-      padding: 0 1rem;
-    }
 
     .navigation {
       padding-bottom: 1rem;
@@ -861,14 +840,7 @@
       padding: 1.5rem 0;
     }
 
-    .main-title {
-      font-size: clamp(38px, 5vw, 36px) !important;
-    }
 
-    .page-description {
-      font-size: 0.9rem;
-      margin: 0.75rem auto 0;
-    }
 
     .navigation {
       padding-bottom: 0.75rem;
@@ -933,9 +905,7 @@
       padding: 2rem 0;
     }
 
-    .chord-practice-wrapper .main-title {
-      margin: 0 0 0.5rem;
-    }
+
 
     .chord-practice-wrapper .game-section {
       padding-bottom: 0;

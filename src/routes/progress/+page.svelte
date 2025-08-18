@@ -6,6 +6,7 @@
     getSuccessRate,
     formatDuration,
     formatDate,
+    resetAllProgress,
     ACHIEVEMENTS,
     type UserProgress,
     type Achievement
@@ -15,6 +16,7 @@
   let overallStats: ReturnType<typeof getOverallStats> | null = null;
   let recentAchievements: Achievement[] = [];
   let allAchievements: (Achievement | { id: string; name: string; description: string; icon: string; category: string; locked: true })[] = [];
+  let showResetConfirmation = false;
 
   onMount(() => {
     try {
@@ -56,6 +58,42 @@
   $: chordPracticeRate = progress ? getSuccessRate(progress.modules.chordPractice) : 0;
   $: pitchTrainingNotesRate = progress ? getSuccessRate(progress.modules.pitchTraining.notes) : 0;
   $: pitchTrainingChordsRate = progress ? getSuccessRate(progress.modules.pitchTraining.chords) : 0;
+  
+  // Check if user has any progress data worth resetting
+  $: hasProgressData = progress ? (
+    progress.modules.chordPractice.totalRounds > 0 ||
+    progress.modules.pitchTraining.notes.totalRounds > 0 ||
+    progress.modules.pitchTraining.chords.totalRounds > 0 ||
+    progress.achievements.length > 0 ||
+    progress.totalPlayTime > 0
+  ) : false;
+  
+  // Reset progress functions
+  function handleResetClick() {
+    showResetConfirmation = true;
+  }
+  
+  function confirmReset() {
+    progress = resetAllProgress();
+    overallStats = getOverallStats(progress);
+    recentAchievements = [];
+    allAchievements = ACHIEVEMENTS.map(achievement => ({
+      ...achievement,
+      locked: true as const
+    }));
+    showResetConfirmation = false;
+  }
+  
+  function cancelReset() {
+    showResetConfirmation = false;
+  }
+  
+  function handleOverlayClick(event: MouseEvent) {
+    // Only close modal if clicking on the overlay itself, not its children
+    if (event.target === event.currentTarget) {
+      cancelReset();
+    }
+  }
   
 
 </script>
@@ -277,7 +315,15 @@
         </div>
       </section>
 
-
+      <!-- Reset Progress Button -->
+      <div class="reset-button-container">
+        <button class="btn-reset" on:click={handleResetClick} disabled={!hasProgressData}>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Reset Progress
+        </button>
+      </div>
     {:else}
       <!-- Loading state -->
       <div class="loading-state">
@@ -288,6 +334,25 @@
   </div>
 </div>
 
+<!-- Reset Confirmation Modal -->
+{#if showResetConfirmation}
+  <div class="modal-overlay" on:click={handleOverlayClick} on:keydown={(e) => e.key === 'Escape' && cancelReset()} role="dialog" aria-modal="true" tabindex="-1">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <svg class="modal-icon" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+        <h3 class="modal-title">Reset All Progress?</h3>
+        <p class="modal-subtitle">This will permanently delete all your progress data.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" on:click={cancelReset}>Cancel</button>
+        <button class="btn-confirm-reset" on:click={confirmReset}>Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
   /* Progress wrapper */
   .progress-wrapper {
@@ -295,18 +360,7 @@
     padding: 2rem 0;
   }
 
-  .progress-wrapper .main-title {
-    font-size: clamp(38px, 8vw, 70px);
-  }
 
-  /* Page description */
-  .page-description {
-    max-width: 42rem;
-    margin: 1.5rem auto 0;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-  }
 
   /* Navigation */
   .navigation {
@@ -611,9 +665,7 @@
 
   /* Mobile Responsiveness */
   @media (max-width: 768px) {
-    .main-title {
-      font-size: 2.5rem;
-    }
+
 
     .stats-grid {
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -637,9 +689,7 @@
   }
 
   @media (max-width: 480px) {
-    .main-title {
-      font-size: 2rem;
-    }
+
 
     .stat-card {
       flex-direction: column;
@@ -649,6 +699,154 @@
     .achievement-card {
       flex-direction: column;
       text-align: center;
+    }
+  }
+
+  /* Reset Progress Button */
+  .reset-button-container {
+    text-align: center;
+    margin: 3rem 0;
+  }
+
+  .btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-reset:hover:not(:disabled) {
+    background: rgba(185, 28, 28, 0.9);
+    color: white;
+    border-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.4);
+  }
+
+  .btn-reset:disabled {
+    background: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+    border-color: rgba(156, 163, 175, 0.3);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .btn-reset svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-content {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 20rem;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+  }
+
+  .modal-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-icon {
+    color: #f59e0b;
+    margin: 0 auto 0.75rem;
+    display: block;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-subtitle {
+    font-size: 0.875rem;
+    color: #4b5563;
+    line-height: 1.4;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .btn-cancel {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+  }
+
+  .btn-cancel:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #9ca3af;
+  }
+
+  .btn-confirm-reset {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+  }
+
+  .btn-confirm-reset:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.4);
+  }
+
+  @media (max-width: 480px) {
+    .modal-content {
+      padding: 1.25rem;
+      margin: 1rem;
+      max-width: 18rem;
+    }
+
+    .modal-actions {
+      flex-direction: column;
+      gap: 0.5rem;
     }
   }
 </style>
