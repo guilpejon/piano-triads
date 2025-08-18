@@ -49,10 +49,10 @@
 }
 
 .main-title {
-  font-size: clamp(38px, 8vw, 92px);
+  font-size: clamp(38px, 8vw, 90px);
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.05;
+  line-height: 1.15;
   color: var(--color-text-primary);
   margin: 0 0 2rem;
   background: var(--gradient-text);
@@ -71,7 +71,7 @@
 }
 
 .page-description {
-  font-size: clamp(16px, 2.5vw, 18px);
+  font-size: clamp(16px, 2.5vw, 20px);
   font-weight: 400;
   line-height: 1.6;
   color: var(--color-text-secondary);

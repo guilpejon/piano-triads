@@ -128,6 +128,33 @@
           </div>
         </a>
 
+        <a href="/chord-progressions" class="glass-card feature-card">
+          <div class="card-icon progressions-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
+              />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Chord Progressions</h2>
+            <p class="card-description">Learn common chord progressions used in popular music</p>
+          </div>
+          <div class="card-arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </a>
+
         <a href="/progress" class="glass-card feature-card">
           <div class="card-icon progress-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,6 +262,11 @@
 
   .pitch-icon {
     background: var(--gradient-orange);
+    color: white;
+  }
+
+  .progressions-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     color: white;
   }
 
