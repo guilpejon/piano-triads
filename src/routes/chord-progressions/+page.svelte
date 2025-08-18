@@ -835,12 +835,6 @@
     .piano-container {
       padding: 1rem;
     }
-
-
-
-
-
-
   }
 
   @media (max-width: 480px) {

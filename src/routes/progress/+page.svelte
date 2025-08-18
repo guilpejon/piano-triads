@@ -396,7 +396,7 @@
   /* Header */
   .header-section {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 1rem;
   }
 
   /* Card base */
@@ -665,10 +665,32 @@
 
   /* Mobile Responsiveness */
   @media (max-width: 768px) {
-
-
     .stats-grid {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .stat-card {
+      padding: 1.25rem;
+      gap: 1rem;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .stat-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .stat-number {
+      font-size: 1.75rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
     }
 
     .modules-grid {
@@ -679,21 +701,48 @@
       grid-template-columns: 1fr;
     }
 
-
+    .progress-wrapper .header-section {
+      margin-bottom: 1rem;
+    }
+    
+    .progress-wrapper .stats-section {
+      margin-bottom: 2rem;
+    }
 
     .module-stats {
       grid-template-columns: repeat(2, 1fr);
     }
-
-
   }
 
   @media (max-width: 480px) {
-
-
     .stat-card {
       flex-direction: column;
       text-align: center;
+      padding: 1rem;
+      gap: 0.75rem;
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .stat-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      line-height: 1.2;
+    }
+
+    .stats-grid {
+      gap: 0.75rem;
     }
 
     .achievement-card {
