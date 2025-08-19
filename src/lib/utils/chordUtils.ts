@@ -847,58 +847,84 @@ export interface ScaleDefinition {
 const scaleDefinitions: { [key: string]: ScaleDefinition } = {
   major: {
     name: 'Major Scale',
-    intervals: [0, 2, 4, 5, 7, 9, 11],
+    intervals: [0, 2, 4, 5, 7, 9, 11, 12],
     description: 'The foundation of Western music - bright and happy'
   },
   natural_minor: {
     name: 'Natural Minor Scale',
-    intervals: [0, 2, 3, 5, 7, 8, 10],
+    intervals: [0, 2, 3, 5, 7, 8, 10, 12],
     description: 'The natural minor scale - melancholic and emotional'
   },
   harmonic_minor: {
     name: 'Harmonic Minor Scale',
-    intervals: [0, 2, 3, 5, 7, 8, 11],
+    intervals: [0, 2, 3, 5, 7, 8, 11, 12],
     description: 'Minor scale with raised 7th - exotic and dramatic'
   },
   melodic_minor: {
     name: 'Melodic Minor Scale',
-    intervals: [0, 2, 3, 5, 7, 9, 11],
+    intervals: [0, 2, 3, 5, 7, 9, 11, 12],
     description: 'Minor scale with raised 6th and 7th - smooth and flowing'
+  },
+  // Modal Scales (Modes of the Major Scale)
+  ionian: {
+    name: 'Ionian Mode',
+    intervals: [0, 2, 4, 5, 7, 9, 11, 12],
+    description: 'The major scale - bright and stable (1st mode)'
   },
   dorian: {
     name: 'Dorian Mode',
-    intervals: [0, 2, 3, 5, 7, 9, 10],
-    description: 'Minor mode with raised 6th - jazzy and sophisticated'
+    intervals: [0, 2, 3, 5, 7, 9, 10, 12],
+    description: 'Minor mode with raised 6th - jazzy and sophisticated (2nd mode)'
+  },
+  phrygian: {
+    name: 'Phrygian Mode',
+    intervals: [0, 1, 3, 5, 7, 8, 10, 12],
+    description: 'Minor mode with lowered 2nd - dark and Spanish-influenced (3rd mode)'
+  },
+  lydian: {
+    name: 'Lydian Mode',
+    intervals: [0, 2, 4, 6, 7, 9, 11, 12],
+    description: 'Major mode with raised 4th - dreamy and ethereal (4th mode)'
   },
   mixolydian: {
     name: 'Mixolydian Mode',
-    intervals: [0, 2, 4, 5, 7, 9, 10],
-    description: 'Major mode with lowered 7th - bluesy and rock-oriented'
+    intervals: [0, 2, 4, 5, 7, 9, 10, 12],
+    description: 'Major mode with lowered 7th - bluesy and rock-oriented (5th mode)'
+  },
+  aeolian: {
+    name: 'Aeolian Mode',
+    intervals: [0, 2, 3, 5, 7, 8, 10, 12],
+    description: 'The natural minor scale - melancholic and emotional (6th mode)'
+  },
+  locrian: {
+    name: 'Locrian Mode',
+    intervals: [0, 1, 3, 5, 6, 8, 10, 12],
+    description: 'Diminished mode with lowered 2nd and 5th - unstable and tense (7th mode)'
   },
   pentatonic_major: {
     name: 'Major Pentatonic Scale',
-    intervals: [0, 2, 4, 7, 9],
-    description: 'Five-note scale - simple and universally pleasing'
+    intervals: [0, 2, 4, 7, 9, 12],
+    description: 'Five-note scale with octave - simple and universally pleasing'
   },
   pentatonic_minor: {
     name: 'Minor Pentatonic Scale',
-    intervals: [0, 3, 5, 7, 10],
-    description: 'Five-note minor scale - perfect for blues and rock'
+    intervals: [0, 3, 5, 7, 10, 12],
+    description: 'Five-note minor scale with octave - perfect for blues and rock'
   },
   blues: {
     name: 'Blues Scale',
-    intervals: [0, 3, 5, 6, 7, 10],
-    description: 'Minor pentatonic with added blue note - soulful and expressive'
+    intervals: [0, 3, 5, 6, 7, 10, 12],
+    description: 'Minor pentatonic with added blue note and octave - soulful and expressive'
   },
   whole_tone: {
     name: 'Whole Tone Scale',
-    intervals: [0, 2, 4, 6, 8, 10],
-    description: 'All whole steps - dreamy and impressionistic'
+    intervals: [0, 2, 4, 6, 8, 10, 12],
+    description: 'All whole steps with octave - dreamy and impressionistic'
   },
   chromatic: {
     name: 'Chromatic Scale',
-    intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    description: 'All twelve notes - complete tonal palette'
+    intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    description: 'All twelve notes with octave - complete tonal palette'
   }
 };
 
@@ -967,7 +993,7 @@ export function getScaleDegreeNames(scaleType: string): string[] {
   const scaleDefinition = scaleDefinitions[scaleType];
   if (!scaleDefinition) return [];
 
-  const degreeNames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+  const degreeNames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
   return scaleDefinition.intervals.map((_, index) => degreeNames[index]);
 }
 
@@ -997,8 +1023,13 @@ export function getPracticeScales(): string[] {
     'natural_minor',
     'harmonic_minor',
     'melodic_minor',
+    'ionian',
     'dorian',
+    'phrygian',
+    'lydian',
     'mixolydian',
+    'aeolian',
+    'locrian',
     'pentatonic_major',
     'pentatonic_minor',
     'blues',

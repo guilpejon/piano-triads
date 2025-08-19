@@ -291,8 +291,13 @@
               <option value="melodic_minor">Melodic Minor Scale</option>
             </optgroup>
             <optgroup label="Modal Scales">
+              <option value="ionian">Ionian Mode</option>
               <option value="dorian">Dorian Mode</option>
+              <option value="phrygian">Phrygian Mode</option>
+              <option value="lydian">Lydian Mode</option>
               <option value="mixolydian">Mixolydian Mode</option>
+              <option value="aeolian">Aeolian Mode</option>
+              <option value="locrian">Locrian Mode</option>
             </optgroup>
             <optgroup label="Pentatonic Scales">
               <option value="pentatonic_major">Major Pentatonic Scale</option>
