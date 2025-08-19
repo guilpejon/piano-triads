@@ -1,6 +1,8 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { playNote } from '$lib/utils/audioUtils';
   import {
     loadProgress,
@@ -60,6 +62,42 @@
   $: scaleDegrees = getScaleDegreeNames(currentScaleType);
   $: scaleDescription = scaleDefinition?.description || '';
 
+  // Function to update URL based on current scale selection
+  function updateURL() {
+    if (isInitialLoad) return; // Don't update URL during initial load
+
+    const searchParams = new URLSearchParams();
+    searchParams.set('scale', currentScaleType);
+    searchParams.set('root', currentRootNote);
+
+    const newPath = `/learn-scales?${searchParams.toString()}`;
+    goto(newPath, { replaceState: true });
+  }
+
+  // Function to parse URL and set initial scale state
+  function parseURLAndSetScale() {
+    // Parse scale type from query parameters
+    const scaleParam = $page.url.searchParams.get('scale');
+    if (scaleParam && availableScaleTypes.includes(scaleParam)) {
+      currentScaleType = scaleParam;
+    }
+
+    // Parse root note from query parameters
+    const rootParam = $page.url.searchParams.get('root');
+    if (rootParam && availableRootNotes.includes(rootParam)) {
+      currentRootNote = rootParam;
+    }
+  }
+
+  // Function to update select elements to match current state
+  function updateSelectElements() {
+    const rootNoteSelect = document.getElementById('root-note-select') as HTMLSelectElement;
+    const scaleTypeSelect = document.getElementById('scale-type-select') as HTMLSelectElement;
+
+    if (rootNoteSelect) rootNoteSelect.value = currentRootNote;
+    if (scaleTypeSelect) scaleTypeSelect.value = currentScaleType;
+  }
+
   // Function to update the current scale
   function updateScale() {
     // Use octave 3 for lower notes to avoid going into octave 5
@@ -80,6 +118,9 @@
       userProgress = checkAchievements(userProgress);
       saveProgress(userProgress);
     }
+    
+    // Update URL to reflect current scale selection
+    updateURL();
   }
 
   // Function to update piano display
@@ -175,9 +216,12 @@
     // Load user progress
     userProgress = loadProgress();
 
+    // Parse URL and set initial scale state
+    parseURLAndSetScale();
     
     setTimeout(() => {
-      isInitialLoad = false;
+      updateSelectElements(); // Update select elements to match parsed state
+      isInitialLoad = false; // Allow URL updates after initial load
       updateScale();
     }, 100); // Small delay to ensure piano and DOM are rendered
   });
