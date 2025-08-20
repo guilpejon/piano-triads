@@ -77,7 +77,7 @@
     mistakes = 0;
     timeLeft = 30;
     correctNotesClicked.clear();
-    
+
     // Track round start time
     roundStartTime = Date.now();
 
@@ -132,17 +132,11 @@
 
     // Update progress tracking
     const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
-    userProgress = completePracticeSession(
-      userProgress,
-      'chordPractice',
-      null,
-      success,
-      roundTime
-    );
-    
+    userProgress = completePracticeSession(userProgress, 'chordPractice', null, success, roundTime);
+
     // Check for achievements
     userProgress = checkAchievements(userProgress);
-    
+
     // Save progress
     saveProgress(userProgress);
 
@@ -322,7 +316,6 @@
     // Load user progress
     userProgress = loadProgress();
 
-    
     // Load existing stats from progress
     const chordStats = userProgress.modules.chordPractice;
     totalRounds = chordStats.totalRounds;
@@ -492,7 +485,6 @@
   }
 
   /* Navigation */
-
 
   /* Game section */
   .game-container {
@@ -762,10 +754,6 @@
       padding: 1rem 0;
     }
 
-
-
-
-
     .game-section {
       padding-bottom: 0;
     }
@@ -828,10 +816,6 @@
       padding: 1.5rem 0;
     }
 
-
-
-
-
     .game-section {
       padding-bottom: 1rem;
     }
@@ -890,8 +874,6 @@
     .chord-practice-wrapper .header-section {
       padding: 2rem 0;
     }
-
-
 
     .chord-practice-wrapper .game-section {
       padding-bottom: 0;

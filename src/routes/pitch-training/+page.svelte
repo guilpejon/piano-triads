@@ -93,7 +93,7 @@
     incorrectAttempts = 0;
     chordMistakes = 0;
     correctNotesClicked.clear();
-    
+
     // Track round start time
     roundStartTime = Date.now();
 
@@ -159,15 +159,14 @@
       success,
       roundTime
     );
-    
+
     // Check for achievements
     userProgress = checkAchievements(userProgress);
-    
+
     // Save progress
     saveProgress(userProgress);
 
     if (!success) {
-
       // Show correct notes in green when failing
       if (currentMode === 'chord') {
         // Only highlight notes that the user didn't find
@@ -399,9 +398,10 @@
 
     // Load stats for the new mode from progress
     if (userProgress) {
-      const pitchStats = currentMode === 'note' 
-        ? userProgress.modules.pitchTraining.notes 
-        : userProgress.modules.pitchTraining.chords;
+      const pitchStats =
+        currentMode === 'note'
+          ? userProgress.modules.pitchTraining.notes
+          : userProgress.modules.pitchTraining.chords;
       totalRounds = pitchStats.totalRounds;
       successfulRounds = pitchStats.successfulRounds;
       failedRounds = pitchStats.failedRounds;
@@ -422,11 +422,11 @@
     // Load user progress
     userProgress = loadProgress();
 
-    
     // Load existing stats from progress based on current mode
-    const pitchStats = currentMode === 'note' 
-      ? userProgress.modules.pitchTraining.notes 
-      : userProgress.modules.pitchTraining.chords;
+    const pitchStats =
+      currentMode === 'note'
+        ? userProgress.modules.pitchTraining.notes
+        : userProgress.modules.pitchTraining.chords;
     totalRounds = pitchStats.totalRounds;
     successfulRounds = pitchStats.successfulRounds;
     failedRounds = pitchStats.failedRounds;
@@ -624,22 +624,13 @@
     padding: 2rem 0;
   }
 
-
-
   /* Navigation */
-
-
-
-
-
 
   /* Header */
   .header-section {
     text-align: center;
     padding-bottom: 2rem;
   }
-
-
 
   /* Mode Selection */
   .mode-section {
@@ -928,8 +919,6 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
-
-
     .mode-container {
       flex-direction: row;
       justify-content: center;
@@ -1006,7 +995,6 @@
       padding-bottom: 2.5rem !important;
     }
 
-
     .piano-section {
       padding: 0;
     }
@@ -1014,10 +1002,6 @@
     .piano-container {
       padding-bottom: 2rem;
     }
-
-
-
-
 
     .mode-section {
       padding-bottom: 0.5rem;

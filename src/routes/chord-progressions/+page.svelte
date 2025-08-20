@@ -8,11 +8,7 @@
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
-  import {
-    getChord,
-    getNoteNameOnly,
-    areNotesEquivalent
-  } from '$lib/utils/chordUtils';
+  import { getChord, getNoteNameOnly, areNotesEquivalent } from '$lib/utils/chordUtils';
 
   // Reference to Piano component for auto-scroll
   let pianoComponent: Piano;
@@ -86,10 +82,25 @@
   let currentChordNotes: string[] = [];
   let progressionsLearned: Set<string> = new Set();
 
-
   // Available keys for transposition
   const availableKeys = [
-    'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'
+    'C',
+    'C#',
+    'Db',
+    'D',
+    'D#',
+    'Eb',
+    'E',
+    'F',
+    'F#',
+    'Gb',
+    'G',
+    'G#',
+    'Ab',
+    'A',
+    'A#',
+    'Bb',
+    'B'
   ];
 
   // Chromatic notes for transposition
@@ -100,33 +111,33 @@
     // Extract the root note and chord type (e.g., "Am" -> "A" and "m")
     const match = originalChord.match(/^([A-G][#b]?)(.*)$/);
     if (!match) return originalChord;
-    
+
     const [, rootNote, chordType] = match;
-    
+
     // Calculate semitone difference between keys
     const fromIndex = chromaticNotes.indexOf(fromKey);
     const toIndex = chromaticNotes.indexOf(toKey);
     if (fromIndex === -1 || toIndex === -1) return originalChord;
-    
+
     let semitoneShift = toIndex - fromIndex;
     if (semitoneShift < 0) semitoneShift += 12;
-    
+
     // Find the original root note index
     const rootIndex = chromaticNotes.indexOf(rootNote);
     if (rootIndex === -1) return originalChord;
-    
+
     // Calculate new root note
     const newRootIndex = (rootIndex + semitoneShift) % 12;
     const newRootNote = chromaticNotes[newRootIndex];
-    
+
     return newRootNote + chordType;
   }
 
   // Function to get transposed progressions
   function getTransposedProgressions(key: string) {
-    return chordProgressions.map(progression => ({
+    return chordProgressions.map((progression) => ({
       ...progression,
-      chords: progression.chords.map(chord => transposeChord(chord, 'C', key)),
+      chords: progression.chords.map((chord) => transposeChord(chord, 'C', key)),
       key: `${key} Major`
     }));
   }
@@ -135,11 +146,15 @@
   $: transposedProgressions = getTransposedProgressions(currentKey);
 
   // Reactive chord display with transposition
-  $: transposedChord = transposeChord(currentProgression.chords[currentChordIndex], 'C', currentKey);
+  $: transposedChord = transposeChord(
+    currentProgression.chords[currentChordIndex],
+    'C',
+    currentKey
+  );
   $: currentChord = transposedChord;
   $: currentRomanNumeral = currentProgression.romanNumerals[currentChordIndex];
   $: currentKeyDisplay = currentKey === 'C' ? 'C Major' : `${currentKey} Major`;
-  
+
   // Reactive chord notes update
   $: {
     const chordData = getChord(currentChord);
@@ -157,11 +172,11 @@
   }
 
   // Function to select a progression
-  function selectProgression(progression: typeof chordProgressions[0]) {
+  function selectProgression(progression: (typeof chordProgressions)[0]) {
     currentProgression = progression;
     currentChordIndex = 0;
     // Reactive statements will handle chord updates
-    
+
     // Track progression learned
     if (!progressionsLearned.has(progression.id)) {
       progressionsLearned.add(progression.id);
@@ -245,25 +260,25 @@
   // Function to play entire progression
   async function playProgression() {
     if (isPlaying) return;
-    
+
     isPlaying = true;
-    
+
     for (let i = 0; i < currentProgression.chords.length; i++) {
       currentChordIndex = i;
-      
+
       // Get transposed chord for current key
       const transposedChordName = transposeChord(currentProgression.chords[i], 'C', currentKey);
       const chordData = getChord(transposedChordName);
       if (chordData) {
         playChord(chordData.root_position);
       }
-      
+
       // Wait before next chord (except for last chord)
       if (i < currentProgression.chords.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
     }
-    
+
     isPlaying = false;
   }
 
@@ -291,7 +306,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
-    
+
     // Initialize first chord
     setTimeout(() => {
       updateCurrentChord();
@@ -325,7 +340,9 @@
     <header class="header-section">
       <div class="header-content">
         <h1 class="main-title">Chord Progressions</h1>
-        <p class="page-description">Learn the most common chord progressions used in popular music</p>
+        <p class="page-description">
+          Learn the most common chord progressions used in popular music
+        </p>
       </div>
     </header>
 
@@ -366,59 +383,61 @@
           <h2 class="current-progression-title">{currentProgression.name}</h2>
           <div class="key-selector-container">
             <label for="key-select" class="key-label">Key:</label>
-            <select
-              id="key-select"
-              class="key-select"
-              bind:value={currentKey}
-            >
+            <select id="key-select" class="key-select" bind:value={currentKey}>
               {#each availableKeys as key}
                 <option value={key}>{key} Major</option>
               {/each}
             </select>
           </div>
         </div>
-        
+
         <div class="chord-display">
           <div class="chord-navigation">
-            <button 
-              class="nav-button" 
+            <button
+              class="nav-button"
               on:click={previousChord}
               disabled={currentChordIndex === 0}
               aria-label="Previous chord"
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
-            
+
             <div class="current-chord">
               <div class="chord-name">{currentChord}</div>
               <div class="chord-roman">{currentRomanNumeral}</div>
-              <div class="chord-position">{currentChordIndex + 1} of {currentProgression.chords.length}</div>
+              <div class="chord-position">
+                {currentChordIndex + 1} of {currentProgression.chords.length}
+              </div>
             </div>
-            
-            <button 
-              class="nav-button" 
+
+            <button
+              class="nav-button"
               on:click={nextChord}
               disabled={currentChordIndex === currentProgression.chords.length - 1}
               aria-label="Next chord"
             >
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </div>
         </div>
 
         <div class="playback-controls">
-          <button class="control-button primary" on:click={playCurrentChord}>
-            Play Chord
-          </button>
-          <button 
-            class="control-button secondary" 
-            on:click={playProgression}
-            disabled={isPlaying}
-          >
+          <button class="control-button primary" on:click={playCurrentChord}> Play Chord </button>
+          <button class="control-button secondary" on:click={playProgression} disabled={isPlaying}>
             {isPlaying ? 'Playing...' : 'Play Progression'}
           </button>
         </div>
@@ -431,8 +450,6 @@
         <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} stickyOnMobile={true} />
       </div>
     </section>
-
-
   </div>
 </div>
 
@@ -442,13 +459,6 @@
     min-height: calc(90vh - 4rem);
     padding: 2rem 0;
   }
-
-  /* Navigation */
-
-
-
-
-
 
   /* Progressions selection */
   .progressions-section {

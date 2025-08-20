@@ -15,23 +15,33 @@
   let progress: UserProgress | null = null;
   let overallStats: ReturnType<typeof getOverallStats> | null = null;
   let recentAchievements: Achievement[] = [];
-  let allAchievements: (Achievement | { id: string; name: string; description: string; icon: string; category: string; locked: true })[] = [];
+  let allAchievements: (
+    | Achievement
+    | {
+        id: string;
+        name: string;
+        description: string;
+        icon: string;
+        category: string;
+        locked: true;
+      }
+  )[] = [];
   let showResetConfirmation = false;
 
   onMount(() => {
     try {
       progress = loadProgress();
       overallStats = getOverallStats(progress);
-      
+
       // Get recent achievements (last 5)
       recentAchievements = progress.achievements
         .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
         .slice(0, 5);
-      
+
       // Create all achievements array with locked/unlocked status
-      const unlockedIds = new Set(progress.achievements.map(a => a.id));
-      allAchievements = ACHIEVEMENTS.map(achievement => {
-        const unlocked = progress?.achievements.find(a => a.id === achievement.id);
+      const unlockedIds = new Set(progress.achievements.map((a) => a.id));
+      allAchievements = ACHIEVEMENTS.map((achievement) => {
+        const unlocked = progress?.achievements.find((a) => a.id === achievement.id);
         if (unlocked) {
           return unlocked;
         } else {
@@ -47,7 +57,7 @@
       progress = loadProgress();
       overallStats = getOverallStats(progress);
       recentAchievements = [];
-      allAchievements = ACHIEVEMENTS.map(achievement => ({
+      allAchievements = ACHIEVEMENTS.map((achievement) => ({
         ...achievement,
         locked: true as const
       }));
@@ -58,44 +68,42 @@
   $: chordPracticeRate = progress ? getSuccessRate(progress.modules.chordPractice) : 0;
   $: pitchTrainingNotesRate = progress ? getSuccessRate(progress.modules.pitchTraining.notes) : 0;
   $: pitchTrainingChordsRate = progress ? getSuccessRate(progress.modules.pitchTraining.chords) : 0;
-  
+
   // Check if user has any progress data worth resetting
-  $: hasProgressData = progress ? (
-    progress.modules.chordPractice.totalRounds > 0 ||
-    progress.modules.pitchTraining.notes.totalRounds > 0 ||
-    progress.modules.pitchTraining.chords.totalRounds > 0 ||
-    progress.achievements.length > 0 ||
-    progress.totalPlayTime > 0
-  ) : false;
-  
+  $: hasProgressData = progress
+    ? progress.modules.chordPractice.totalRounds > 0 ||
+      progress.modules.pitchTraining.notes.totalRounds > 0 ||
+      progress.modules.pitchTraining.chords.totalRounds > 0 ||
+      progress.achievements.length > 0 ||
+      progress.totalPlayTime > 0
+    : false;
+
   // Reset progress functions
   function handleResetClick() {
     showResetConfirmation = true;
   }
-  
+
   function confirmReset() {
     progress = resetAllProgress();
     overallStats = getOverallStats(progress);
     recentAchievements = [];
-    allAchievements = ACHIEVEMENTS.map(achievement => ({
+    allAchievements = ACHIEVEMENTS.map((achievement) => ({
       ...achievement,
       locked: true as const
     }));
     showResetConfirmation = false;
   }
-  
+
   function cancelReset() {
     showResetConfirmation = false;
   }
-  
+
   function handleOverlayClick(event: MouseEvent) {
     // Only close modal if clicking on the overlay itself, not its children
     if (event.target === event.currentTarget) {
       cancelReset();
     }
   }
-  
-
 </script>
 
 <svelte:head>
@@ -137,7 +145,12 @@
           <div class="glass-card stat-card">
             <div class="stat-icon overall-icon">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
               </svg>
             </div>
             <div class="stat-content">
@@ -149,7 +162,12 @@
           <div class="glass-card stat-card">
             <div class="stat-icon success-icon">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <div class="stat-content">
@@ -161,7 +179,12 @@
           <div class="glass-card stat-card">
             <div class="stat-icon streak-icon">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+                />
               </svg>
             </div>
             <div class="stat-content">
@@ -173,7 +196,12 @@
           <div class="glass-card stat-card">
             <div class="stat-icon time-icon">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <div class="stat-content">
@@ -184,8 +212,6 @@
         </div>
       </section>
 
-
-
       <!-- Module Progress Section -->
       <section class="modules-section">
         <h2 class="section-title">Module Progress</h2>
@@ -195,7 +221,12 @@
             <div class="module-header">
               <div class="module-icon chord-practice-icon">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                  />
                 </svg>
               </div>
               <div class="module-info">
@@ -227,7 +258,12 @@
             <div class="module-header">
               <div class="module-icon pitch-training-icon">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                  />
                 </svg>
               </div>
               <div class="module-info">
@@ -237,7 +273,9 @@
             </div>
             <div class="module-stats">
               <div class="module-stat">
-                <span class="module-stat-number">{progress.modules.pitchTraining.notes.totalRounds}</span>
+                <span class="module-stat-number"
+                  >{progress.modules.pitchTraining.notes.totalRounds}</span
+                >
                 <span class="module-stat-label">Rounds</span>
               </div>
               <div class="module-stat">
@@ -245,12 +283,15 @@
                 <span class="module-stat-label">Success</span>
               </div>
               <div class="module-stat">
-                <span class="module-stat-number">{progress.modules.pitchTraining.notes.bestStreak}</span>
+                <span class="module-stat-number"
+                  >{progress.modules.pitchTraining.notes.bestStreak}</span
+                >
                 <span class="module-stat-label">Best Streak</span>
               </div>
             </div>
             <div class="module-last-played">
-              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)} {progress.modules.pitchTraining.lastMode === 'note' ? '(last mode)' : ''}
+              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)}
+              {progress.modules.pitchTraining.lastMode === 'note' ? '(last mode)' : ''}
             </div>
           </div>
 
@@ -259,7 +300,12 @@
             <div class="module-header">
               <div class="module-icon pitch-training-icon">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                  />
                 </svg>
               </div>
               <div class="module-info">
@@ -269,7 +315,9 @@
             </div>
             <div class="module-stats">
               <div class="module-stat">
-                <span class="module-stat-number">{progress.modules.pitchTraining.chords.totalRounds}</span>
+                <span class="module-stat-number"
+                  >{progress.modules.pitchTraining.chords.totalRounds}</span
+                >
                 <span class="module-stat-label">Rounds</span>
               </div>
               <div class="module-stat">
@@ -277,12 +325,15 @@
                 <span class="module-stat-label">Success</span>
               </div>
               <div class="module-stat">
-                <span class="module-stat-number">{progress.modules.pitchTraining.chords.bestStreak}</span>
+                <span class="module-stat-number"
+                  >{progress.modules.pitchTraining.chords.bestStreak}</span
+                >
                 <span class="module-stat-label">Best Streak</span>
               </div>
             </div>
             <div class="module-last-played">
-              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)} {progress.modules.pitchTraining.lastMode === 'chord' ? '(last mode)' : ''}
+              Last played: {formatDate(progress.modules.pitchTraining.lastPlayed)}
+              {progress.modules.pitchTraining.lastMode === 'chord' ? '(last mode)' : ''}
             </div>
           </div>
         </div>
@@ -292,16 +343,24 @@
       <section class="achievements-section">
         <h2 class="section-title">
           Achievements
-          <span class="achievements-count">({progress.achievements.length}/{ACHIEVEMENTS.length})</span>
+          <span class="achievements-count"
+            >({progress.achievements.length}/{ACHIEVEMENTS.length})</span
+          >
         </h2>
-        
+
         <div class="achievements-grid">
           {#each allAchievements as achievement}
             <div class="glass-card achievement-card" class:locked={'locked' in achievement}>
-              <div class="achievement-icon" class:locked={'locked' in achievement}>{achievement.icon}</div>
+              <div class="achievement-icon" class:locked={'locked' in achievement}>
+                {achievement.icon}
+              </div>
               <div class="achievement-content">
-                <h3 class="achievement-name" class:locked={'locked' in achievement}>{achievement.name}</h3>
-                <p class="achievement-description" class:locked={'locked' in achievement}>{achievement.description}</p>
+                <h3 class="achievement-name" class:locked={'locked' in achievement}>
+                  {achievement.name}
+                </h3>
+                <p class="achievement-description" class:locked={'locked' in achievement}>
+                  {achievement.description}
+                </p>
                 {#if 'locked' in achievement}
                   <div class="achievement-status locked">🔒 Locked</div>
                 {:else}
@@ -319,7 +378,12 @@
       <div class="reset-button-container">
         <button class="btn-reset" on:click={handleResetClick} disabled={!hasProgressData}>
           <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
           </svg>
           Reset Progress
         </button>
@@ -336,11 +400,30 @@
 
 <!-- Reset Confirmation Modal -->
 {#if showResetConfirmation}
-  <div class="modal-overlay" on:click={handleOverlayClick} on:keydown={(e) => e.key === 'Escape' && cancelReset()} role="dialog" aria-modal="true" tabindex="-1">
+  <div
+    class="modal-overlay"
+    on:click={handleOverlayClick}
+    on:keydown={(e) => e.key === 'Escape' && cancelReset()}
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
+  >
     <div class="modal-content" role="document">
       <div class="modal-header">
-        <svg class="modal-icon" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        <svg
+          class="modal-icon"
+          width="32"
+          height="32"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+          />
         </svg>
         <h3 class="modal-title">Reset All Progress?</h3>
         <p class="modal-subtitle">This will permanently delete all your progress data.</p>
@@ -360,14 +443,7 @@
     padding: 2rem 0;
   }
 
-
-
   /* Navigation */
-
-
-
-
-
 
   /* Header */
   .header-section {
@@ -422,10 +498,18 @@
     background: var(--gradient-blue);
   }
 
-  .overall-icon { background: var(--gradient-blue); }
-  .success-icon { background: var(--gradient-green); }
-  .streak-icon { background: var(--gradient-orange); }
-  .time-icon { background: var(--gradient-purple); }
+  .overall-icon {
+    background: var(--gradient-blue);
+  }
+  .success-icon {
+    background: var(--gradient-green);
+  }
+  .streak-icon {
+    background: var(--gradient-orange);
+  }
+  .time-icon {
+    background: var(--gradient-purple);
+  }
 
   .stat-icon svg {
     color: white;
@@ -450,8 +534,6 @@
     color: var(--color-text-secondary);
     margin-top: 0.25rem;
   }
-
-
 
   /* Modules Section */
   .modules-section {
@@ -493,8 +575,12 @@
     flex-shrink: 0;
   }
 
-  .chord-practice-icon { background: var(--gradient-green); }
-  .pitch-training-icon { background: var(--gradient-orange); }
+  .chord-practice-icon {
+    background: var(--gradient-green);
+  }
+  .pitch-training-icon {
+    background: var(--gradient-orange);
+  }
 
   .module-icon svg {
     color: white;
@@ -542,8 +628,6 @@
     padding-top: 1rem;
     border-top: 1px solid var(--color-border-light);
   }
-
-
 
   /* Achievements Section */
   .achievements-section {
@@ -613,10 +697,6 @@
     opacity: 0.7;
   }
 
-
-
-
-
   /* Loading State */
   .loading-state {
     text-align: center;
@@ -635,8 +715,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   /* Mobile Responsiveness */
@@ -680,7 +764,7 @@
     .progress-wrapper .header-section {
       margin-bottom: 1rem;
     }
-    
+
     .progress-wrapper .stats-section {
       margin-bottom: 2rem;
     }

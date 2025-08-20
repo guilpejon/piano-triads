@@ -158,9 +158,14 @@
         <a href="/circle-of-fifths" class="glass-card feature-card">
           <div class="card-icon circle-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2v20M2 12h20"/>
-              <circle cx="12" cy="12" r="3"/>
+              <circle cx="12" cy="12" r="10" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M12 2v20M2 12h20"
+              />
+              <circle cx="12" cy="12" r="3" />
             </svg>
           </div>
           <div class="card-content">
@@ -178,8 +183,6 @@
             </svg>
           </div>
         </a>
-
-
       </div>
     </section>
 
@@ -473,7 +476,9 @@
     padding: 2px;
     background: linear-gradient(135deg, var(--color-accent) 0%, #af52de 100%);
     border-radius: inherit;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     mask-composite: xor;
     -webkit-mask-composite: xor;
   }
@@ -509,7 +514,5 @@
     .progress-card .card-title {
       font-size: 1.125rem;
     }
-
-
   }
 </style>

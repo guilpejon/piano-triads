@@ -109,7 +109,7 @@ const PROGRESS_KEY = 'piano-triads-progress';
 // Load progress from localStorage
 export function loadProgress(): UserProgress {
   if (typeof window === 'undefined') return getDefaultProgress();
-  
+
   try {
     const stored = localStorage.getItem(PROGRESS_KEY);
     if (stored) {
@@ -120,14 +120,14 @@ export function loadProgress(): UserProgress {
   } catch (error) {
     console.warn('Failed to load progress from localStorage:', error);
   }
-  
+
   return getDefaultProgress();
 }
 
 // Save progress to localStorage
 export function saveProgress(progress: UserProgress): void {
   if (typeof window === 'undefined') return;
-  
+
   try {
     progress.lastActive = new Date().toISOString();
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
@@ -143,10 +143,10 @@ export function updateSessionStats(
   timeSpent?: number
 ): SessionStats {
   const newStats = { ...currentStats };
-  
+
   newStats.totalRounds++;
   newStats.lastPlayed = new Date().toISOString();
-  
+
   if (wasSuccessful) {
     newStats.successfulRounds++;
     newStats.currentStreak++;
@@ -155,18 +155,21 @@ export function updateSessionStats(
     newStats.failedRounds++;
     newStats.currentStreak = 0;
   }
-  
+
   // Update average time if provided
   if (timeSpent !== undefined) {
     const totalTime = (newStats.averageTime || 0) * (newStats.totalRounds - 1) + timeSpent;
     newStats.averageTime = totalTime / newStats.totalRounds;
   }
-  
+
   return newStats;
 }
 
 // Update total play time for a user
-export function updateTotalPlayTime(progress: UserProgress, timeSpentMinutes: number): UserProgress {
+export function updateTotalPlayTime(
+  progress: UserProgress,
+  timeSpentMinutes: number
+): UserProgress {
   const newProgress = { ...progress };
   newProgress.totalPlayTime += timeSpentMinutes;
   return newProgress;
@@ -182,10 +185,10 @@ export function completePracticeSession(
 ): UserProgress {
   const newProgress = { ...progress };
   const timeSpentMinutes = timeSpentSeconds / 60;
-  
+
   // Update total play time
   newProgress.totalPlayTime += timeSpentMinutes;
-  
+
   // Update specific module stats
   if (module === 'chordPractice') {
     newProgress.modules.chordPractice = updateSessionStats(
@@ -210,7 +213,7 @@ export function completePracticeSession(
     newProgress.modules.pitchTraining.lastMode = subModule === 'notes' ? 'note' : 'chord';
     newProgress.modules.pitchTraining.lastPlayed = new Date().toISOString();
   }
-  
+
   return newProgress;
 }
 
@@ -218,14 +221,14 @@ export function completePracticeSession(
 export function trackChordViewed(progress: UserProgress, chordName: string): UserProgress {
   const newProgress = { ...progress };
   const chordDict = newProgress.modules.chordDictionary;
-  
+
   if (!chordDict.chordsViewed.includes(chordName)) {
     chordDict.chordsViewed.push(chordName);
   }
   chordDict.lastChord = chordName;
   chordDict.totalChordsViewed++;
   chordDict.lastPlayed = new Date().toISOString();
-  
+
   return newProgress;
 }
 
@@ -233,14 +236,14 @@ export function trackChordViewed(progress: UserProgress, chordName: string): Use
 export function trackScaleLearned(progress: UserProgress, scaleName: string): UserProgress {
   const newProgress = { ...progress };
   const scaleModule = newProgress.modules.learnScales;
-  
+
   if (!scaleModule.scalesLearned.includes(scaleName)) {
     scaleModule.scalesLearned.push(scaleName);
   }
   scaleModule.lastScale = scaleName;
   scaleModule.totalScalesPlayed++;
   scaleModule.lastPlayed = new Date().toISOString();
-  
+
   return newProgress;
 }
 
@@ -254,15 +257,20 @@ export function getSuccessRate(stats: SessionStats): number {
 export function getOverallStats(progress: UserProgress) {
   const { chordPractice, pitchTraining } = progress.modules;
   const { learnScales, chordDictionary } = progress.modules;
-  
-  const pitchTrainingTotalRounds = pitchTraining.notes.totalRounds + pitchTraining.chords.totalRounds;
-  const pitchTrainingSuccessful = pitchTraining.notes.successfulRounds + pitchTraining.chords.successfulRounds;
-  const pitchTrainingBestStreak = Math.max(pitchTraining.notes.bestStreak, pitchTraining.chords.bestStreak);
-  
+
+  const pitchTrainingTotalRounds =
+    pitchTraining.notes.totalRounds + pitchTraining.chords.totalRounds;
+  const pitchTrainingSuccessful =
+    pitchTraining.notes.successfulRounds + pitchTraining.chords.successfulRounds;
+  const pitchTrainingBestStreak = Math.max(
+    pitchTraining.notes.bestStreak,
+    pitchTraining.chords.bestStreak
+  );
+
   const totalRounds = chordPractice.totalRounds + pitchTrainingTotalRounds;
   const totalSuccessful = chordPractice.successfulRounds + pitchTrainingSuccessful;
   const bestStreak = Math.max(chordPractice.bestStreak, pitchTrainingBestStreak);
-  
+
   return {
     totalRounds,
     totalSuccessful,
@@ -278,14 +286,15 @@ export function getOverallStats(progress: UserProgress) {
       combined: {
         totalRounds: pitchTrainingTotalRounds,
         successfulRounds: pitchTrainingSuccessful,
-        successRate: pitchTrainingTotalRounds > 0 ? Math.round((pitchTrainingSuccessful / pitchTrainingTotalRounds) * 100) : 0,
+        successRate:
+          pitchTrainingTotalRounds > 0
+            ? Math.round((pitchTrainingSuccessful / pitchTrainingTotalRounds) * 100)
+            : 0,
         bestStreak: pitchTrainingBestStreak
       }
     }
   };
 }
-
-
 
 // Predefined achievements
 export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
@@ -331,23 +340,22 @@ export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
     description: 'Complete a chord practice round in under 10 seconds',
     icon: '⚡',
     category: 'practice'
-  },
-
+  }
 ];
 
 // Check and unlock achievements
 export function checkAchievements(progress: UserProgress): UserProgress {
   const newProgress = { ...progress };
-  const unlockedIds = new Set(progress.achievements.map(a => a.id));
+  const unlockedIds = new Set(progress.achievements.map((a) => a.id));
   const now = new Date().toISOString();
   const stats = getOverallStats(progress);
-  
+
   // Check each achievement
   for (const achievement of ACHIEVEMENTS) {
     if (unlockedIds.has(achievement.id)) continue;
-    
+
     let shouldUnlock = false;
-    
+
     switch (achievement.id) {
       case 'first-chord':
         shouldUnlock = progress.modules.chordPractice.successfulRounds >= 1;
@@ -356,11 +364,12 @@ export function checkAchievements(progress: UserProgress): UserProgress {
         shouldUnlock = progress.modules.chordPractice.successfulRounds >= 50;
         break;
       case 'perfect-pitch':
-        shouldUnlock = Math.max(
-          progress.modules.pitchTraining.notes.bestStreak, 
-          progress.modules.pitchTraining.chords.bestStreak,
-          progress.modules.chordPractice.bestStreak
-        ) >= 10;
+        shouldUnlock =
+          Math.max(
+            progress.modules.pitchTraining.notes.bestStreak,
+            progress.modules.pitchTraining.chords.bestStreak,
+            progress.modules.chordPractice.bestStreak
+          ) >= 10;
         break;
       case 'scale-explorer':
         shouldUnlock = progress.modules.learnScales.scalesLearned.length >= 10;
@@ -372,9 +381,8 @@ export function checkAchievements(progress: UserProgress): UserProgress {
       case 'speed-demon':
         shouldUnlock = (progress.modules.chordPractice.averageTime || Infinity) < 10;
         break;
-
     }
-    
+
     if (shouldUnlock) {
       newProgress.achievements.push({
         ...achievement,
@@ -382,7 +390,7 @@ export function checkAchievements(progress: UserProgress): UserProgress {
       });
     }
   }
-  
+
   return newProgress;
 }
 
@@ -409,12 +417,12 @@ export function formatDate(isoString: string): string {
 // Reset all progress data
 export function resetAllProgress(): UserProgress {
   if (typeof window === 'undefined') return getDefaultProgress();
-  
+
   try {
     localStorage.removeItem(PROGRESS_KEY);
   } catch (error) {
     console.warn('Failed to clear progress from localStorage:', error);
   }
-  
+
   return getDefaultProgress();
 }

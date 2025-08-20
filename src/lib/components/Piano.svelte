@@ -127,7 +127,7 @@
     if (stickyOnMobile && window.innerWidth <= 600) {
       document.body.style.paddingBottom = '13rem';
     }
-    
+
     // Cleanup on unmount
     return () => {
       if (document.body.style.paddingBottom === '13rem') {
@@ -449,7 +449,11 @@
     border-bottom: 1px solid #999;
     background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
   }
-  .g, .a, .b, .d, .e {
+  .g,
+  .a,
+  .b,
+  .d,
+  .e {
     margin: 0 0 0 -1em;
   }
   .key.black {

@@ -38,8 +38,11 @@
 
 <svelte:head>
   <title>Piano Triads - Master Piano Chords, Scales & Ear Training</title>
-  <meta name="description" content="Master piano chords and scales with interactive lessons, practice modes, and ear training exercises" />
-  
+  <meta
+    name="description"
+    content="Master piano chords and scales with interactive lessons, practice modes, and ear training exercises"
+  />
+
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#3480f1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -48,21 +51,21 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="msapplication-TileColor" content="#3480f1" />
   <meta name="msapplication-tap-highlight" content="no" />
-  
+
   <!-- Web App Manifest -->
   <link rel="manifest" href="/manifest.json" />
-  
+
   <!-- Apple Touch Icons -->
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png" />
-  
+
   <!-- Microsoft Tiles -->
   <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
-  
+
   <!-- Viewport for mobile optimization -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 </svelte:head>

@@ -8,7 +8,6 @@
     loadProgress,
     saveProgress,
     trackScaleLearned,
-
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -110,7 +109,7 @@
     if (!isInitialLoad && currentScaleNotes.length > 0) {
       playScaleAscending();
     }
-    
+
     // Track scale learned for progress (skip on initial load)
     if (!isInitialLoad && userProgress) {
       const scaleName = `${currentRootNote} ${currentScaleType}`;
@@ -118,7 +117,7 @@
       userProgress = checkAchievements(userProgress);
       saveProgress(userProgress);
     }
-    
+
     // Update URL to reflect current scale selection
     updateURL();
   }
@@ -218,7 +217,7 @@
 
     // Parse URL and set initial scale state
     parseURLAndSetScale();
-    
+
     setTimeout(() => {
       updateSelectElements(); // Update select elements to match parsed state
       isInitialLoad = false; // Allow URL updates after initial load
@@ -358,10 +357,7 @@
     padding: 2rem 0;
   }
 
-
-
   /* Navigation */
-
 
   .scale-pattern {
     font-size: 1rem;
@@ -528,8 +524,6 @@
     color: white;
   }
 
-
-
   .action-button:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
@@ -613,8 +607,6 @@
     .piano-container {
       padding: 1.5rem 1rem;
     }
-
-
 
     .header-section {
       padding: 2rem 0;

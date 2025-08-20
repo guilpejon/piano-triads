@@ -9,7 +9,6 @@
     loadProgress,
     saveProgress,
     trackChordViewed,
-
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -131,7 +130,7 @@
     if (!isInitialLoad && activeNotes.length > 0) {
       playChord(activeNotes);
     }
-    
+
     // Track chord viewed for progress (skip on initial load)
     if (!isInitialLoad && userProgress) {
       const chordName = currentNote + currentChordType;
@@ -139,7 +138,7 @@
       userProgress = checkAchievements(userProgress);
       saveProgress(userProgress);
     }
-    
+
     // Update URL to reflect current chord selection
     updateURL();
   }
@@ -213,7 +212,7 @@
         if (dataNote && dataNote.includes(noteName)) {
           // Highlight the key
           key.classList.add('chord-active');
-          
+
           // Show the note name for this active key
           const noteElement = key.querySelector('.note');
           if (noteElement) {
@@ -257,7 +256,6 @@
     // Load user progress
     userProgress = loadProgress();
 
-    
     // Parse URL and set initial chord state
     parseURLAndSetChord();
 
@@ -386,13 +384,9 @@
   .chord-dictionary-wrapper {
     min-height: calc(90vh - 4rem); /* Account for navbar */
     padding: 2rem 0;
-
   }
 
   /* Navigation */
-
-
-
 
   /* Controls section */
   .controls-container {
@@ -535,11 +529,8 @@
       padding: 1.5rem 1rem;
     }
 
-
-
     .header-section {
       padding: 2rem 0;
-
     }
 
     .controls-section {
