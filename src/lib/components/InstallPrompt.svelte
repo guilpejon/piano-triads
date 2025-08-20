@@ -4,10 +4,30 @@
   let deferredPrompt: any = null;
   let showInstallPrompt = false;
   let isInstalled = false;
+  let isMobileDevice = false;
 
   onMount(() => {
     // Ensure we're running in the browser
     if (typeof window === 'undefined') return;
+
+    // Check if this is a mobile device
+    const checkMobileDevice = () => {
+      // Check for mobile user agents
+      const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent);
+      
+      // Check for touch capability and screen size
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth <= 1024; // Tablet and below
+      
+      return isMobileUserAgent || (isTouchDevice && isSmallScreen);
+    };
+
+    isMobileDevice = checkMobileDevice();
+
+    // Only proceed if this is a mobile device
+    if (!isMobileDevice) {
+      return;
+    }
 
     // Check if app is already installed
     if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
@@ -32,14 +52,27 @@
       deferredPrompt = null;
     };
 
+    // Handle window resize to re-check mobile status
+    const handleResize = () => {
+      const wasMobile = isMobileDevice;
+      isMobileDevice = checkMobileDevice();
+      
+      // If device changed from mobile to desktop, hide the prompt
+      if (wasMobile && !isMobileDevice) {
+        showInstallPrompt = false;
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('resize', handleResize);
 
     // Cleanup event listeners
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.removeEventListener('appinstalled', handleAppInstalled);
+        window.removeEventListener('resize', handleResize);
       }
     };
   });
@@ -73,7 +106,7 @@
   });
 </script>
 
-{#if showInstallPrompt && !isInstalled}
+{#if showInstallPrompt && !isInstalled && isMobileDevice}
   <div class="install-prompt" role="banner" aria-label="Install app prompt">
     <div class="install-content">
       <div class="install-icon">
