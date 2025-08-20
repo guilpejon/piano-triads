@@ -532,16 +532,16 @@
     .music-score {
       padding: 1rem;
     }
-  }
 
-  @supports not (-webkit-overflow-scrolling: touch) {
-    .treble-clef {
-      top: 26px;
-      font-size: 2.7rem;
-    }
-    .bass-clef {
-      bottom: -14px;
-      font-size: 3rem;
+    @supports not (-webkit-overflow-scrolling: touch) {
+      .treble-clef {
+        top: 26px;
+        font-size: 2.7rem;
+      }
+      .bass-clef {
+        bottom: -14px;
+        font-size: 3rem;
+      }
     }
   }
 </style>

@@ -1,11 +1,25 @@
 <script lang="ts">
   import { playNote } from '$lib/utils/audioUtils';
-  import { onMount, afterUpdate } from 'svelte';
+  import { onMount, afterUpdate, onDestroy } from 'svelte';
 
   // Props to control which enharmonic notation to show
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
   export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
   export let stickyOnMobile: boolean = false; // Enable sticky positioning on mobile devices
+
+  // Keyboard mapping for piano keys
+  const keyboardMapping: { [key: string]: string } = {
+    // White keys (C3-B4) mapped to bottom row: A S D F G H J K L ; Z X C V
+    'a': 'C3', 's': 'D3', 'd': 'E3', 'f': 'F3', 'g': 'G3', 'h': 'A3', 'j': 'B3',
+    'k': 'C4', 'l': 'D4', ';': 'E4', 'z': 'F4', 'x': 'G4', 'c': 'A4', 'v': 'B4',
+    
+    // Black keys (C#3-A#4) mapped to top row: Q W E R T Y U I O P
+    'q': 'C#3/Db3', 'w': 'D#3/Eb3', 'e': 'F#3/Gb3', 'r': 'G#3/Ab3', 't': 'A#3/Bb3',
+    'y': 'C#4/Db4', 'u': 'D#4/Eb4', 'i': 'F#4/Gb4', 'o': 'G#4/Ab4', 'p': 'A#4/Bb4'
+  };
+
+  let activeKeys = new Set<string>(); // Track currently pressed keys for visual feedback
+  let showKeyboardHelp = false; // Toggle for keyboard mapping help
 
   // Handle key press (click or keyboard)
   function handleKeyPress(event: Event): void {
@@ -23,6 +37,49 @@
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleKeyPress(event);
+    }
+  }
+
+  // Global keyboard event handlers for piano control
+  function handleGlobalKeyDown(event: KeyboardEvent): void {
+    // Ignore if user is typing in an input field
+    if (event.target instanceof HTMLInputElement || 
+        event.target instanceof HTMLTextAreaElement || 
+        event.target instanceof HTMLSelectElement ||
+        (event.target as HTMLElement)?.contentEditable === 'true') {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    const noteData = keyboardMapping[key];
+    
+    if (noteData && !activeKeys.has(key)) {
+      event.preventDefault();
+      activeKeys.add(key);
+      activeKeys = activeKeys; // Trigger reactivity
+      playNote(noteData);
+      
+      // Add visual feedback to the corresponding piano key
+      const pianoKey = document.querySelector(`[data-note="${noteData}"]`) as HTMLElement;
+      if (pianoKey) {
+        pianoKey.classList.add('keyboard-active');
+      }
+    }
+  }
+
+  function handleGlobalKeyUp(event: KeyboardEvent): void {
+    const key = event.key.toLowerCase();
+    const noteData = keyboardMapping[key];
+    
+    if (noteData && activeKeys.has(key)) {
+      activeKeys.delete(key);
+      activeKeys = activeKeys; // Trigger reactivity
+      
+      // Remove visual feedback from the corresponding piano key
+      const pianoKey = document.querySelector(`[data-note="${noteData}"]`) as HTMLElement;
+      if (pianoKey) {
+        pianoKey.classList.remove('keyboard-active');
+      }
     }
   }
 
@@ -109,6 +166,12 @@
   onMount(() => {
     // Small delay to ensure DOM is fully rendered and CSS classes are applied
     setTimeout(scrollToFirstActiveKey, 100);
+    
+    // Add global keyboard event listeners
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleGlobalKeyDown);
+      window.addEventListener('keyup', handleGlobalKeyUp);
+    }
   });
 
   // Scroll when chordNotes change (when new chord/scale is selected)
@@ -127,13 +190,26 @@
     if (stickyOnMobile && window.innerWidth <= 600) {
       document.body.style.paddingBottom = '13rem';
     }
+  });
 
-    // Cleanup on unmount
-    return () => {
-      if (document.body.style.paddingBottom === '13rem') {
-        document.body.style.paddingBottom = '';
-      }
-    };
+  // Cleanup on component destroy
+  onDestroy(() => {
+    // Remove keyboard event listeners
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keyup', handleGlobalKeyUp);
+    }
+    
+    // Reset body padding if it was set
+    if (typeof document !== 'undefined' && document.body.style.paddingBottom === '13rem') {
+      document.body.style.paddingBottom = '';
+    }
+    
+    // Clear any active keyboard visual feedback
+    if (typeof document !== 'undefined') {
+      const activeKeyElements = document.querySelectorAll('.key.keyboard-active');
+      activeKeyElements.forEach(el => el.classList.remove('keyboard-active'));
+    }
   });
 </script>
 
@@ -448,6 +524,21 @@
     border-left: 1px solid #999;
     border-bottom: 1px solid #999;
     background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
+  }
+
+  /* Keyboard control visual feedback */
+  :global(.key.keyboard-active) {
+    transform: translateY(2px);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  :global(.key.white.keyboard-active) {
+    background: linear-gradient(to bottom, #d0d0d0 0%, #c0c0c0 100%);
+    border-color: #777;
+  }
+
+  :global(.key.black.keyboard-active) {
+    background: linear-gradient(to bottom, #111 0%, #333 100%);
   }
   .g,
   .a,

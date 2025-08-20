@@ -593,8 +593,7 @@
     letter-spacing: 0.05em;
   }
 
-  .key-signature,
-  .related-key {
+  .key-signature {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-text-primary);
