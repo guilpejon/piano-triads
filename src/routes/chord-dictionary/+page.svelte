@@ -390,17 +390,9 @@
   }
 
   /* Navigation */
-  .navigation {
-    padding-bottom: 1.5rem;
-  }
 
-  /* Back button icon */
-  .back-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    stroke-width: 1.5;
-  }
+
+
 
   /* Controls section */
   .controls-container {
@@ -543,9 +535,7 @@
       padding: 1.5rem 1rem;
     }
 
-    nav.navigation {
-      padding: 0;
-    }
+
 
     .header-section {
       padding: 2rem 0;

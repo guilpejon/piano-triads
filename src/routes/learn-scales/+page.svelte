@@ -614,9 +614,7 @@
       padding: 1.5rem 1rem;
     }
 
-    .navigation {
-      padding-bottom: 1rem;
-    }
+
 
     .header-section {
       padding: 2rem 0;

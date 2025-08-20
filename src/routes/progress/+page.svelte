@@ -363,35 +363,11 @@
 
 
   /* Navigation */
-  .navigation {
-    margin-bottom: 2rem;
-  }
 
-  .btn-glass {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--color-card-background);
-    border: 1px solid var(--color-border-light);
-    border-radius: 12px;
-    color: var(--color-text-primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(20px);
-  }
 
-  .btn-glass:hover {
-    background: var(--color-card-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
 
-  .back-icon {
-    width: 20px;
-    height: 20px;
-  }
+
+
 
   /* Header */
   .header-section {

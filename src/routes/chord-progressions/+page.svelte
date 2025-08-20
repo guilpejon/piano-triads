@@ -444,16 +444,9 @@
   }
 
   /* Navigation */
-  .navigation {
-    padding-bottom: 1.5rem;
-  }
 
-  .back-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    stroke-width: 1.5;
-  }
+
+
 
 
 
