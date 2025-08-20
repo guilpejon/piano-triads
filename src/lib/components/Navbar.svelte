@@ -6,6 +6,7 @@
     { href: '/chord-dictionary', label: 'Chords' },
     { href: '/chord-practice', label: 'Practice' },
     { href: '/learn-scales', label: 'Scales' },
+    { href: '/circle-of-fifths', label: 'Circle of Fifths' },
     { href: '/pitch-training', label: 'Ear Training' },
     { href: '/progress', label: 'Progress' }
   ];
@@ -258,7 +259,7 @@
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     .nav-container {
       padding: 0 1.25rem;
     }

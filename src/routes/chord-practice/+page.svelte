@@ -492,17 +492,7 @@
   }
 
   /* Navigation */
-  .navigation {
-    padding-bottom: 1.5rem;
-  }
 
-  /* Back button icon */
-  .back-icon {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    stroke-width: 1.5;
-  }
 
   /* Game section */
   .game-container {
@@ -774,9 +764,7 @@
 
 
 
-    .navigation {
-      padding-bottom: 1rem;
-    }
+
 
     .game-section {
       padding-bottom: 0;
@@ -842,9 +830,7 @@
 
 
 
-    .navigation {
-      padding-bottom: 0.75rem;
-    }
+
 
     .game-section {
       padding-bottom: 1rem;

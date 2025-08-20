@@ -155,20 +155,17 @@
           </div>
         </a>
 
-        <a href="/progress" class="glass-card feature-card">
-          <div class="card-icon progress-icon">
+        <a href="/circle-of-fifths" class="glass-card feature-card">
+          <div class="card-icon circle-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
+              <circle cx="12" cy="12" r="10"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2v20M2 12h20"/>
+              <circle cx="12" cy="12" r="3"/>
             </svg>
           </div>
           <div class="card-content">
-            <h2 class="card-title">Progress Dashboard</h2>
-            <p class="card-description">Track your learning journey and achievements</p>
+            <h2 class="card-title">Circle of Fifths</h2>
+            <p class="card-description">Master key signatures and chord relationships</p>
           </div>
           <div class="card-arrow">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,6 +176,38 @@
                 d="M9 5l7 7-7 7"
               />
             </svg>
+          </div>
+        </a>
+
+
+      </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="progress-section">
+      <div class="progress-container">
+        <div class="progress-content">
+          <h2 class="progress-title">Track Your Progress</h2>
+          <p class="progress-description">
+            Monitor your learning journey, view achievements, and see how much you've improved
+          </p>
+        </div>
+        <a href="/progress" class="glass-card progress-card">
+          <div class="progress-card-header">
+            <div class="card-icon progress-icon">
+              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h3 class="card-title">Progress Dashboard</h3>
+          </div>
+          <div class="card-content">
+            <p class="card-description">View your stats, achievements, and learning milestones</p>
           </div>
         </a>
       </div>
@@ -206,7 +235,7 @@
 
   /* Features section */
   .features-section {
-    padding-bottom: 5rem;
+    padding-bottom: 2rem;
   }
 
   .features-grid {
@@ -270,6 +299,11 @@
     color: white;
   }
 
+  .circle-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+  }
+
   .progress-icon {
     background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
     color: white;
@@ -302,6 +336,9 @@
     transform: translateX(0);
   }
 
+  .progress-container {
+    padding: 0 2rem;
+  }
   /* Responsive Design */
   @media (max-width: 768px) {
     .features-grid {
@@ -314,6 +351,12 @@
       flex-direction: column;
       text-align: center;
       gap: 1rem;
+    }
+
+    .progress-container {
+      flex-direction: column;
+      gap: 2rem;
+      text-align: center;
     }
 
     .card-content {
@@ -342,5 +385,131 @@
     .card-description {
       font-size: 0.875rem;
     }
+
+    .progress-section {
+      margin-top: 2rem;
+      padding: 2rem 1rem;
+    }
+
+    .progress-card {
+      max-width: none;
+      padding: 1.5rem;
+    }
+
+    .progress-card .card-title {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Progress Section */
+  .progress-section {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    background: linear-gradient(135deg, rgba(52, 128, 241, 0.03) 0%, rgba(175, 82, 222, 0.03) 100%);
+    border-radius: 24px;
+    border: 1px solid var(--color-border-light);
+  }
+
+  .progress-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .progress-content {
+    flex: 1;
+  }
+
+  .progress-title {
+    font-size: clamp(1.75rem, 5vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .progress-description {
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .progress-card {
+    flex-shrink: 0;
+    max-width: 400px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .progress-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .progress-card .card-title {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+  }
+
+  .progress-card .card-content {
+    flex: none;
+  }
+
+  .progress-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, #af52de 100%);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+  }
+
+  .progress-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(52, 128, 241, 0.15);
+  }
+
+  .progress-card .progress-icon {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3);
+  }
+
+  @media (max-width: 480px) {
+    .progress-section {
+      padding: 1.5rem 0.5rem;
+    }
+
+    .progress-card {
+      padding: 1.25rem;
+    }
+
+    .progress-card-header {
+      gap: 0.75rem;
+    }
+
+    .progress-card .card-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .progress-card .card-title {
+      font-size: 1.125rem;
+    }
+
+
   }
 </style>

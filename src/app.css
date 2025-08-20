@@ -116,8 +116,19 @@
   transform: translateY(-1px);
 }
 
+.navigation {
+  padding-bottom: 1.5rem;
+}
+
+.back-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+  stroke-width: 1.5;
+}
+
 /* Responsive containers */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .page-container {
     padding-left: 1.25rem;
     padding-right: 1.25rem;
@@ -126,11 +137,19 @@
   .header-section {
     padding: 2rem 0;
   }
+
+  .navigation {
+    padding-bottom: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
   .page-container {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .navigation {
+    padding-bottom: 0.75rem;
   }
 }
