@@ -268,47 +268,7 @@
   });
 </script>
 
-<svelte:head>
-  <title>Chord Dictionary - Interactive Piano Chord Reference | Piano Triads</title>
-  <meta name="description" content="Explore and learn piano chords with our interactive chord dictionary. See chord inversions, hear audio playback, and master major, minor, diminished, suspended, and extended chords." />
-  <meta name="keywords" content="piano chords, chord dictionary, chord inversions, major chords, minor chords, diminished chords, suspended chords, seventh chords, chord reference" />
-  <link rel="canonical" href="https://piano-triads.com/chord-dictionary" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Chord Dictionary - Interactive Piano Chord Reference | Piano Triads" />
-  <meta property="og:description" content="Explore and learn piano chords with our interactive chord dictionary. See chord inversions, hear audio playback, and master major, minor, diminished, suspended, and extended chords." />
-  <meta property="og:url" content="https://piano-triads.com/chord-dictionary" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:title" content="Chord Dictionary - Interactive Piano Chord Reference | Piano Triads" />
-  <meta name="twitter:description" content="Explore and learn piano chords with our interactive chord dictionary. See chord inversions, hear audio playback, and master all chord types." />
-
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Chord Dictionary - Interactive Piano Chord Reference",
-      "url": "https://piano-triads.com/chord-dictionary",
-      "description": "Explore and learn piano chords with our interactive chord dictionary. See chord inversions, hear audio playback, and master major, minor, diminished, suspended, and extended chords.",
-      "mainEntity": {
-        "@type": "LearningResource",
-        "name": "Piano Chord Dictionary",
-        "description": "Interactive chord dictionary featuring major, minor, diminished, suspended, and extended chords with audio playback and multiple inversions.",
-        "educationalLevel": "Beginner to Advanced",
-        "learningResourceType": "Reference Tool",
-        "teaches": [
-          "Piano Chord Theory",
-          "Chord Inversions",
-          "Chord Construction",
-          "Music Theory Fundamentals"
-        ],
-        "interactivityType": "Active"
-      }
-    }
-  </script>
-</svelte:head>
 
 <div class="chord-dictionary-wrapper">
   <div class="page-container">

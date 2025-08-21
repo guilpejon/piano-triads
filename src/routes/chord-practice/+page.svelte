@@ -370,49 +370,7 @@
   });
 </script>
 
-<svelte:head>
-  <title>Chord Practice - Interactive Piano Chord Training Game | Piano Triads</title>
-  <meta name="description" content="Master chord recognition with our interactive piano chord practice game. Build chords note by note, track your progress, and improve your music theory skills with timed challenges." />
-  <meta name="keywords" content="chord practice, piano training, chord recognition, music theory practice, piano games, chord building, ear training, music education" />
-  <link rel="canonical" href="https://piano-triads.com/chord-practice" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Chord Practice - Interactive Piano Chord Training Game | Piano Triads" />
-  <meta property="og:description" content="Master chord recognition with our interactive piano chord practice game. Build chords note by note, track your progress, and improve your music theory skills with timed challenges." />
-  <meta property="og:url" content="https://piano-triads.com/chord-practice" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:title" content="Chord Practice - Interactive Piano Chord Training Game | Piano Triads" />
-  <meta name="twitter:description" content="Master chord recognition with our interactive piano chord practice game. Build chords note by note and track your progress." />
-
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Chord Practice - Interactive Piano Chord Training Game",
-      "url": "https://piano-triads.com/chord-practice",
-      "description": "Master chord recognition with our interactive piano chord practice game. Build chords note by note, track your progress, and improve your music theory skills with timed challenges.",
-      "mainEntity": {
-        "@type": "Game",
-        "name": "Piano Chord Practice Game",
-        "description": "Interactive chord recognition game where players identify and build piano chords within time limits.",
-        "genre": "Educational Game",
-        "gameItem": {
-          "@type": "Thing",
-          "name": "Piano Chord Training"
-        },
-        "teaches": [
-          "Chord Recognition",
-          "Piano Technique",
-          "Music Theory",
-          "Ear Training"
-        ]
-      }
-    }
-  </script>
-</svelte:head>
 
 <div class="chord-practice-wrapper">
   <div class="page-container">

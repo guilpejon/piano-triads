@@ -106,46 +106,7 @@
   }
 </script>
 
-<svelte:head>
-  <title>Progress Dashboard - Track Your Piano Learning Journey | Piano Triads</title>
-  <meta name="description" content="Monitor your piano learning progress with detailed statistics, achievements, and performance tracking across chords, scales, and ear training exercises." />
-  <meta name="keywords" content="piano progress tracking, learning statistics, music achievements, practice progress, piano learning dashboard, performance analytics" />
-  <link rel="canonical" href="https://piano-triads.com/progress" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Progress Dashboard - Track Your Piano Learning Journey | Piano Triads" />
-  <meta property="og:description" content="Monitor your piano learning progress with detailed statistics, achievements, and performance tracking across chords, scales, and ear training exercises." />
-  <meta property="og:url" content="https://piano-triads.com/progress" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:title" content="Progress Dashboard - Track Your Piano Learning Journey | Piano Triads" />
-  <meta name="twitter:description" content="Monitor your piano learning progress with detailed statistics and achievements." />
-
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Progress Dashboard - Track Your Piano Learning Journey",
-      "url": "https://piano-triads.com/progress",
-      "description": "Monitor your piano learning progress with detailed statistics, achievements, and performance tracking across chords, scales, and ear training exercises.",
-      "mainEntity": {
-        "@type": "WebApplication",
-        "name": "Piano Learning Progress Tracker",
-        "description": "Comprehensive progress tracking system for monitoring piano learning achievements, practice statistics, and skill development across multiple learning modules.",
-        "applicationCategory": "EducationalApplication",
-        "featureList": [
-          "Practice Statistics",
-          "Achievement Tracking",
-          "Performance Analytics",
-          "Learning Progress Visualization",
-          "Skill Assessment"
-        ]
-      }
-    }
-  </script>
-</svelte:head>
 
 <div class="progress-wrapper">
   <div class="page-container">

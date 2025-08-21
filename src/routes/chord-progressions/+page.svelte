@@ -314,48 +314,7 @@
   });
 </script>
 
-<svelte:head>
-  <title>Chord Progressions - Learn Popular Piano Chord Progressions | Piano Triads</title>
-  <meta name="description" content="Master common chord progressions used in popular music. Learn I-V-vi-IV, ii-V-I, and other essential progressions with interactive examples and practice exercises." />
-  <meta name="keywords" content="chord progressions, piano progressions, I-V-vi-IV, ii-V-I, popular music chords, song progressions, music theory, chord sequences" />
-  <link rel="canonical" href="https://piano-triads.com/chord-progressions" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Chord Progressions - Learn Popular Piano Chord Progressions | Piano Triads" />
-  <meta property="og:description" content="Master common chord progressions used in popular music. Learn I-V-vi-IV, ii-V-I, and other essential progressions with interactive examples and practice exercises." />
-  <meta property="og:url" content="https://piano-triads.com/chord-progressions" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:title" content="Chord Progressions - Learn Popular Piano Chord Progressions | Piano Triads" />
-  <meta name="twitter:description" content="Master common chord progressions used in popular music with interactive examples and practice exercises." />
-
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Chord Progressions - Learn Popular Piano Chord Progressions",
-      "url": "https://piano-triads.com/chord-progressions",
-      "description": "Master common chord progressions used in popular music. Learn I-V-vi-IV, ii-V-I, and other essential progressions with interactive examples and practice exercises.",
-      "mainEntity": {
-        "@type": "LearningResource",
-        "name": "Piano Chord Progressions Guide",
-        "description": "Interactive guide to learning popular chord progressions including I-V-vi-IV, ii-V-I, and other essential sequences used in contemporary music.",
-        "educationalLevel": "Beginner to Intermediate",
-        "learningResourceType": "Interactive Guide",
-        "teaches": [
-          "Chord Progressions",
-          "Roman Numeral Analysis",
-          "Popular Music Theory",
-          "Song Structure",
-          "Harmonic Analysis"
-        ],
-        "interactivityType": "Active"
-      }
-    }
-  </script>
-</svelte:head>
 
 <div class="chord-progressions-wrapper">
   <div class="page-container">
