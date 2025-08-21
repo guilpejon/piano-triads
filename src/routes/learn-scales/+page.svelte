@@ -227,8 +227,48 @@
 </script>
 
 <svelte:head>
-  <title>Learn Scales - Piano Triads</title>
-  <meta name="description" content="Learn and practice piano scales with interactive lessons" />
+  <title>Learn Piano Scales - Major, Minor, Pentatonic & Modal Scales | Piano Triads</title>
+  <meta name="description" content="Master piano scales with our interactive scale learning tool. Explore major, minor, pentatonic, blues, and modal scales with audio playback, scale degrees, and comprehensive theory." />
+  <meta name="keywords" content="piano scales, major scales, minor scales, pentatonic scales, blues scale, modal scales, scale theory, music theory, piano lessons" />
+  <link rel="canonical" href="https://piano-triads.com/learn-scales" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Learn Piano Scales - Major, Minor, Pentatonic & Modal Scales | Piano Triads" />
+  <meta property="og:description" content="Master piano scales with our interactive scale learning tool. Explore major, minor, pentatonic, blues, and modal scales with audio playback, scale degrees, and comprehensive theory." />
+  <meta property="og:url" content="https://piano-triads.com/learn-scales" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:title" content="Learn Piano Scales - Major, Minor, Pentatonic & Modal Scales | Piano Triads" />
+  <meta name="twitter:description" content="Master piano scales with our interactive scale learning tool. Explore all major scale types with audio playback and theory." />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Learn Piano Scales - Major, Minor, Pentatonic & Modal Scales",
+      "url": "https://piano-triads.com/learn-scales",
+      "description": "Master piano scales with our interactive scale learning tool. Explore major, minor, pentatonic, blues, and modal scales with audio playback, scale degrees, and comprehensive theory.",
+      "mainEntity": {
+        "@type": "LearningResource",
+        "name": "Piano Scale Learning Tool",
+        "description": "Comprehensive scale learning resource featuring major, minor, pentatonic, blues, and all modal scales with interactive piano visualization and audio playback.",
+        "educationalLevel": "Beginner to Advanced",
+        "learningResourceType": "Interactive Tool",
+        "teaches": [
+          "Major Scales",
+          "Minor Scales",
+          "Pentatonic Scales",
+          "Blues Scales",
+          "Modal Scales",
+          "Scale Theory",
+          "Scale Degrees"
+        ],
+        "interactivityType": "Active"
+      }
+    }
+  </script>
 </svelte:head>
 
 <div class="learn-scales-wrapper">

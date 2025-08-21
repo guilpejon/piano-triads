@@ -1,6 +1,29 @@
 <svelte:head>
-  <title>Piano Triads - Master Piano Chords, Scales & Ear Training</title>
-  <meta name="description" content="Master piano chords and scales" />
+  <!-- Page-specific structured data for homepage -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Piano Triads - Master Piano Chords, Scales & Ear Training",
+      "url": "https://piano-triads.com",
+      "description": "Master piano chords and scales with interactive lessons, practice modes, and ear training exercises. Learn chord progressions, scales, and develop perfect pitch with our comprehensive piano learning platform.",
+      "mainEntity": {
+        "@type": "LearningResource",
+        "name": "Piano Learning Platform",
+        "description": "Comprehensive piano learning platform with interactive chord dictionary, practice games, scale learning, pitch training, and chord progressions.",
+        "educationalLevel": "Beginner to Advanced",
+        "learningResourceType": "Interactive Tool",
+        "teaches": [
+          "Piano Chords",
+          "Piano Scales",
+          "Music Theory",
+          "Ear Training",
+          "Chord Progressions",
+          "Circle of Fifths"
+        ]
+      }
+    }
+  </script>
 </svelte:head>
 
 <div class="home-wrapper">

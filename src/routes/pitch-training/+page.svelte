@@ -471,8 +471,46 @@
 </script>
 
 <svelte:head>
-  <title>Pitch Training - Piano Triads</title>
-  <meta name="description" content="Develop perfect pitch and ear training skills" />
+  <title>Pitch Training - Perfect Pitch & Ear Training Exercises | Piano Triads</title>
+  <meta name="description" content="Develop perfect pitch and interval recognition skills with our interactive ear training exercises. Practice note identification and chord recognition to improve your musical ear." />
+  <meta name="keywords" content="pitch training, ear training, perfect pitch, interval recognition, note identification, chord recognition, ear training exercises, music theory practice" />
+  <link rel="canonical" href="https://piano-triads.com/pitch-training" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Pitch Training - Perfect Pitch & Ear Training Exercises | Piano Triads" />
+  <meta property="og:description" content="Develop perfect pitch and interval recognition skills with our interactive ear training exercises. Practice note identification and chord recognition to improve your musical ear." />
+  <meta property="og:url" content="https://piano-triads.com/pitch-training" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:title" content="Pitch Training - Perfect Pitch & Ear Training Exercises | Piano Triads" />
+  <meta name="twitter:description" content="Develop perfect pitch and interval recognition skills with our interactive ear training exercises." />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Pitch Training - Perfect Pitch & Ear Training Exercises",
+      "url": "https://piano-triads.com/pitch-training",
+      "description": "Develop perfect pitch and interval recognition skills with our interactive ear training exercises. Practice note identification and chord recognition to improve your musical ear.",
+      "mainEntity": {
+        "@type": "LearningResource",
+        "name": "Piano Pitch Training Tool",
+        "description": "Interactive ear training exercises for developing perfect pitch, note identification, and chord recognition skills.",
+        "educationalLevel": "Beginner to Advanced",
+        "learningResourceType": "Practice Tool",
+        "teaches": [
+          "Perfect Pitch",
+          "Note Identification",
+          "Chord Recognition",
+          "Interval Recognition",
+          "Ear Training"
+        ],
+        "interactivityType": "Active"
+      }
+    }
+  </script>
 </svelte:head>
 
 <div class="pitch-training-wrapper">

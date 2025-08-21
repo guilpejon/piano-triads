@@ -221,11 +221,47 @@
 </script>
 
 <svelte:head>
-  <title>Circle of Fifths - Piano Triads</title>
-  <meta
-    name="description"
-    content="Learn the Circle of Fifths - the ultimate tool for understanding key signatures, chord progressions, and music theory relationships."
-  />
+  <title>Circle of Fifths - Interactive Key Signature & Music Theory Tool | Piano Triads</title>
+  <meta name="description" content="Master the Circle of Fifths with our interactive visual tool. Learn key signatures, chord relationships, and music theory fundamentals through an engaging, clickable interface." />
+  <meta name="keywords" content="circle of fifths, key signatures, music theory, chord relationships, major keys, minor keys, sharps and flats, music theory tool" />
+  <link rel="canonical" href="https://piano-triads.com/circle-of-fifths" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Circle of Fifths - Interactive Key Signature & Music Theory Tool | Piano Triads" />
+  <meta property="og:description" content="Master the Circle of Fifths with our interactive visual tool. Learn key signatures, chord relationships, and music theory fundamentals through an engaging, clickable interface." />
+  <meta property="og:url" content="https://piano-triads.com/circle-of-fifths" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:title" content="Circle of Fifths - Interactive Key Signature & Music Theory Tool | Piano Triads" />
+  <meta name="twitter:description" content="Master the Circle of Fifths with our interactive visual tool. Learn key signatures and music theory fundamentals." />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Circle of Fifths - Interactive Key Signature & Music Theory Tool",
+      "url": "https://piano-triads.com/circle-of-fifths",
+      "description": "Master the Circle of Fifths with our interactive visual tool. Learn key signatures, chord relationships, and music theory fundamentals through an engaging, clickable interface.",
+      "mainEntity": {
+        "@type": "LearningResource",
+        "name": "Interactive Circle of Fifths Tool",
+        "description": "Visual, interactive representation of the Circle of Fifths for learning key signatures, chord relationships, and fundamental music theory concepts.",
+        "educationalLevel": "Beginner to Advanced",
+        "learningResourceType": "Interactive Diagram",
+        "teaches": [
+          "Key Signatures",
+          "Circle of Fifths",
+          "Major and Minor Keys",
+          "Sharps and Flats",
+          "Chord Relationships",
+          "Music Theory Fundamentals"
+        ],
+        "interactivityType": "Active"
+      }
+    }
+  </script>
 </svelte:head>
 
 <div class="circle-of-fifths-wrapper">
