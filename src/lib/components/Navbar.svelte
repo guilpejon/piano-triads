@@ -1,25 +1,87 @@
 <script lang="ts">
   import { page } from '$app/stores';
 
-  // Navigation items
-  const navItems = [
-    { href: '/chord-dictionary', label: 'Chords' },
-    { href: '/chord-practice', label: 'Practice' },
-    { href: '/learn-scales', label: 'Scales' },
-    { href: '/circle-of-fifths', label: 'Circle of Fifths' },
-    { href: '/pitch-training', label: 'Ear Training' },
-    { href: '/progress', label: 'Progress' }
+  // Type definitions
+  interface NavItem {
+    href: string;
+    label: string;
+  }
+
+  interface DropdownNav {
+    type: 'dropdown';
+    label: string;
+    items: NavItem[];
+  }
+
+  interface LinkNav {
+    type: 'link';
+    href: string;
+    label: string;
+  }
+
+  type NavStructureItem = DropdownNav | LinkNav;
+
+  // Navigation structure with dropdowns
+  const navStructure: NavStructureItem[] = [
+    {
+      type: 'dropdown',
+      label: 'Theory',
+      items: [
+        { href: '/chord-dictionary', label: 'Chord Dictionary' },
+        { href: '/chord-progressions', label: 'Chord Progressions' },
+        { href: '/learn-scales', label: 'Scales' },
+        { href: '/circle-of-fifths', label: 'Circle of Fifths' }
+      ]
+    },
+    {
+      type: 'dropdown',
+      label: 'Practice',
+      items: [
+        { href: '/chord-practice', label: 'Chord Practice' },
+        { href: '/pitch-training', label: 'Ear Training' }
+      ]
+    },
+    {
+      type: 'link',
+      href: '/progress',
+      label: 'Progress'
+    }
   ];
 
   // Mobile menu state
   let mobileMenuOpen = false;
+  let activeDropdown: number | null = null;
 
   function toggleMobileMenu() {
     mobileMenuOpen = !mobileMenuOpen;
+    // Close any open dropdowns when opening mobile menu
+    activeDropdown = null;
   }
 
   function closeMobileMenu() {
     mobileMenuOpen = false;
+  }
+
+  function toggleDropdown(index: number) {
+    activeDropdown = activeDropdown === index ? null : index;
+  }
+
+  function closeDropdown() {
+    activeDropdown = null;
+  }
+
+  // Close dropdown when clicking outside
+  function handleDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.nav-dropdown')) {
+      closeDropdown();
+    }
+  }
+
+  // Check if current path is in any dropdown items
+  function isDropdownActive(dropdownItems: NavItem[]) {
+    if (typeof window === 'undefined') return false;
+    return dropdownItems.some((item: NavItem) => $page.url.pathname === item.href);
   }
 
   // Reactive statement to get current path (SSR-safe)
@@ -50,10 +112,50 @@
 
     <!-- Desktop Navigation -->
     <div class="nav-links">
-      {#each navItems as item}
-        <a href={item.href} class="nav-link" class:active={currentPath === item.href}>
-          {item.label}
-        </a>
+      {#each navStructure as item, index}
+        {#if item.type === 'link'}
+          <a href={item.href} class="nav-link" class:active={currentPath === item.href}>
+            {item.label}
+          </a>
+        {:else if item.type === 'dropdown'}
+          <div class="nav-dropdown" class:active={isDropdownActive(item.items)}>
+            <button
+              class="nav-dropdown-btn"
+              class:active={activeDropdown === index}
+              on:click={() => toggleDropdown(index)}
+              aria-expanded={activeDropdown === index}
+              aria-haspopup="true"
+            >
+              {item.label}
+              <svg
+                class="dropdown-arrow"
+                class:rotated={activeDropdown === index}
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="m6 9 3-3 3 3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            {#if activeDropdown === index}
+              <div class="nav-dropdown-menu">
+                {#each item.items as dropdownItem}
+                  <a
+                    href={dropdownItem.href}
+                    class="nav-dropdown-item"
+                    class:active={currentPath === dropdownItem.href}
+                    on:click={closeDropdown}
+                  >
+                    {dropdownItem.label}
+                  </a>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
       {/each}
     </div>
 
@@ -84,20 +186,42 @@
     <!-- Menu -->
     <div class="mobile-menu">
       <div class="mobile-nav-links">
-        {#each navItems as item}
-          <a
-            href={item.href}
-            class="mobile-nav-link"
-            class:active={currentPath === item.href}
-            on:click={closeMobileMenu}
-          >
-            {item.label}
-          </a>
+        {#each navStructure as item}
+          {#if item.type === 'link'}
+            <a
+              href={item.href}
+              class="mobile-nav-link"
+              class:active={currentPath === item.href}
+              on:click={closeMobileMenu}
+            >
+              {item.label}
+            </a>
+          {:else if item.type === 'dropdown'}
+            <!-- Section divider -->
+            <div class="mobile-nav-section">
+              <h3 class="mobile-nav-section-title">{item.label}</h3>
+              <div class="mobile-nav-section-items">
+                {#each item.items as dropdownItem}
+                  <a
+                    href={dropdownItem.href}
+                    class="mobile-nav-section-item"
+                    class:active={currentPath === dropdownItem.href}
+                    on:click={closeMobileMenu}
+                  >
+                    {dropdownItem.label}
+                  </a>
+                {/each}
+              </div>
+            </div>
+          {/if}
         {/each}
       </div>
     </div>
   {/if}
 </nav>
+
+<!-- Document click listener to close dropdowns when clicking outside -->
+<svelte:window on:click={handleDocumentClick} />
 
 <style>
   /* Static navbar */
@@ -168,6 +292,85 @@
   }
 
   .nav-link.active {
+    color: var(--color-accent);
+    background: rgba(0, 122, 255, 0.1);
+  }
+
+  /* Desktop dropdown styles */
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .nav-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+  }
+
+  .nav-dropdown-btn:hover,
+  .nav-dropdown-btn.active {
+    color: var(--color-text-primary);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .nav-dropdown.active .nav-dropdown-btn {
+    color: var(--color-accent);
+    background: rgba(0, 122, 255, 0.1);
+  }
+
+  .dropdown-arrow {
+    transition: transform 0.2s ease;
+    transform: rotate(180deg);
+  }
+
+  .dropdown-arrow.rotated {
+    transform: rotate(0deg);
+  }
+
+  .nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    z-index: 1001;
+  }
+
+  .nav-dropdown-item {
+    display: block;
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+  }
+
+  .nav-dropdown-item:hover {
+    color: var(--color-text-primary);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .nav-dropdown-item.active {
     color: var(--color-accent);
     background: rgba(0, 122, 255, 0.1);
   }
@@ -254,6 +457,54 @@
   }
 
   .mobile-nav-link.active {
+    color: var(--color-accent);
+    background: rgba(0, 122, 255, 0.1);
+  }
+
+  /* Mobile section styles */
+  .mobile-nav-section {
+    margin-bottom: 1rem;
+  }
+
+  .mobile-nav-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .mobile-nav-section-title {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    padding: 0.75rem 1.5rem 0.5rem 1.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-nav-section-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .mobile-nav-section-item {
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 0.75rem 1.5rem 0.75rem 2rem;
+    border-radius: 0.5rem;
+    transition: var(--transition-smooth);
+    margin: 0 0.75rem;
+  }
+
+  .mobile-nav-section-item:hover {
+    color: var(--color-text-primary);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .mobile-nav-section-item.active {
     color: var(--color-accent);
     background: rgba(0, 122, 255, 0.1);
   }

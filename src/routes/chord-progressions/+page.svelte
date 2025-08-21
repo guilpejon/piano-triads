@@ -555,12 +555,7 @@
     font-weight: 500;
   }
 
-  .progression-example {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    margin: 0;
-  }
+
 
   /* Current progression display */
   .current-progression-section {
