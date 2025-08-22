@@ -18,6 +18,7 @@
 
   // Common chord progressions with descriptions
   const chordProgressions = [
+    // Major key progressions
     {
       id: 'vi-IV-I-V',
       name: 'vi-IV-I-V',
@@ -25,6 +26,7 @@
       example: 'Used in countless hits like "Don\'t Stop Believin\'" and "Let It Be"',
       chords: ['Am', 'FM', 'CM', 'GM'], // In key of C major
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['vi', 'IV', 'I', 'V']
     },
     {
@@ -34,6 +36,7 @@
       example: 'Found in "Someone Like You" by Adele and many others',
       chords: ['CM', 'GM', 'Am', 'FM'],
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['I', 'V', 'vi', 'IV']
     },
     {
@@ -43,6 +46,7 @@
       example: 'Essential in jazz standards and sophisticated pop songs',
       chords: ['Dm', 'GM', 'CM'],
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['ii', 'V', 'I']
     },
     {
@@ -52,6 +56,7 @@
       example: 'Used in "Stand By Me" and "Blue Moon"',
       chords: ['CM', 'Am', 'Dm', 'GM'],
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['I', 'vi', 'ii', 'V']
     },
     {
@@ -61,6 +66,7 @@
       example: 'Found in folk, blues, and classical music',
       chords: ['CM', 'FM', 'GM', 'CM'],
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['I', 'IV', 'V', 'I']
     },
     {
@@ -70,7 +76,69 @@
       example: 'Common in jazz ballads and sophisticated pop',
       chords: ['Am', 'Dm', 'GM', 'CM'],
       key: 'C Major',
+      keyType: 'major',
       romanNumerals: ['vi', 'ii', 'V', 'I']
+    },
+    // Minor key progressions
+    {
+      id: 'i-VI-III-VII',
+      name: 'i-VI-III-VII',
+      description: 'Popular minor progression with emotional impact',
+      example: 'Common in emotional ballads and rock songs',
+      chords: ['Am', 'FM', 'CM', 'GM'], // In key of A minor
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'VI', 'III', 'VII']
+    },
+    {
+      id: 'i-v-iv-VII',
+      name: 'i-v-iv-VII',
+      description: 'Dark and moody minor progression',
+      example: 'Used in many alternative and indie songs',
+      chords: ['Am', 'Em', 'Dm', 'GM'],
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'v', 'iv', 'VII']
+    },
+    {
+      id: 'i-iv-V-i',
+      name: 'i-iv-V-i',
+      description: 'Classic minor cadence with major dominant',
+      example: 'Foundation of classical minor harmony',
+      chords: ['Am', 'Dm', 'EM', 'Am'],
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'iv', 'V', 'i']
+    },
+    {
+      id: 'i-VII-VI-VII',
+      name: 'i-VII-VI-VII',
+      description: 'Dramatic minor progression with strong resolution',
+      example: 'Popular in rock and metal music',
+      chords: ['Am', 'GM', 'FM', 'GM'],
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'VII', 'VI', 'VII']
+    },
+    {
+      id: 'i-VI-iv-V',
+      name: 'i-VI-iv-V',
+      description: 'Melancholic progression with plagal motion',
+      example: 'Common in ballads and emotional songs',
+      chords: ['Am', 'FM', 'Dm', 'EM'],
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'VI', 'iv', 'V']
+    },
+    {
+      id: 'i-ii°-V-i',
+      name: 'i-ii°-V-i',
+      description: 'Minor jazz progression with diminished chord',
+      example: 'Found in jazz standards and sophisticated harmonies',
+      chords: ['Am', 'Bm♭5', 'EM', 'Am'],
+      key: 'A Minor',
+      keyType: 'minor',
+      romanNumerals: ['i', 'ii°', 'V', 'i']
     }
   ];
 
@@ -78,33 +146,58 @@
   let currentProgression = chordProgressions[0];
   let currentChordIndex = 0;
   let currentKey = 'C'; // Default key
+  let currentKeyType = 'major'; // Default key type
   let isPlaying = false;
   let currentChordNotes: string[] = [];
   let progressionsLearned: Set<string> = new Set();
+  let transposedChord: string;
 
   // Available keys for transposition
-  const availableKeys = [
-    'C',
-    'C#',
-    'Db',
-    'D',
-    'D#',
-    'Eb',
-    'E',
-    'F',
-    'F#',
-    'Gb',
-    'G',
-    'G#',
-    'Ab',
-    'A',
-    'A#',
-    'Bb',
-    'B'
+  const availableKeys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const availableModes = [
+    { value: 'major', label: 'Major' },
+    { value: 'minor', label: 'Minor' }
   ];
 
   // Chromatic notes for transposition
   const chromaticNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  // Function to generate all scale chords for a key
+  function getScaleChords(key: string, keyType: string) {
+    const scalePatterns = {
+      major: ['M', 'm', 'm', 'M', 'M', 'm', 'dim'],
+      minor: ['m', 'dim', 'M', 'm', 'm', 'M', 'M']
+    };
+    
+    const romanNumerals = {
+      major: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'],
+      minor: ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII']
+    };
+
+    const keyIndex = chromaticNotes.indexOf(key);
+    const pattern = scalePatterns[keyType as keyof typeof scalePatterns];
+    const numerals = romanNumerals[keyType as keyof typeof romanNumerals];
+    
+    // Scale intervals from the root
+    const scaleIntervals = keyType === 'major' 
+      ? [0, 2, 4, 5, 7, 9, 11] // Major scale intervals
+      : [0, 2, 3, 5, 7, 8, 10]; // Natural minor scale intervals
+    
+    return scaleIntervals.map((interval, index) => {
+      const chordRootIndex = (keyIndex + interval) % 12;
+      const chordRoot = chromaticNotes[chordRootIndex];
+      const chordType = pattern[index];
+      
+      return {
+        roman: numerals[index],
+        chord: chordRoot + (chordType === 'M' ? 'M' : chordType === 'm' ? 'm' : chordType === 'dim' ? 'dim' : ''),
+        degree: index + 1
+      };
+    });
+  }
+
+  // Reactive scale chords
+  $: scaleChords = getScaleChords(currentKey, currentKeyType);
 
   // Function to transpose a chord to a new key
   function transposeChord(originalChord: string, fromKey: string, toKey: string): string {
@@ -134,26 +227,34 @@
   }
 
   // Function to get transposed progressions
-  function getTransposedProgressions(key: string) {
-    return chordProgressions.map((progression) => ({
-      ...progression,
-      chords: progression.chords.map((chord) => transposeChord(chord, 'C', key)),
-      key: `${key} Major`
-    }));
+  function getTransposedProgressions(key: string, keyType: string) {
+    return chordProgressions
+      .filter(progression => progression.keyType === keyType)
+      .map((progression) => {
+        const baseKey = progression.keyType === 'major' ? 'C' : 'A';
+        return {
+          ...progression,
+          chords: progression.chords.map((chord) => transposeChord(chord, baseKey, key)),
+          key: `${key} ${keyType.charAt(0).toUpperCase() + keyType.slice(1)}`
+        };
+      });
   }
 
   // Reactive transposed progressions for display
-  $: transposedProgressions = getTransposedProgressions(currentKey);
+  $: transposedProgressions = getTransposedProgressions(currentKey, currentKeyType);
 
   // Reactive chord display with transposition
-  $: transposedChord = transposeChord(
-    currentProgression.chords[currentChordIndex],
-    'C',
-    currentKey
-  );
+  $: {
+    const baseKey = currentProgression.keyType === 'major' ? 'C' : 'A';
+    transposedChord = transposeChord(
+      currentProgression.chords[currentChordIndex],
+      baseKey,
+      currentKey
+    );
+  }
   $: currentChord = transposedChord;
   $: currentRomanNumeral = currentProgression.romanNumerals[currentChordIndex];
-  $: currentKeyDisplay = currentKey === 'C' ? 'C Major' : `${currentKey} Major`;
+  $: currentKeyDisplay = `${currentKey} ${currentKeyType.charAt(0).toUpperCase() + currentKeyType.slice(1)}`;
 
   // Reactive chord notes update
   $: {
@@ -189,8 +290,20 @@
   }
 
   // Function to change key
-  function changeKey(newKey: string) {
-    currentKey = newKey;
+  function changeKey(key: string) {
+    currentKey = key;
+    // Reactive statements will handle chord updates
+  }
+
+  // Function to change mode (major/minor)
+  function changeMode(mode: string) {
+    currentKeyType = mode;
+    // Filter progressions to match the new key type
+    const availableProgressions = chordProgressions.filter(p => p.keyType === currentKeyType);
+    if (availableProgressions.length > 0 && currentProgression.keyType !== currentKeyType) {
+      // Switch to the first progression of the new key type
+      selectProgression(availableProgressions[0]);
+    }
     // Reactive statements will handle chord updates
   }
 
@@ -267,7 +380,8 @@
       currentChordIndex = i;
 
       // Get transposed chord for current key
-      const transposedChordName = transposeChord(currentProgression.chords[i], 'C', currentKey);
+      const baseKey = currentProgression.keyType === 'major' ? 'C' : 'A';
+      const transposedChordName = transposeChord(currentProgression.chords[i], baseKey, currentKey);
       const chordData = getChord(transposedChordName);
       if (chordData) {
         playChord(chordData.root_position);
@@ -306,6 +420,9 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
+    
+    // Initialize key type to match first progression
+    currentKeyType = currentProgression.keyType;
 
     // Initialize first chord
     setTimeout(() => {
@@ -343,30 +460,54 @@
       </div>
     </header>
 
-    <!-- Progression Selection -->
-    <section class="progressions-section">
-      <div class="progressions-container">
-        <div class="progressions-grid">
-          {#each transposedProgressions as progression, progressionIndex}
-            <button
-              class="progression-card"
-              class:active={currentProgression.id === progression.id}
-              on:click={() => selectProgression(chordProgressions[progressionIndex])}
-            >
-              <div class="progression-header">
-                <h3 class="progression-name">{progression.name}</h3>
-                <div class="progression-key">{progression.key}</div>
-              </div>
-              <div class="progression-chords">
-                {#each progression.chords as chord, index}
-                  <span class="chord-badge">
-                    {chord}
-                    <span class="roman-numeral">{progression.romanNumerals[index]}</span>
-                  </span>
+    <!-- Scale Chords Display -->
+    <section class="scale-chords-section">
+      <div class="scale-chords-container">
+        <h3 class="scale-chords-title">All Chords in {currentKeyDisplay}</h3>
+
+                      <div class="key-mode-selectors">
+            <div class="key-selector-container">
+              <label for="key-select" class="key-label">Key:</label>
+              <select 
+                id="key-select" 
+                class="key-select" 
+                bind:value={currentKey}
+                on:change={(e) => changeKey((e.target as HTMLSelectElement).value)}
+              >
+                {#each availableKeys as key}
+                  <option value={key}>{key}</option>
                 {/each}
-              </div>
-              <p class="progression-description">{progression.description}</p>
-              <!-- <p class="progression-example">{progression.example}</p> -->
+              </select>
+            </div>
+            <div class="mode-selector-container">
+              <label for="mode-select" class="mode-label">Mode:</label>
+              <select 
+                id="mode-select" 
+                class="mode-select" 
+                bind:value={currentKeyType}
+                on:change={(e) => changeMode((e.target as HTMLSelectElement).value)}
+              >
+                {#each availableModes as mode}
+                  <option value={mode.value}>{mode.label}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+        <div class="scale-chords-grid">
+          {#each scaleChords as scaleChord}
+            <button 
+              class="scale-chord-card"
+              on:click={() => {
+                const chordData = getChord(scaleChord.chord);
+                if (chordData) {
+                  currentChordNotes = chordData.root_position;
+                  updatePianoDisplay();
+                  playChord(chordData.root_position);
+                }
+              }}
+            >
+              <div class="scale-chord-roman">{scaleChord.roman}</div>
+              <div class="scale-chord-name">{scaleChord.chord}</div>
             </button>
           {/each}
         </div>
@@ -378,11 +519,18 @@
       <div class="current-progression-container">
         <div class="progression-info">
           <h2 class="current-progression-title">{currentProgression.name}</h2>
-          <div class="key-selector-container">
-            <label for="key-select" class="key-label">Key:</label>
-            <select id="key-select" class="key-select" bind:value={currentKey}>
-              {#each availableKeys as key}
-                <option value={key}>{key} Major</option>
+          <p class="progression-description">{currentProgression.description}</p>
+          <div class="progression-selector-container">
+            <label for="progression-select" class="progression-label">Progression:</label>
+            <select 
+              id="progression-select" 
+              class="progression-select"
+              bind:value={currentProgression}
+            >
+              {#each transposedProgressions as progression, progressionIndex}
+                <option value={chordProgressions.filter(p => p.keyType === currentKeyType)[progressionIndex]}>
+                  {progression.name}
+                </option>
               {/each}
             </select>
           </div>
@@ -457,101 +605,6 @@
     padding: 2rem 0;
   }
 
-  /* Progressions selection */
-  .progressions-section {
-    padding-bottom: 3rem;
-  }
-
-  .progressions-container {
-    max-width: 72rem;
-    margin: 0 auto;
-  }
-
-  .progressions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .progression-card {
-    background: rgba(255, 255, 255, 0.9);
-    border: 2px solid var(--color-border-light);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    text-align: left;
-    backdrop-filter: blur(20px);
-  }
-
-  .progression-card:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .progression-card.active {
-    border-color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.05);
-    box-shadow: var(--shadow-md);
-  }
-
-  .progression-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  .progression-name {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-
-  .progression-key {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    background: rgba(0, 0, 0, 0.05);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-  }
-
-  .progression-chords {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .chord-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: var(--gradient-blue);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    min-width: 3rem;
-  }
-
-  .roman-numeral {
-    font-size: 0.75rem;
-    opacity: 0.8;
-    margin-top: 0.125rem;
-  }
-
-  .progression-description {
-    font-size: 0.95rem;
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-
 
 
   /* Current progression display */
@@ -581,21 +634,43 @@
     margin-bottom: 0.5rem;
   }
 
-  .key-selector-container {
+  .progression-description {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+  }
+
+  .key-mode-selectors {
     display: flex;
+    gap: 1.5rem;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    margin-bottom: 2rem;
   }
 
-  .key-label {
-    font-size: 1rem;
+  .key-selector-container,
+  .mode-selector-container,
+  .progression-selector-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .key-label,
+  .mode-label,
+  .progression-label {
+    font-size: 0.875rem;
     color: var(--color-text-secondary);
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  .key-select {
+  .key-select,
+  .mode-select,
+  .progression-select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -615,22 +690,39 @@
     background-repeat: no-repeat;
     background-position: right 8px center;
     background-size: 16px;
-    min-width: 120px;
   }
 
-  .key-select:hover {
+  .key-select {
+    width: 70px;
+  }
+  
+  .mode-select {
+    width: 90px;
+  }
+  
+  .progression-select {
+    width: 130px;
+  }
+  
+  .key-select:hover,
+  .mode-select:hover,
+  .progression-select:hover {
     border-color: var(--color-border-strong);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
   }
 
-  .key-select:focus {
+  .key-select:focus,
+  .mode-select:focus,
+  .progression-select:focus {
     border-color: var(--color-accent);
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     transform: translateY(-1px);
   }
 
-  .key-select option {
+  .key-select option,
+  .mode-select option,
+  .progression-select option {
     font-weight: 400;
     padding: 0.5rem 0.75rem;
     color: var(--color-text-primary);
@@ -738,6 +830,68 @@
     cursor: not-allowed;
   }
 
+  /* Scale chords section */
+  .scale-chords-section {
+    padding-bottom: 3rem;
+  }
+
+  .scale-chords-container {
+    max-width: 48rem;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border-light);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .scale-chords-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  .scale-chords-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+  }
+
+  .scale-chord-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid var(--color-border-light);
+    border-radius: 1rem;
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+  }
+
+  .scale-chord-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: rgba(0, 122, 255, 0.05);
+  }
+
+  .scale-chord-roman {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    margin-bottom: 0.25rem;
+  }
+
+  .scale-chord-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
   /* Piano section */
   .piano-section {
     padding-bottom: 3rem;
@@ -782,27 +936,43 @@
       padding: 1rem 0;
     }
 
-    .progressions-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .progression-card {
-      padding: 1.25rem;
-    }
-
     .current-progression-container {
       margin: 0 1rem;
       padding: 1.5rem;
     }
 
-    .key-selector-container {
+    .key-mode-selectors {
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
     }
 
     .key-select {
-      min-width: 140px;
+      width: 100px;
+    }
+    
+    .mode-select {
+      width: 100px;
+    }
+    
+    .progression-select {
+      min-width: 130px;
+    }
+
+    .key-selector-container,
+    .mode-selector-container,
+    .progression-selector-container {
+      align-items: center;
+    }
+
+    .scale-chords-container {
+      margin: 0 1rem;
+      padding: 1.5rem;
+    }
+
+    .scale-chords-grid {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 
     .chord-navigation {
@@ -833,11 +1003,12 @@
   }
 
   @media (max-width: 480px) {
-    .progressions-section {
-      padding-bottom: 0;
-    }
     .current-progression-title {
       font-size: 1.5rem;
+    }
+
+    .progression-description {
+      font-size: 1rem;
     }
 
     .chord-name {
@@ -848,19 +1019,27 @@
       font-size: 1rem;
     }
 
-    .progression-chords {
-      justify-content: center;
-    }
-
-    .chord-badge {
-      min-width: 2.5rem;
-      padding: 0.375rem 0.5rem;
-    }
-
     .nav-button {
       width: 2.5rem;
       height: 2.5rem;
     }
+    
+    .scale-chords-grid {
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    }
+    
+    .scale-chord-card {
+      padding: 0.75rem 0.25rem;
+    }
+    
+    .scale-chord-roman {
+      font-size: 1rem;
+    }
+    
+    .scale-chord-name {
+      font-size: 0.875rem;
+    }
+    
     .piano-section {
       padding-bottom: 0;
     }

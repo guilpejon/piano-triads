@@ -22,6 +22,11 @@ function initializeChordDictionary() {
     first_inversion: ['Eb3', 'Gb3', 'C4'],
     second_inversion: ['Gb3', 'C4', 'Eb4']
   });
+  chordDictionary.set('Cm♭5', {
+    root_position: ['C3', 'Eb3', 'Gb3'],
+    first_inversion: ['Eb3', 'Gb3', 'C4'],
+    second_inversion: ['Gb3', 'C4', 'Eb4']
+  });
   chordDictionary.set('C9', { root_position: ['C3', 'E3', 'G3', 'Bb3', 'D4'] });
   chordDictionary.set('C11', { root_position: ['C3', 'E3', 'G3', 'Bb3', 'D4', 'F4'] });
   chordDictionary.set('Csus4', {
@@ -144,6 +149,11 @@ function initializeChordDictionary() {
     second_inversion: ['A3', 'D4', 'F#4']
   });
   chordDictionary.set('Ddim', {
+    root_position: ['D3', 'F3', 'Ab3'],
+    first_inversion: ['F3', 'Ab3', 'D4'],
+    second_inversion: ['Ab3', 'D4', 'F4']
+  });
+  chordDictionary.set('Dm♭5', {
     root_position: ['D3', 'F3', 'Ab3'],
     first_inversion: ['F3', 'Ab3', 'D4'],
     second_inversion: ['Ab3', 'D4', 'F4']
@@ -274,6 +284,11 @@ function initializeChordDictionary() {
     first_inversion: ['G3', 'Bb3', 'E4'],
     second_inversion: ['Bb3', 'E4', 'G4']
   });
+  chordDictionary.set('Em♭5', {
+    root_position: ['E3', 'G3', 'Bb3'],
+    first_inversion: ['G3', 'Bb3', 'E4'],
+    second_inversion: ['Bb3', 'E4', 'G4']
+  });
   chordDictionary.set('E9', { root_position: ['E3', 'G#3', 'B3', 'D4', 'F#4'] });
   chordDictionary.set('E11', { root_position: ['E3', 'G#3', 'B3', 'D4', 'F#4', 'A4'] });
   chordDictionary.set('Esus4', {
@@ -312,6 +327,11 @@ function initializeChordDictionary() {
     second_inversion: ['C4', 'F4', 'A4']
   });
   chordDictionary.set('Fdim', {
+    root_position: ['F3', 'Ab3', 'B3'],
+    first_inversion: ['Ab3', 'B3', 'F4'],
+    second_inversion: ['B3', 'F4', 'Ab4']
+  });
+  chordDictionary.set('Fm♭5', {
     root_position: ['F3', 'Ab3', 'B3'],
     first_inversion: ['Ab3', 'B3', 'F4'],
     second_inversion: ['B3', 'F4', 'Ab4']
@@ -442,6 +462,11 @@ function initializeChordDictionary() {
     first_inversion: ['Bb3', 'Db4', 'G4'],
     second_inversion: ['Db4', 'G4', 'Bb4']
   });
+  chordDictionary.set('Gm♭5', {
+    root_position: ['G3', 'Bb3', 'Db4'],
+    first_inversion: ['Bb3', 'Db4', 'G4'],
+    second_inversion: ['Db4', 'G4', 'Bb4']
+  });
   chordDictionary.set('G9', { root_position: ['G3', 'B3', 'D4', 'F4', 'A4'] });
   chordDictionary.set('G11', { root_position: ['G3', 'B3', 'D4', 'F4', 'A4', 'C5'] });
   chordDictionary.set('Gsus4', {
@@ -568,6 +593,11 @@ function initializeChordDictionary() {
     first_inversion: ['C4', 'Eb4', 'A4'],
     second_inversion: ['Eb4', 'A4', 'C5']
   });
+  chordDictionary.set('Am♭5', {
+    root_position: ['A3', 'C4', 'Eb4'],
+    first_inversion: ['C4', 'Eb4', 'A4'],
+    second_inversion: ['Eb4', 'A4', 'C5']
+  });
   chordDictionary.set('A9', { root_position: ['A3', 'C#4', 'E4', 'G4', 'B4'] });
   chordDictionary.set('A11', { root_position: ['A3', 'C#4', 'E4', 'G4', 'B4', 'D5'] });
   chordDictionary.set('Asus4', {
@@ -690,6 +720,11 @@ function initializeChordDictionary() {
     second_inversion: ['F#4', 'B4', 'D#5']
   });
   chordDictionary.set('Bdim', {
+    root_position: ['B3', 'D4', 'F4'],
+    first_inversion: ['D4', 'F4', 'B4'],
+    second_inversion: ['F4', 'B4', 'D5']
+  });
+  chordDictionary.set('Bm♭5', {
     root_position: ['B3', 'D4', 'F4'],
     first_inversion: ['D4', 'F4', 'B4'],
     second_inversion: ['F4', 'B4', 'D5']
