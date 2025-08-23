@@ -27,9 +27,11 @@
   <meta property="og:type" content={seoData.og?.type || 'website'} />
   <meta property="og:url" content={seoData.og?.url || seoData.canonical} />
   <meta property="og:image" content={seoData.og?.image || SHARED_OG_META.image.url} />
+  <meta property="og:image:secure_url" content={seoData.og?.image || SHARED_OG_META.image.url} />
+  <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content={SHARED_OG_META.image.width} />
   <meta property="og:image:height" content={SHARED_OG_META.image.height} />
-  <meta property="og:image:alt" content={seoData.og?.imageAlt || SHARED_OG_META.image.url} />
+  <meta property="og:image:alt" content={seoData.og?.imageAlt || 'Piano Triads - Interactive Piano Learning Platform'} />
   <meta property="og:site_name" content={SHARED_OG_META.site_name} />
   <meta property="og:locale" content={SHARED_OG_META.locale} />
 
