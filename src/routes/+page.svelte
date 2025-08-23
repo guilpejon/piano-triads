@@ -532,42 +532,8 @@
     }
   }
 
-  @media (max-width: 480px) {
-    .feature-card {
-      padding: 1.25rem;
-    }
-
-    .card-icon {
-      width: 3rem;
-      height: 3rem;
-    }
-
-    .card-title {
-      font-size: 1.125rem;
-    }
-
-    .card-description {
-      font-size: 0.875rem;
-    }
-
-    .progress-section {
-      margin-top: 2rem;
-      padding: 2rem 1rem;
-    }
-
-    .progress-card {
-      max-width: none;
-      padding: 1.5rem;
-    }
-
-    .progress-card .card-title {
-      font-size: 1.25rem;
-    }
-  }
-
-  /* Progress Section */
   .progress-section {
-    margin-top: 4rem;
+    margin-top: 1rem;
     padding: 3rem 0;
     background: linear-gradient(135deg, rgba(52, 128, 241, 0.03) 0%, rgba(175, 82, 222, 0.03) 100%);
     border-radius: 24px;
@@ -655,8 +621,34 @@
   }
 
   @media (max-width: 480px) {
+    .feature-card {
+      padding: 1.25rem;
+    }
+
+    .card-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+    }
+
+    .card-description {
+      font-size: 0.875rem;
+    }
+
     .progress-section {
       padding: 1.5rem 0.5rem;
+    }
+
+    .progress-card {
+      max-width: none;
+      padding: 1.5rem;
+    }
+
+    .progress-card .card-title {
+      font-size: 1.25rem;
     }
 
     .progress-card {
@@ -674,6 +666,10 @@
 
     .progress-card .card-title {
       font-size: 1.125rem;
+    }
+
+    .features-section {
+      padding-bottom: 2rem;
     }
   }
 </style>

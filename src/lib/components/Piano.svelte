@@ -1,15 +1,38 @@
 <script lang="ts">
-  import { playNote } from '$lib/utils/audioUtils';
+  import { playNote, setAudioKeyRange } from '$lib/utils/audioUtils';
   import { onMount, afterUpdate, onDestroy } from 'svelte';
 
   // Props to control which enharmonic notation to show
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
   export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
   export let stickyOnMobile: boolean = false; // Enable sticky positioning on mobile devices
-  export let showOctaveMarkers: boolean = false; // Show C3 and C4 octave reference markers
+  export let showOctaveMarkers: boolean = false; // Show octave reference markers
+  export let keyRange: 'standard' | 'extended' = 'standard'; // Control piano key range: standard (C3-B4) or extended (C2-C6)
 
-  // Keyboard mapping for piano keys
-  const keyboardMapping: { [key: string]: string } = {
+  // Keyboard mapping for piano keys (conditional based on keyRange)
+  $: keyboardMapping = (keyRange === 'extended' ? {
+    // Extended range (C2-C6) keyboard mapping
+    // White keys (C2-B2) mapped to number row: 1 2 3 4 5 6 7
+    '1': 'C2', '2': 'D2', '3': 'E2', '4': 'F2', '5': 'G2', '6': 'A2', '7': 'B2',
+    
+    // White keys (C3-B4) mapped to bottom row: A S D F G H J K L ; Z X C V
+    'a': 'C3', 's': 'D3', 'd': 'E3', 'f': 'F3', 'g': 'G3', 'h': 'A3', 'j': 'B3',
+    'k': 'C4', 'l': 'D4', ';': 'E4', 'z': 'F4', 'x': 'G4', 'c': 'A4', 'v': 'B4',
+    
+    // White keys (C5-C6) mapped to additional keys: N M , . / [ ]
+    'n': 'C5', 'm': 'D5', ',': 'E5', '.': 'F5', '/': 'G5', '[': 'A5', ']': 'B5', '\\': 'C6',
+    
+    // Black keys (C#2-A#2) mapped to function keys and symbols: ! @ # $ %
+    '!': 'C#2/Db2', '@': 'D#2/Eb2', '$': 'F#2/Gb2', '%': 'G#2/Ab2', '^': 'A#2/Bb2',
+    
+    // Black keys (C#3-A#4) mapped to top row: Q W E R T Y U I O P
+    'q': 'C#3/Db3', 'w': 'D#3/Eb3', 'e': 'F#3/Gb3', 'r': 'G#3/Ab3', 't': 'A#3/Bb3',
+    'y': 'C#4/Db4', 'u': 'D#4/Eb4', 'i': 'F#4/Gb4', 'o': 'G#4/Ab4', 'p': 'A#4/Bb4',
+    
+    // Black keys (C#5-A#5) mapped to remaining keys: - = ; ' (shift+chars)
+    '-': 'C#5/Db5', '=': 'D#5/Eb5', "'": 'F#5/Gb5', '8': 'G#5/Ab5', '9': 'A#5/Bb5'
+  } : {
+    // Standard range (C3-B4) keyboard mapping - original mapping
     // White keys (C3-B4) mapped to bottom row: A S D F G H J K L ; Z X C V
     'a': 'C3', 's': 'D3', 'd': 'E3', 'f': 'F3', 'g': 'G3', 'h': 'A3', 'j': 'B3',
     'k': 'C4', 'l': 'D4', ';': 'E4', 'z': 'F4', 'x': 'G4', 'c': 'A4', 'v': 'B4',
@@ -17,10 +40,15 @@
     // Black keys (C#3-A#4) mapped to top row: Q W E R T Y U I O P
     'q': 'C#3/Db3', 'w': 'D#3/Eb3', 'e': 'F#3/Gb3', 'r': 'G#3/Ab3', 't': 'A#3/Bb3',
     'y': 'C#4/Db4', 'u': 'D#4/Eb4', 'i': 'F#4/Gb4', 'o': 'G#4/Ab4', 'p': 'A#4/Bb4'
-  };
+  }) as { [key: string]: string };
 
   let activeKeys = new Set<string>(); // Track currently pressed keys for visual feedback
   let showKeyboardHelp = false; // Toggle for keyboard mapping help
+
+  // Update audio system when keyRange changes
+  $: {
+    setAudioKeyRange(keyRange);
+  }
 
   // Handle key press (click or keyboard)
   function handleKeyPress(event: Event): void {
@@ -52,7 +80,7 @@
     }
 
     const key = event.key.toLowerCase();
-    const noteData = keyboardMapping[key];
+    const noteData = keyboardMapping[key] as string | undefined;
     
     if (noteData && !activeKeys.has(key)) {
       event.preventDefault();
@@ -70,7 +98,7 @@
 
   function handleGlobalKeyUp(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
-    const noteData = keyboardMapping[key];
+    const noteData = keyboardMapping[key] as string | undefined;
     
     if (noteData && activeKeys.has(key)) {
       activeKeys.delete(key);
@@ -214,7 +242,132 @@
   });
 </script>
 
-<div class="piano" class:sticky-mobile={stickyOnMobile}>
+<div class="piano" class:sticky-mobile={stickyOnMobile} class:extended={keyRange === 'extended'}>
+  {#if keyRange === 'extended'}
+  <!-- Octave 2 -->
+  <button
+    class="key white c"
+    data-note="C2"
+    aria-label="Piano key C"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note C">C</p>
+    {#if showOctaveMarkers}
+      <span class="octave-marker">C2</span>
+    {/if}
+  </button>
+  <button
+    class="key black cs"
+    data-note="C#2/Db2"
+    aria-label="Piano key C#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('C#', 'Db')}">
+      {getPreferredNotation('C#', 'Db')}
+    </p>
+  </button>
+  <button
+    class="key white d"
+    data-note="D2"
+    aria-label="Piano key D"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note D">D</p>
+  </button>
+  <button
+    class="key black ds"
+    data-note="D#2/Eb2"
+    aria-label="Piano key D#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('D#', 'Eb')}">
+      {getPreferredNotation('D#', 'Eb')}
+    </p>
+  </button>
+  <button
+    class="key white e"
+    data-note="E2"
+    aria-label="Piano key E"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note E">E</p>
+  </button>
+  <button
+    class="key white f"
+    data-note="F2"
+    aria-label="Piano key F"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note F">F</p>
+  </button>
+  <button
+    class="key black fs"
+    data-note="F#2/Gb2"
+    aria-label="Piano key F#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('F#', 'Gb')}">
+      {getPreferredNotation('F#', 'Gb')}
+    </p>
+  </button>
+  <button
+    class="key white g"
+    data-note="G2"
+    aria-label="Piano key G"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note G">G</p>
+  </button>
+  <button
+    class="key black gs"
+    data-note="G#2/Ab2"
+    aria-label="Piano key G#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('G#', 'Ab')}">
+      {getPreferredNotation('G#', 'Ab')}
+    </p>
+  </button>
+  <button
+    class="key white a"
+    data-note="A2"
+    aria-label="Piano key A"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note A">A</p>
+  </button>
+  <button
+    class="key black as"
+    data-note="A#2/Bb2"
+    aria-label="Piano key A#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('A#', 'Bb')}">
+      {getPreferredNotation('A#', 'Bb')}
+    </p>
+  </button>
+  <button
+    class="key white b"
+    data-note="B2"
+    aria-label="Piano key B"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note B">B</p>
+  </button>
+  {/if}
+
   <!-- Octave 3 -->
   <button
     class="key white c"
@@ -460,6 +613,145 @@
   >
     <p class="note" aria-label="Note B">B</p>
   </button>
+
+  {#if keyRange === 'extended'}
+  <!-- Octave 5 -->
+  <button
+    class="key white c"
+    data-note="C5"
+    aria-label="Piano key C"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note C">C</p>
+    {#if showOctaveMarkers}
+      <span class="octave-marker">C5</span>
+    {/if}
+  </button>
+  <button
+    class="key black cs"
+    data-note="C#5/Db5"
+    aria-label="Piano key C#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('C#', 'Db')}">
+      {getPreferredNotation('C#', 'Db')}
+    </p>
+  </button>
+  <button
+    class="key white d"
+    data-note="D5"
+    aria-label="Piano key D"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note D">D</p>
+  </button>
+  <button
+    class="key black ds"
+    data-note="D#5/Eb5"
+    aria-label="Piano key D#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('D#', 'Eb')}">
+      {getPreferredNotation('D#', 'Eb')}
+    </p>
+  </button>
+  <button
+    class="key white e"
+    data-note="E5"
+    aria-label="Piano key E"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note E">E</p>
+  </button>
+  <button
+    class="key white f"
+    data-note="F5"
+    aria-label="Piano key F"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note F">F</p>
+  </button>
+  <button
+    class="key black fs"
+    data-note="F#5/Gb5"
+    aria-label="Piano key F#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('F#', 'Gb')}">
+      {getPreferredNotation('F#', 'Gb')}
+    </p>
+  </button>
+  <button
+    class="key white g"
+    data-note="G5"
+    aria-label="Piano key G"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note G">G</p>
+  </button>
+  <button
+    class="key black gs"
+    data-note="G#5/Ab5"
+    aria-label="Piano key G#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('G#', 'Ab')}">
+      {getPreferredNotation('G#', 'Ab')}
+    </p>
+  </button>
+  <button
+    class="key white a"
+    data-note="A5"
+    aria-label="Piano key A"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note A">A</p>
+  </button>
+  <button
+    class="key black as"
+    data-note="A#5/Bb5"
+    aria-label="Piano key A#"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note {getPreferredNotation('A#', 'Bb')}">
+      {getPreferredNotation('A#', 'Bb')}
+    </p>
+  </button>
+  <button
+    class="key white b"
+    data-note="B5"
+    aria-label="Piano key B"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note B">B</p>
+  </button>
+
+  <!-- C6 -->
+  <button
+    class="key white c"
+    data-note="C6"
+    aria-label="Piano key C"
+    on:click={handleKeyPress}
+    on:keydown={handleKeyDown}
+  >
+    <p class="note" aria-label="Note C">C</p>
+    {#if showOctaveMarkers}
+      <span class="octave-marker">C6</span>
+    {/if}
+  </button>
+  {/if}
 </div>
 
 <style>
@@ -478,7 +770,7 @@
 
   .piano {
     height: 18.875em;
-    width: 62.2em;
+    width: 62.2em; /* Standard width for C3-B4 range (24 keys) */
     margin: auto;
     padding: 3em 0 0 3em;
     position: relative;
@@ -492,6 +784,14 @@
     display: flex;
   }
 
+  .piano.extended {
+    width: 122.5em; /* Extended width for C2-C6 range (49 keys) */
+    overflow-x: auto; /* Always show horizontal scrollbar when needed */
+    overflow-y: hidden;
+    /* Ensure scrollbar is always visible on mobile */
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
   .key {
     margin: 0;
     padding: 0;
@@ -760,17 +1060,28 @@
 
   @media (max-width: 1100px) {
     .piano {
+      height: 19.9em;
       width: 100%;
       overflow-x: auto;
-      display: flex;
-      flex-wrap: wrap;
-      flex-direction: column;
-      padding: 3em 0 0 0em;
       overflow-y: hidden;
+      display: flex;
+      padding: 3em 0 0 3em;
+      /* Ensure smooth scrolling */
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
     }
 
+    .piano.extended {
+      width: auto;
+      padding-right: 3em;
+    }
     .key.white {
       width: 4.6rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
+    }
+
+    .key.black {
+      flex-shrink: 0; /* Prevent keys from shrinking */
     }
 
     .key.white p.note {
@@ -781,6 +1092,10 @@
   @media (min-width: 950px) and (max-width: 1100px) {
     .key.white {
       width: 4.6rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
+    }
+    .key.black {
+      flex-shrink: 0; /* Prevent keys from shrinking */
     }
   }
   @media (max-width: 600px) {
@@ -790,15 +1105,26 @@
       padding: 0;
       border: none;
       height: 16rem;
+      display: flex; /* Ensure flexbox layout is maintained */
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
 
-      .key.white {
-        height: 14rem;
-        width: 3.6rem;
-        p.note {
-          margin-left: 12px !important;
-          font-size: 22px;
-          bottom: 10px;
-        }
+    .piano.extended {
+      padding-right: 0;
+    }
+
+    .key.white {
+      height: 14rem;
+      width: 3.6rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
+      
+      p.note {
+        margin-left: 12px !important;
+        font-size: 22px;
+        bottom: 10px;
       }
     }
 
@@ -809,6 +1135,7 @@
     .key.black {
       width: 1.9rem;
       height: 8rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
 
       p.note {
         font-size: 19px;
@@ -837,15 +1164,22 @@
       border-top: 2px solid var(--border-dark);
       border-radius: 0;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-      height: 13rem;
+      height: 13.9rem;
+      display: flex; /* Maintain flexbox */
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
     }
 
     .piano.sticky-mobile .key.white {
       height: 13rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
     }
 
     .piano.sticky-mobile .key.black {
       height: 7.5rem;
+      flex-shrink: 0; /* Prevent keys from shrinking */
     }
 
     /* Add body padding when sticky piano is present */

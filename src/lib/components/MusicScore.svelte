@@ -112,19 +112,31 @@
     }
 
     // For bass clef: G2 is on the bottom line (position 0)
-    // Staff positions: G2=0, A2=1, B2=2, C3=3, D3=4, E3=5, F3=6, G3=7, A3=8
+    // Staff positions: C2=-4, D2=-3, E2=-2, F2=-1, G2=0, A2=1, B2=2, C3=3, D3=4, E3=5, F3=6, G3=7, A3=8
     let bassPosition = 0;
     if (octave === 2) {
       switch (note) {
+        case 'C':
+          bassPosition = -4;
+          break; // Second ledger line below staff
+        case 'D':
+          bassPosition = -3;
+          break; // Space below first ledger line
+        case 'E':
+          bassPosition = -2;
+          break; // First ledger line below staff
+        case 'F':
+          bassPosition = -1;
+          break; // Space below bottom line
         case 'G':
           bassPosition = 0;
-          break;
+          break; // Bottom line of staff
         case 'A':
           bassPosition = 1;
-          break;
+          break; // First space
         case 'B':
           bassPosition = 2;
-          break;
+          break; // Second line
       }
     } else if (octave === 3) {
       switch (note) {
@@ -417,11 +429,14 @@
       <!-- Ledger Lines -->
       <div class="ledger-lines">
         {#each [...new Set(bassNotes.map(note => note.bass))] as uniquePosition}
-          {#if uniquePosition <= 0}
-            <!-- Below staff ledger lines -->
-            {#each Array(Math.ceil((1 - uniquePosition) / 2)) as _, i}
-              {#if 1 - uniquePosition >= (i + 1) * 2}
-                <div class="ledger-line" style="bottom: {-6 - i * 6}px; left: 100px; width: 30px;"></div>
+          {#if uniquePosition < 0}
+            <!-- Below staff ledger lines for C2(-4), D2(-3), E2(-2), F2(-1) -->
+            {#each Array(Math.ceil(Math.abs(uniquePosition) / 2)) as _, i}
+              {#if Math.abs(uniquePosition) > i * 2}
+                <div
+                  class="ledger-line"
+                  style="bottom: {-12 - i * 12}px; left: 155px; width: 30px;"
+                ></div>
               {/if}
             {/each}
           {/if}
@@ -429,7 +444,7 @@
             <!-- Above staff ledger lines -->
             {#each Array(Math.ceil((uniquePosition - 8) / 2)) as _, i}
               {#if uniquePosition >= 10 + i * 2}
-                <div class="ledger-line" style="bottom: {60 + i * 6}px; left: 100px; width: 30px;"></div>
+                <div class="ledger-line" style="bottom: {60 + i * 6}px; left: 155px; width: 30px;"></div>
               {/if}
             {/each}
           {/if}
@@ -483,7 +498,7 @@
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 2.5rem 1.5rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     max-width: 500px;
@@ -652,7 +667,7 @@
 
   @media (max-width: 480px) {
     .music-score {
-      padding: 1rem;
+      padding: 2rem 1rem;
     }
 
     @supports not (-webkit-overflow-scrolling: touch) {

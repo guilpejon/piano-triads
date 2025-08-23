@@ -245,7 +245,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={selectedNotes} showOctaveMarkers={true} stickyOnMobile={true} autoScrollToActiveKey={false} />
+        <Piano chordNotes={selectedNotes} showOctaveMarkers={true} stickyOnMobile={true} autoScrollToActiveKey={false} keyRange="extended" />
       </div>
     </section>
 
@@ -520,6 +520,12 @@
     max-width: 80rem;
     margin: 0 auto;
     padding: 0 1rem;
+  }
+
+  /* Allow extended piano to use full width and scroll */
+  .learn-music-reading-wrapper .piano-container {
+    max-width: 100%; /* Override for extended piano */
+    overflow-x: auto;
   }
 
 
