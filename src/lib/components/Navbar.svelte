@@ -38,7 +38,8 @@
       label: 'Practice',
       items: [
         { href: '/chord-practice', label: 'Chord Practice' },
-        { href: '/pitch-training', label: 'Ear Training' }
+        { href: '/pitch-training', label: 'Pitch Practice' },
+        { href: '/music-score-practice', label: 'Music Score Practice' }
       ]
     },
     {

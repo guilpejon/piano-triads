@@ -469,31 +469,6 @@
     background: var(--color-background);
   }
 
-  /* Chord highlighting styles */
-  :global(.key.chord-active) {
-    box-shadow:
-      0 0 20px rgba(0, 122, 255, 0.4),
-      0 4px 12px rgba(0, 122, 255, 0.3) !important;
-    border-color: var(--color-accent-hover) !important;
-  }
-
-  :global(.key.white.chord-active) {
-    background: var(--gradient-blue) !important;
-    transform: scaleY(0.99);
-    color: white;
-  }
-
-  :global(.key.black.chord-active) {
-    background: var(--gradient-blue) !important;
-    transform: translateY(-1px);
-  }
-
-  :global(.key.chord-active .note) {
-    /* Note: display is controlled by JavaScript for selective showing */
-    color: white !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
 
   /* Responsive Design */
   @media (max-width: 768px) {

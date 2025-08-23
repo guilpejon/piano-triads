@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: 'Piano Triads - Master Piano Chords & Scales',
         short_name: 'Piano Triads',
-        description: 'Master piano chords, scales, and ear training with interactive lessons and practice modes',
+        description: 'Master piano chords, scales, and pitch training with interactive lessons and practice modes',
         theme_color: '#3480f1',
         background_color: '#ffffff',
         display: 'standalone',
@@ -91,7 +91,7 @@ export default defineConfig({
             icons: [{ src: 'icons/icon-96x96.png', sizes: '96x96' }]
           },
           {
-            name: 'Pitch Training',
+            name: 'Pitch Practice',
             short_name: 'Pitch',
             description: 'Train your ear with pitch recognition',
             url: '/pitch-training',

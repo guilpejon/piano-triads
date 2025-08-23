@@ -492,7 +492,7 @@
     <!-- Header Section -->
     <header class="header-section">
       <div class="header-content">
-        <h1 class="main-title">Pitch Training</h1>
+        <h1 class="main-title">Pitch Practice</h1>
         <p class="page-description">
           {#if currentMode === 'note'}
             Identify the note by clicking its corresponding key
@@ -581,7 +581,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} stickyOnMobile={true} />
+        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} stickyOnMobile={true} showOctaveMarkers={true} />
       </div>
     </section>
 
@@ -1063,80 +1063,6 @@
     }
   }
 
-  /* Piano highlighting for pitch training */
-  :global(.key.practice-correct) {
-    box-shadow:
-      0 0 20px rgba(52, 128, 241, 0.4),
-      0 4px 12px rgba(52, 128, 241, 0.3) !important;
-    border-color: var(--color-accent-hover) !important;
-  }
-
-  :global(.key.white.practice-correct) {
-    background: var(--gradient-blue) !important;
-    transform: scaleY(0.99);
-    color: white;
-  }
-
-  :global(.key.black.practice-correct) {
-    background: var(--gradient-blue) !important;
-    transform: translateY(-1px);
-  }
-
-  :global(.key.practice-correct .note) {
-    color: white !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Failed practice styles (red) */
-  :global(.key.practice-failed) {
-    box-shadow:
-      0 0 20px rgba(239, 68, 68, 0.4),
-      0 4px 12px rgba(239, 68, 68, 0.3) !important;
-    border-color: #dc2626 !important;
-  }
-
-  :global(.key.white.practice-failed) {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-    transform: scaleY(0.99);
-    color: white;
-  }
-
-  :global(.key.black.practice-failed) {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-    transform: translateY(-1px);
-  }
-
-  :global(.key.practice-failed .note) {
-    color: white !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Success practice styles (green) */
-  :global(.key.practice-success) {
-    box-shadow:
-      0 0 20px rgba(34, 197, 94, 0.4),
-      0 4px 12px rgba(34, 197, 94, 0.3) !important;
-    border-color: #16a34a !important;
-  }
-
-  :global(.key.white.practice-success) {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
-    transform: scaleY(0.99);
-    color: white;
-  }
-
-  :global(.key.black.practice-success) {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
-    transform: translateY(-1px);
-  }
-
-  :global(.key.practice-success .note) {
-    color: white !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
 
   /* Blurred note display */
   .note-reveal {

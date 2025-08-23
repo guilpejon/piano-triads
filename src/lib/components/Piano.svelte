@@ -6,6 +6,7 @@
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
   export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
   export let stickyOnMobile: boolean = false; // Enable sticky positioning on mobile devices
+  export let showOctaveMarkers: boolean = false; // Show C3 and C4 octave reference markers
 
   // Keyboard mapping for piano keys
   const keyboardMapping: { [key: string]: string } = {
@@ -223,6 +224,9 @@
     on:keydown={handleKeyDown}
   >
     <p class="note" aria-label="Note C">C</p>
+    {#if showOctaveMarkers}
+      <span class="octave-marker">C3</span>
+    {/if}
   </button>
   <button
     class="key black cs"
@@ -343,6 +347,9 @@
     on:keydown={handleKeyDown}
   >
     <p class="note" aria-label="Note C">C</p>
+    {#if showOctaveMarkers}
+      <span class="octave-marker">C4</span>
+    {/if}
   </button>
   <button
     class="key black cs"
@@ -540,6 +547,128 @@
   :global(.key.black.keyboard-active) {
     background: linear-gradient(to bottom, #111 0%, #333 100%);
   }
+
+  /* Practice highlighting styles - used across practice pages */
+  :global(.key.practice-correct) {
+    box-shadow:
+      0 0 20px rgba(52, 128, 241, 0.4),
+      0 4px 12px rgba(52, 128, 241, 0.3) !important;
+    border-color: var(--color-accent-hover) !important;
+  }
+
+  :global(.key.white.practice-correct) {
+    background: var(--gradient-blue) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-correct) {
+    background: var(--gradient-blue) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-correct .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  :global(.key.practice-failed) {
+    box-shadow:
+      0 0 20px rgba(239, 68, 68, 0.4),
+      0 4px 12px rgba(239, 68, 68, 0.3) !important;
+    border-color: #dc2626 !important;
+  }
+
+  :global(.key.white.practice-failed) {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-failed) {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-failed .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  :global(.key.practice-success) {
+    box-shadow:
+      0 0 20px rgba(34, 197, 94, 0.4),
+      0 4px 12px rgba(34, 197, 94, 0.3) !important;
+    border-color: #16a34a !important;
+  }
+
+  :global(.key.white.practice-success) {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.practice-success) {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.practice-success .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Theory highlighting styles - used across theory pages */
+  :global(.key.chord-active) {
+    box-shadow:
+      0 0 20px rgba(0, 122, 255, 0.4),
+      0 4px 12px rgba(0, 122, 255, 0.3) !important;
+    border-color: var(--color-accent-hover) !important;
+  }
+
+  :global(.key.white.chord-active) {
+    background: var(--gradient-blue) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.chord-active) {
+    background: var(--gradient-blue) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.chord-active .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  :global(.key.scale-active) {
+    box-shadow:
+      0 0 20px rgba(0, 122, 255, 0.4),
+      0 4px 12px rgba(0, 122, 255, 0.3) !important;
+    border-color: var(--color-accent-hover) !important;
+  }
+
+  :global(.key.white.scale-active) {
+    background: var(--gradient-blue) !important;
+    transform: scaleY(0.99);
+    color: white;
+  }
+
+  :global(.key.black.scale-active) {
+    background: var(--gradient-blue) !important;
+    transform: translateY(-1px);
+  }
+
+  :global(.key.scale-active .note) {
+    color: white !important;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
   .g,
   .a,
   .b,
@@ -607,6 +736,15 @@
     color: var(--text-primary);
   }
 
+  .octave-marker {
+    position: absolute;
+    top: 8px;
+    transform: translateX(-75%);
+    color: var(--color-text-light, #a3a5a6);
+    pointer-events: none;
+    user-select: none;
+  }
+
   .piano .key:first-child {
     border-radius: 5px 0 5px 5px;
   }
@@ -657,6 +795,11 @@
           bottom: 10px;
         }
       }
+    }
+
+    /* Mobile octave markers */
+    .octave-marker {
+      font-size: 0.75rem;
     }
     .key.black {
       width: 1.9rem;

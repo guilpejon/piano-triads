@@ -18,16 +18,11 @@ export interface ModuleProgress {
     lastMode: 'note' | 'chord';
     lastPlayed: string;
   };
-  learnScales: {
-    scalesLearned: string[]; // Array of scale names learned
-    lastScale: string;
-    totalScalesPlayed: number;
-    lastPlayed: string;
-  };
-  chordDictionary: {
-    chordsViewed: string[]; // Array of chord names viewed
-    lastChord: string;
-    totalChordsViewed: number;
+  musicReading: {
+    trebleClef: SessionStats;
+    bassClef: SessionStats;
+    bothClef: SessionStats;
+    lastMode: 'treble' | 'bass' | 'both';
     lastPlayed: string;
   };
 }
@@ -84,16 +79,35 @@ export function getDefaultProgress(): UserProgress {
         lastMode: 'note',
         lastPlayed: now
       },
-      learnScales: {
-        scalesLearned: [],
-        lastScale: '',
-        totalScalesPlayed: 0,
-        lastPlayed: now
-      },
-      chordDictionary: {
-        chordsViewed: [],
-        lastChord: '',
-        totalChordsViewed: 0,
+      musicReading: {
+        trebleClef: {
+          totalRounds: 0,
+          successfulRounds: 0,
+          failedRounds: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          averageTime: 0,
+          lastPlayed: now
+        },
+        bassClef: {
+          totalRounds: 0,
+          successfulRounds: 0,
+          failedRounds: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          averageTime: 0,
+          lastPlayed: now
+        },
+        bothClef: {
+          totalRounds: 0,
+          successfulRounds: 0,
+          failedRounds: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          averageTime: 0,
+          lastPlayed: now
+        },
+        lastMode: 'both',
         lastPlayed: now
       }
     },
@@ -178,8 +192,8 @@ export function updateTotalPlayTime(
 // Complete practice session - updates both session stats and total play time
 export function completePracticeSession(
   progress: UserProgress,
-  module: 'chordPractice' | 'pitchTraining',
-  subModule: 'notes' | 'chords' | null,
+  module: 'chordPractice' | 'pitchTraining' | 'musicReading',
+  subModule: 'notes' | 'chords' | 'trebleClef' | 'bassClef' | 'bothClef' | null,
   wasSuccessful: boolean,
   timeSpentSeconds: number
 ): UserProgress {
@@ -212,40 +226,36 @@ export function completePracticeSession(
     }
     newProgress.modules.pitchTraining.lastMode = subModule === 'notes' ? 'note' : 'chord';
     newProgress.modules.pitchTraining.lastPlayed = new Date().toISOString();
+  } else if (module === 'musicReading' && subModule) {
+    if (subModule === 'trebleClef') {
+      newProgress.modules.musicReading.trebleClef = updateSessionStats(
+        newProgress.modules.musicReading.trebleClef,
+        wasSuccessful,
+        timeSpentSeconds
+      );
+      newProgress.modules.musicReading.lastMode = 'treble';
+    } else if (subModule === 'bassClef') {
+      newProgress.modules.musicReading.bassClef = updateSessionStats(
+        newProgress.modules.musicReading.bassClef,
+        wasSuccessful,
+        timeSpentSeconds
+      );
+      newProgress.modules.musicReading.lastMode = 'bass';
+    } else if (subModule === 'bothClef') {
+      newProgress.modules.musicReading.bothClef = updateSessionStats(
+        newProgress.modules.musicReading.bothClef,
+        wasSuccessful,
+        timeSpentSeconds
+      );
+      newProgress.modules.musicReading.lastMode = 'both';
+    }
+    newProgress.modules.musicReading.lastPlayed = new Date().toISOString();
   }
 
   return newProgress;
 }
 
-// Track chord dictionary usage
-export function trackChordViewed(progress: UserProgress, chordName: string): UserProgress {
-  const newProgress = { ...progress };
-  const chordDict = newProgress.modules.chordDictionary;
 
-  if (!chordDict.chordsViewed.includes(chordName)) {
-    chordDict.chordsViewed.push(chordName);
-  }
-  chordDict.lastChord = chordName;
-  chordDict.totalChordsViewed++;
-  chordDict.lastPlayed = new Date().toISOString();
-
-  return newProgress;
-}
-
-// Track scale learning
-export function trackScaleLearned(progress: UserProgress, scaleName: string): UserProgress {
-  const newProgress = { ...progress };
-  const scaleModule = newProgress.modules.learnScales;
-
-  if (!scaleModule.scalesLearned.includes(scaleName)) {
-    scaleModule.scalesLearned.push(scaleName);
-  }
-  scaleModule.lastScale = scaleName;
-  scaleModule.totalScalesPlayed++;
-  scaleModule.lastPlayed = new Date().toISOString();
-
-  return newProgress;
-}
 
 // Calculate success rate
 export function getSuccessRate(stats: SessionStats): number {
@@ -255,8 +265,7 @@ export function getSuccessRate(stats: SessionStats): number {
 
 // Calculate overall progress
 export function getOverallStats(progress: UserProgress) {
-  const { chordPractice, pitchTraining } = progress.modules;
-  const { learnScales, chordDictionary } = progress.modules;
+  const { chordPractice, pitchTraining, musicReading } = progress.modules;
 
   const pitchTrainingTotalRounds =
     pitchTraining.notes.totalRounds + pitchTraining.chords.totalRounds;
@@ -267,17 +276,29 @@ export function getOverallStats(progress: UserProgress) {
     pitchTraining.chords.bestStreak
   );
 
-  const totalRounds = chordPractice.totalRounds + pitchTrainingTotalRounds;
-  const totalSuccessful = chordPractice.successfulRounds + pitchTrainingSuccessful;
-  const bestStreak = Math.max(chordPractice.bestStreak, pitchTrainingBestStreak);
+  const musicReadingTotalRounds =
+    (musicReading?.trebleClef?.totalRounds || 0) + 
+    (musicReading?.bassClef?.totalRounds || 0) + 
+    (musicReading?.bothClef?.totalRounds || 0);
+  const musicReadingSuccessful =
+    (musicReading?.trebleClef?.successfulRounds || 0) + 
+    (musicReading?.bassClef?.successfulRounds || 0) + 
+    (musicReading?.bothClef?.successfulRounds || 0);
+  const musicReadingBestStreak = Math.max(
+    musicReading?.trebleClef?.bestStreak || 0,
+    musicReading?.bassClef?.bestStreak || 0,
+    musicReading?.bothClef?.bestStreak || 0
+  );
+
+  const totalRounds = chordPractice.totalRounds + pitchTrainingTotalRounds + musicReadingTotalRounds;
+  const totalSuccessful = chordPractice.successfulRounds + pitchTrainingSuccessful + musicReadingSuccessful;
+  const bestStreak = Math.max(chordPractice.bestStreak, pitchTrainingBestStreak, musicReadingBestStreak);
 
   return {
     totalRounds,
     totalSuccessful,
     overallSuccessRate: totalRounds > 0 ? Math.round((totalSuccessful / totalRounds) * 100) : 0,
     bestStreak,
-    scalesLearned: learnScales.scalesLearned.length,
-    chordsViewed: chordDictionary.chordsViewed.length,
     totalPlayTime: progress.totalPlayTime,
 
     pitchTraining: {
@@ -291,6 +312,45 @@ export function getOverallStats(progress: UserProgress) {
             ? Math.round((pitchTrainingSuccessful / pitchTrainingTotalRounds) * 100)
             : 0,
         bestStreak: pitchTrainingBestStreak
+      }
+    },
+
+    musicReading: {
+      trebleClef: musicReading?.trebleClef || {
+        totalRounds: 0,
+        successfulRounds: 0,
+        failedRounds: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averageTime: 0,
+        lastPlayed: new Date().toISOString()
+      },
+      bassClef: musicReading?.bassClef || {
+        totalRounds: 0,
+        successfulRounds: 0,
+        failedRounds: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averageTime: 0,
+        lastPlayed: new Date().toISOString()
+      },
+      bothClef: musicReading?.bothClef || {
+        totalRounds: 0,
+        successfulRounds: 0,
+        failedRounds: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averageTime: 0,
+        lastPlayed: new Date().toISOString()
+      },
+      combined: {
+        totalRounds: musicReadingTotalRounds,
+        successfulRounds: musicReadingSuccessful,
+        successRate:
+          musicReadingTotalRounds > 0
+            ? Math.round((musicReadingSuccessful / musicReadingTotalRounds) * 100)
+            : 0,
+        bestStreak: musicReadingBestStreak
       }
     }
   };
@@ -319,27 +379,28 @@ export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
     icon: '🎧',
     category: 'mastery'
   },
-  {
-    id: 'scale-explorer',
-    name: 'Scale Explorer',
-    description: 'Learn 10 different scales',
-    icon: '🎼',
-    category: 'learning'
-  },
 
-  {
-    id: 'chord-encyclopedia',
-    name: 'Chord Encyclopedia',
-    description: 'View 25 different chords',
-    icon: '📚',
-    category: 'learning'
-  },
   {
     id: 'speed-demon',
     name: 'Speed Demon',
     description: 'Complete a chord practice round in under 10 seconds',
     icon: '⚡',
     category: 'practice'
+  },
+
+  {
+    id: 'score-master',
+    name: 'Score Master',
+    description: 'Get 10 correct answers in a row in music score reading',
+    icon: '🏆',
+    category: 'mastery'
+  },
+  {
+    id: 'score-reader',
+    name: 'Score Reader',
+    description: 'Successfully read 50 notes from sheet music',
+    icon: '📖',
+    category: 'mastery'
   }
 ];
 
@@ -371,15 +432,18 @@ export function checkAchievements(progress: UserProgress): UserProgress {
             progress.modules.chordPractice.bestStreak
           ) >= 10;
         break;
-      case 'scale-explorer':
-        shouldUnlock = progress.modules.learnScales.scalesLearned.length >= 10;
-        break;
-
-      case 'chord-encyclopedia':
-        shouldUnlock = progress.modules.chordDictionary.chordsViewed.length >= 25;
-        break;
       case 'speed-demon':
         shouldUnlock = (progress.modules.chordPractice.averageTime || Infinity) < 10;
+        break;
+      case 'score-master':
+        shouldUnlock = (progress.modules.musicReading?.bothClef?.bestStreak || 0) >= 10;
+        break;
+      case 'score-reader':
+        const allMusicReadingSuccessful = 
+          (progress.modules.musicReading?.trebleClef?.successfulRounds || 0) +
+          (progress.modules.musicReading?.bassClef?.successfulRounds || 0) +
+          (progress.modules.musicReading?.bothClef?.successfulRounds || 0);
+        shouldUnlock = allMusicReadingSuccessful >= 50;
         break;
     }
 

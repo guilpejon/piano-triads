@@ -538,30 +538,6 @@
     padding: 2rem;
   }
 
-  /* Scale highlighting styles */
-  :global(.key.scale-active) {
-    box-shadow:
-      0 0 20px rgba(0, 122, 255, 0.4),
-      0 4px 12px rgba(0, 122, 255, 0.3) !important;
-    border-color: var(--color-accent-hover) !important;
-  }
-
-  :global(.key.white.scale-active) {
-    background: var(--gradient-blue) !important;
-    transform: scaleY(0.99);
-    color: white;
-  }
-
-  :global(.key.black.scale-active) {
-    background: var(--gradient-blue) !important;
-    transform: translateY(-1px);
-  }
-
-  :global(.key.scale-active .note) {
-    color: white !important;
-    font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
 
   /* Responsive Design */
   @media (max-width: 768px) {

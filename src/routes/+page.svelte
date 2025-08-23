@@ -12,9 +12,13 @@
       </div>
     </header>
 
-    <!-- Features Grid -->
-    <section class="features-section">
-      <div class="features-grid">
+    <!-- Theory Section -->
+    <section class="features-section theory-section">
+      <div class="section-header">
+        <h2 class="section-title">Music Theory</h2>
+        <p class="section-description">Learn chords, scales, and music fundamentals</p>
+      </div>
+      <div class="features-grid theory-grid">
         <a href="/chord-dictionary" class="glass-card feature-card">
           <div class="card-icon chord-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,33 +102,6 @@
           </div>
         </a>
 
-        <a href="/pitch-training" class="glass-card feature-card">
-          <div class="card-icon pitch-icon">
-            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-              />
-            </svg>
-          </div>
-          <div class="card-content">
-            <h2 class="card-title">Pitch Training</h2>
-            <p class="card-description">Develop perfect pitch and interval recognition skills</p>
-          </div>
-          <div class="card-arrow">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </div>
-        </a>
-
         <a href="/chord-progressions" class="glass-card feature-card">
           <div class="card-icon progressions-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,6 +145,96 @@
           <div class="card-content">
             <h2 class="card-title">Circle of Fifths</h2>
             <p class="card-description">Master key signatures and chord relationships</p>
+          </div>
+          <div class="card-arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Practice Section -->
+    <section class="features-section practice-section">
+      <div class="section-header">
+        <h2 class="section-title">Practice & Training</h2>
+        <p class="section-description">Improve your skills with interactive exercises</p>
+      </div>
+      <div class="features-grid practice-grid">
+        <a href="/chord-practice" class="glass-card feature-card">
+          <div class="card-icon practice-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+              />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Chord Practice</h2>
+            <p class="card-description">Practice building chords note by note</p>
+          </div>
+          <div class="card-arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </a>
+
+        <a href="/pitch-training" class="glass-card feature-card">
+          <div class="card-icon pitch-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+              />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Pitch Practice</h2>
+            <p class="card-description">Develop perfect pitch and interval recognition skills</p>
+          </div>
+          <div class="card-arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </a>
+
+        <a href="/music-score-practice" class="glass-card feature-card">
+          <div class="card-icon reading-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Music Score Practice</h2>
+            <p class="card-description">Read sheet music and identify piano keys quickly</p>
           </div>
           <div class="card-arrow">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,17 +300,54 @@
     margin-bottom: 2rem;
   }
 
-  /* Features section */
+  /* Section Headers */
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-description {
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: 32rem;
+    margin: 0 auto;
+  }
+
+  /* Features sections */
   .features-section {
-    padding-bottom: 2rem;
+    padding-bottom: 4rem;
+  }
+
+  .theory-section {
+    padding-bottom: 3rem;
+  }
+
+  .practice-section {
+    padding-bottom: 4rem;
   }
 
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    max-width: 64rem;
+    max-width: 72rem;
     margin: 0 auto;
+  }
+
+  .theory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .practice-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   /* Feature Card Specific Styles */
@@ -294,6 +398,11 @@
     color: white;
   }
 
+  .reading-icon {
+    background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    color: white;
+  }
+
   .progressions-icon {
     background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     color: white;
@@ -340,10 +449,27 @@
     padding: 0 2rem;
   }
   /* Responsive Design */
+  @media (max-width: 1024px) {
+    .theory-grid {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .practice-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
   @media (max-width: 768px) {
-    .features-grid {
+    .theory-grid,
+    .practice-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
+    }
+
+    .section-header {
+      margin-bottom: 2rem;
     }
 
     .feature-card {

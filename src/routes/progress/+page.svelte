@@ -68,12 +68,25 @@
   $: chordPracticeRate = progress ? getSuccessRate(progress.modules.chordPractice) : 0;
   $: pitchTrainingNotesRate = progress ? getSuccessRate(progress.modules.pitchTraining.notes) : 0;
   $: pitchTrainingChordsRate = progress ? getSuccessRate(progress.modules.pitchTraining.chords) : 0;
+  $: musicReadingRate = progress && progress.modules.musicReading ? 
+    Math.round((
+      (progress.modules.musicReading.trebleClef?.successfulRounds || 0) +
+      (progress.modules.musicReading.bassClef?.successfulRounds || 0) +
+      (progress.modules.musicReading.bothClef?.successfulRounds || 0)
+    ) / Math.max(1, 
+      (progress.modules.musicReading.trebleClef?.totalRounds || 0) +
+      (progress.modules.musicReading.bassClef?.totalRounds || 0) +
+      (progress.modules.musicReading.bothClef?.totalRounds || 0)
+    ) * 100) : 0;
 
   // Check if user has any progress data worth resetting
   $: hasProgressData = progress
     ? progress.modules.chordPractice.totalRounds > 0 ||
       progress.modules.pitchTraining.notes.totalRounds > 0 ||
       progress.modules.pitchTraining.chords.totalRounds > 0 ||
+      (progress.modules.musicReading?.trebleClef?.totalRounds || 0) > 0 ||
+      (progress.modules.musicReading?.bassClef?.totalRounds || 0) > 0 ||
+      (progress.modules.musicReading?.bothClef?.totalRounds || 0) > 0 ||
       progress.achievements.length > 0 ||
       progress.totalPlayTime > 0
     : false;
@@ -264,7 +277,7 @@
                 </svg>
               </div>
               <div class="module-info">
-                <h3 class="module-title">Note Training</h3>
+                <h3 class="module-title">Pitch Practice - Notes</h3>
                 <p class="module-subtitle">Identify individual notes</p>
               </div>
             </div>
@@ -306,7 +319,7 @@
                 </svg>
               </div>
               <div class="module-info">
-                <h3 class="module-title">Chord Training</h3>
+                <h3 class="module-title">Pitch Practice - Chords</h3>
                 <p class="module-subtitle">Identify chord progressions</p>
               </div>
             </div>
@@ -333,6 +346,45 @@
               {progress.modules.pitchTraining.lastMode === 'chord' ? '(last mode)' : ''}
             </div>
           </div>
+
+          <!-- Music Score Practice -->
+          {#if progress.modules.musicReading && ((progress.modules.musicReading.trebleClef?.totalRounds || 0) > 0 || (progress.modules.musicReading.bassClef?.totalRounds || 0) > 0 || (progress.modules.musicReading.bothClef?.totalRounds || 0) > 0)}
+            <div class="glass-card module-card">
+              <div class="module-header">
+                <div class="module-icon music-reading-icon">
+                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                    />
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <h3 class="module-title">Music Score Practice</h3>
+                  <p class="module-subtitle">Read notes from sheet music</p>
+                </div>
+              </div>
+              <div class="module-stats">
+                <div class="module-stat">
+                  <span class="module-stat-number">{(progress.modules.musicReading.trebleClef?.totalRounds || 0) + (progress.modules.musicReading.bassClef?.totalRounds || 0) + (progress.modules.musicReading.bothClef?.totalRounds || 0)}</span>
+                  <span class="module-stat-label">Rounds</span>
+                </div>
+                <div class="module-stat">
+                  <span class="module-stat-number">{musicReadingRate}%</span>
+                  <span class="module-stat-label">Success</span>
+                </div>
+                <div class="module-stat">
+                  <span class="module-stat-number">{Math.max(progress.modules.musicReading.trebleClef?.bestStreak || 0, progress.modules.musicReading.bassClef?.bestStreak || 0, progress.modules.musicReading.bothClef?.bestStreak || 0)}</span>
+                  <span class="module-stat-label">Best Streak</span>
+                </div>
+              </div>
+              <div class="module-last-played">
+                Last played: {formatDate(progress.modules.musicReading.lastPlayed || new Date().toISOString())}
+              </div>
+            </div>
+          {/if}
         </div>
       </section>
 
@@ -577,6 +629,9 @@
   }
   .pitch-training-icon {
     background: var(--gradient-orange);
+  }
+  .music-reading-icon {
+    background: var(--gradient-purple);
   }
 
   .module-icon svg {
