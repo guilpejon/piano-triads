@@ -233,25 +233,25 @@
 
       <!-- Ledger Lines -->
       <div class="ledger-lines">
-        {#each trebleNotes as note, noteIndex}
-          {#if note.treble <= 0}
+        {#each [...new Set(trebleNotes.map(note => note.treble))] as uniquePosition}
+          {#if uniquePosition <= 0}
             <!-- Below staff ledger lines -->
-            {#each Array(Math.ceil((1 - note.treble) / 2)) as _, i}
-              {#if 1 - note.treble >= (i + 1) * 2}
+            {#each Array(Math.ceil((1 - uniquePosition) / 2)) as _, i}
+              {#if 1 - uniquePosition >= (i + 1) * 2}
                 <div
                   class="ledger-line"
-                  style="bottom: {-13 - i * 12}px; left: {155 + noteIndex * 40}px; width: 30px;"
+                  style="bottom: {-13 - i * 12}px; left: 155px; width: 30px;"
                 ></div>
               {/if}
             {/each}
           {/if}
-          {#if note.treble >= 10}
+          {#if uniquePosition >= 10}
             <!-- Above staff ledger lines -->
-            {#each Array(Math.ceil((note.treble - 8) / 2)) as _, i}
-              {#if note.treble >= 10 + i * 2}
+            {#each Array(Math.ceil((uniquePosition - 8) / 2)) as _, i}
+              {#if uniquePosition >= 10 + i * 2}
                 <div
                   class="ledger-line"
-                  style="bottom: {60 + i * 12}px; left: {155 + noteIndex * 40}px; width: 30px;"
+                  style="bottom: {60 + i * 12}px; left: 155px; width: 30px;"
                 ></div>
               {/if}
             {/each}
@@ -259,19 +259,22 @@
         {/each}
       </div>
 
+      <!-- Accidentals at beginning of staff -->
+      <div class="accidentals-group">
+        {#each trebleNotes.filter(note => note.accidental) as note, accidentalIndex}
+          <div
+            class="accidental"
+            style="bottom: {note.treble * 6 - 19}px; left: {50 + accidentalIndex * 20}px;"
+          >
+            {note.accidental === '#' ? '♯' : '♭'}
+          </div>
+        {/each}
+      </div>
+
       <!-- Notes -->
       <div class="notes">
         {#each trebleNotes as note, noteIndex}
           <div class="note-group" style="left: 150px;">
-            <!-- Accidental -->
-            {#if note.accidental}
-              <div
-                class="accidental"
-                style="bottom: {note.treble * 6 - 10}px; left: {noteIndex * 20 - 60}px;"
-              >
-                {note.accidental === '#' ? '♯' : '♭'}
-              </div>
-            {/if}
             <!-- Note head -->
             <svg
               class="note-head quarter-note"
@@ -309,23 +312,35 @@
 
       <!-- Ledger Lines -->
       <div class="ledger-lines">
-        {#each bassNotes as note}
-          {#if note.bass <= 0}
+        {#each [...new Set(bassNotes.map(note => note.bass))] as uniquePosition}
+          {#if uniquePosition <= 0}
             <!-- Below staff ledger lines -->
-            {#each Array(Math.ceil((1 - note.bass) / 2)) as _, i}
-              {#if 1 - note.bass >= (i + 1) * 2}
-                <div class="ledger-line" style="bottom: {-6 - i * 6}px;"></div>
+            {#each Array(Math.ceil((1 - uniquePosition) / 2)) as _, i}
+              {#if 1 - uniquePosition >= (i + 1) * 2}
+                <div class="ledger-line" style="bottom: {-6 - i * 6}px; left: 100px; width: 30px;"></div>
               {/if}
             {/each}
           {/if}
-          {#if note.bass >= 10}
+          {#if uniquePosition >= 10}
             <!-- Above staff ledger lines -->
-            {#each Array(Math.ceil((note.bass - 8) / 2)) as _, i}
-              {#if note.bass >= 10 + i * 2}
-                <div class="ledger-line" style="bottom: {60 + i * 6}px;"></div>
+            {#each Array(Math.ceil((uniquePosition - 8) / 2)) as _, i}
+              {#if uniquePosition >= 10 + i * 2}
+                <div class="ledger-line" style="bottom: {60 + i * 6}px; left: 100px; width: 30px;"></div>
               {/if}
             {/each}
           {/if}
+        {/each}
+      </div>
+
+      <!-- Accidentals at beginning of staff -->
+      <div class="accidentals-group">
+        {#each bassNotes.filter(note => note.accidental) as note, accidentalIndex}
+          <div
+            class="accidental"
+            style="bottom: {note.bass * 6 - 13}px; left: {50 + accidentalIndex * 20}px;"
+          >
+            {note.accidental === '#' ? '♯' : '♭'}
+          </div>
         {/each}
       </div>
 
@@ -333,15 +348,6 @@
       <div class="notes">
         {#each bassNotes as note, noteIndex}
           <div class="note-group" style="left: 100px;">
-            <!-- Accidental -->
-            {#if note.accidental}
-              <div
-                class="accidental"
-                style="bottom: {note.bass * 6 - 4}px; left: {noteIndex * 15}px;"
-              >
-                {note.accidental === '#' ? '♯' : '♭'}
-              </div>
-            {/if}
             <!-- Note head -->
             <svg
               class="note-head quarter-note"
@@ -526,6 +532,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .accidentals-group {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .accidentals-group .accidental {
+    transform: none;
   }
 
   @media (max-width: 480px) {

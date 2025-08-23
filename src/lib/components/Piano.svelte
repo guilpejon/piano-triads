@@ -745,6 +745,11 @@
     user-select: none;
   }
 
+  :global(.key.practice-failed) .octave-marker, 
+  :global(.key.practice-success) .octave-marker, 
+  :global(.key.practice-correct) .octave-marker {
+    color: white;
+  }
   .piano .key:first-child {
     border-radius: 5px 0 5px 5px;
   }
