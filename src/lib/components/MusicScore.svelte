@@ -196,6 +196,110 @@
       return notePositions[a.note] - notePositions[b.note];
     });
 
+  // Function to calculate accidental positions with collision detection
+  function calculateAccidentalPositions(notes: any[], isBasClef = false) {
+    const accidentalNotes = notes.filter(note => note.accidental);
+    if (accidentalNotes.length === 0) return [];
+
+    const positions: Array<{
+      note: any;
+      verticalPos: number;
+      horizontalPos: number;
+      column: number;
+    }> = [];
+
+    // Sort by staff position (bottom to top)
+    const sortedNotes = [...accidentalNotes].sort((a, b) => {
+      const posA = isBasClef ? a.bass : a.treble;
+      const posB = isBasClef ? b.bass : b.treble;
+      return posA - posB;
+    });
+
+    // Collision detection parameters
+    const minVerticalDistance = 36; // Minimum pixels between accidentals vertically (increased for better readability)
+    const columnWidth = 22; // Width between accidental columns (increased for better separation)
+    const baseLeftPosition = 50; // Starting position from left
+    const maxAccidentalsPerColumn = 2; // Limit accidentals per column for better readability
+
+    // Group accidentals into columns to avoid collisions
+    const columns: Array<Array<{note: any, verticalPos: number}>> = [[]];
+    
+    for (const note of sortedNotes) {
+      const verticalPos = isBasClef 
+        ? note.bass * 6 - 13 
+        : note.treble * 6 - 19;
+      
+      let placed = false;
+      
+      // Try to place in existing columns (from right to left - closest to notes first)
+      for (let colIndex = columns.length - 1; colIndex >= 0; colIndex--) {
+        const column = columns[colIndex];
+        let canPlaceInColumn = true;
+        
+        // Don't allow more than the maximum accidentals per column
+        if (column.length >= maxAccidentalsPerColumn) {
+          canPlaceInColumn = false;
+        } else {
+          // Check for collisions with existing accidentals in this column
+          for (const existing of column) {
+            const distance = Math.abs(existing.verticalPos - verticalPos);
+            const currentStaffPos = isBasClef ? note.bass : note.treble;
+            const existingStaffPos = isBasClef ? existing.note.bass : existing.note.treble;
+            const staffPositionDiff = Math.abs(currentStaffPos - existingStaffPos);
+            
+            // Be much stricter: any accidentals within 2 staff positions should be in separate columns
+            if (staffPositionDiff <= 2) {
+              canPlaceInColumn = false;
+              break;
+            }
+            
+            // Use larger spacing for flats since they're taller, and be more conservative overall
+            const requiredDistance = (note.accidental === 'b' || existing.note.accidental === 'b') 
+              ? minVerticalDistance + 8 
+              : minVerticalDistance;
+            
+            if (distance < requiredDistance) {
+              canPlaceInColumn = false;
+              break;
+            }
+          }
+        }
+        
+        if (canPlaceInColumn) {
+          column.push({note, verticalPos});
+          const horizontalPos = baseLeftPosition + (columns.length - 1 - colIndex) * columnWidth;
+          positions.push({
+            note,
+            verticalPos,
+            horizontalPos,
+            column: colIndex
+          });
+          placed = true;
+          break;
+        }
+      }
+      
+      // If couldn't place in any existing column, create a new one
+      if (!placed) {
+        const newColumnIndex = columns.length;
+        columns.push([{note, verticalPos}]);
+        const horizontalPos = baseLeftPosition + (newColumnIndex) * columnWidth;
+        positions.push({
+          note,
+          verticalPos,
+          horizontalPos,
+          column: newColumnIndex
+        });
+      }
+    }
+
+    return positions;
+  }
+
+  // Calculate accidental positions for both clefs
+  $: trebleAccidentalPositions = calculateAccidentalPositions(trebleNotes, false);
+  $: bassAccidentalPositions = calculateAccidentalPositions(bassNotes, true);
+
   // Determine which clef to use for each note
   // C4 and above → treble clef
   // B3 and below → bass clef
@@ -261,12 +365,12 @@
 
       <!-- Accidentals at beginning of staff -->
       <div class="accidentals-group">
-        {#each trebleNotes.filter(note => note.accidental) as note, accidentalIndex}
+        {#each trebleAccidentalPositions as position}
           <div
             class="accidental"
-            style="bottom: {note.treble * 6 - 19}px; left: {50 + accidentalIndex * 20}px;"
+            style="bottom: {position.verticalPos}px; left: {position.horizontalPos}px;"
           >
-            {note.accidental === '#' ? '♯' : '♭'}
+            {position.note.accidental === '#' ? '♯' : '♭'}
           </div>
         {/each}
       </div>
@@ -334,12 +438,12 @@
 
       <!-- Accidentals at beginning of staff -->
       <div class="accidentals-group">
-        {#each bassNotes.filter(note => note.accidental) as note, accidentalIndex}
+        {#each bassAccidentalPositions as position}
           <div
             class="accidental"
-            style="bottom: {note.bass * 6 - 13}px; left: {50 + accidentalIndex * 20}px;"
+            style="bottom: {position.verticalPos}px; left: {position.horizontalPos}px;"
           >
-            {note.accidental === '#' ? '♯' : '♭'}
+            {position.note.accidental === '#' ? '♯' : '♭'}
           </div>
         {/each}
       </div>
