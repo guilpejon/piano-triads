@@ -8,7 +8,6 @@
   import {
     loadProgress,
     saveProgress,
-    trackChordViewed,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -131,10 +130,8 @@
       playChord(activeNotes);
     }
 
-    // Track chord viewed for progress (skip on initial load)
+    // Check achievements and save progress (skip on initial load)
     if (!isInitialLoad && userProgress) {
-      const chordName = currentNote + currentChordType;
-      userProgress = trackChordViewed(userProgress, chordName);
       userProgress = checkAchievements(userProgress);
       saveProgress(userProgress);
     }

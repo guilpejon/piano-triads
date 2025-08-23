@@ -7,7 +7,6 @@
   import {
     loadProgress,
     saveProgress,
-    trackScaleLearned,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -110,10 +109,8 @@
       playScaleAscending();
     }
 
-    // Track scale learned for progress (skip on initial load)
+    // Check achievements and save progress (skip on initial load)
     if (!isInitialLoad && userProgress) {
-      const scaleName = `${currentRootNote} ${currentScaleType}`;
-      userProgress = trackScaleLearned(userProgress, scaleName);
       userProgress = checkAchievements(userProgress);
       saveProgress(userProgress);
     }
