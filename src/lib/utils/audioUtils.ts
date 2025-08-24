@@ -5,24 +5,26 @@ const audioCache = new Map<string, HTMLAudioElement>();
 let isAudioPreloaded = false;
 let preloadPromise: Promise<void> | null = null;
 
-// Audio file lists for different key ranges
+// Audio file lists for different key ranges (matching actual MP3 file names)
 const standardAudioFiles = [
   // Standard range: Octave 3-4 (C3 to B4)
-  'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3',
-  'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4'
+  // Octave 3: lowercase naturals, uppercase flats
+  'c3', 'Db3', 'd3', 'Eb3', 'e3', 'f3', 'Gb3', 'g3', 'Ab3', 'a3', 'Bb3', 'b3',
+  // Octave 4: lowercase naturals, uppercase flats
+  'c4', 'Db4', 'd4', 'Eb4', 'e4', 'f4', 'Gb4', 'g4', 'Ab4', 'a4', 'Bb4', 'b4'
 ];
 
 const extendedAudioFiles = [
-  // Extended range: Octave 2-6 (C2 to C6)
-  // Octave 2
+  // Extended range: Octave 2-6 (matching actual file case)
+  // Octave 2: uppercase naturals, uppercase flats
   'C2', 'Db2', 'D2', 'Eb2', 'E2', 'F2', 'Gb2', 'G2', 'Ab2', 'A2', 'Bb2', 'B2',
-  // Octave 3
-  'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3',
-  // Octave 4
-  'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4',
-  // Octave 5
+  // Octave 3: lowercase naturals, uppercase flats
+  'c3', 'Db3', 'd3', 'Eb3', 'e3', 'f3', 'Gb3', 'g3', 'Ab3', 'a3', 'Bb3', 'b3',
+  // Octave 4: lowercase naturals, uppercase flats
+  'c4', 'Db4', 'd4', 'Eb4', 'e4', 'f4', 'Gb4', 'g4', 'Ab4', 'a4', 'Bb4', 'b4',
+  // Octave 5: uppercase naturals, uppercase flats
   'C5', 'Db5', 'D5', 'Eb5', 'E5', 'F5', 'Gb5', 'G5', 'Ab5', 'A5', 'Bb5', 'B5',
-  // Octave 6
+  // Octave 6: uppercase naturals, uppercase flats
   'C6', 'Db6', 'D6', 'Eb6', 'E6', 'F6', 'Gb6', 'G6', 'Ab6', 'A6', 'Bb6', 'B6'
 ];
 
@@ -159,8 +161,30 @@ function getNoteFileName(noteData: string): string {
     }
   }
 
-  // Return the note name as-is (already in correct format: C3, Db3, D3, etc.)
-  return primaryNote;
+  // Handle inconsistent MP3 file naming:
+  // - Octaves 3-4: lowercase natural notes (c3.mp3, d3.mp3, a3.mp3, etc.)
+  // - Octaves 2, 5-6: uppercase natural notes (C2.mp3, A5.mp3, B6.mp3, etc.)  
+  // - All flats: always uppercase (Db3.mp3, Eb4.mp3, Ab3.mp3, etc.)
+  
+  const octaveMatch = primaryNote.match(/(\d+)$/);
+  if (!octaveMatch) return primaryNote; // Fallback if no octave found
+  
+  const octave = parseInt(octaveMatch[1]);
+  const noteWithoutOctave = primaryNote.replace(/\d+$/, '');
+  
+  // If it's a flat note, always use uppercase
+  if (noteWithoutOctave.includes('b')) {
+    return primaryNote; // Already in correct format (uppercase)
+  }
+  
+  // For natural notes, use case based on octave
+  if (octave >= 3 && octave <= 4) {
+    // Octaves 3-4: use lowercase
+    return noteWithoutOctave.toLowerCase() + octave;
+  } else {
+    // Octaves 2, 5-6: use uppercase
+    return noteWithoutOctave.toUpperCase() + octave;
+  }
 }
 
 // Function to play audio for a given note

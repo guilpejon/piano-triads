@@ -1,7 +1,7 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
   import MusicScore from '$lib/components/MusicScore.svelte';
-  import { playChord } from '$lib/utils/audioUtils';
+  import { playChord, preloadAudio } from '$lib/utils/audioUtils';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -253,6 +253,9 @@
     // Load user progress
     userProgress = loadProgress();
 
+    // Preload extended range audio for the extended piano
+    preloadAudio('extended');
+
     // Parse URL and set initial chord state
     parseURLAndSetChord();
 
@@ -367,7 +370,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={activeNotes} stickyOnMobile={true} keyRange="standard" />
+        <Piano chordNotes={activeNotes} stickyOnMobile={true} keyRange="extended" forceAutoScrollOnAllScreens={true} showOctaveMarkers={true} scrollToRootNote={currentNote}/>
       </div>
     </section>
   </div>
@@ -380,7 +383,9 @@
     padding: 2rem 0;
   }
 
-  /* Navigation */
+  .chord-dictionary-wrapper .piano-section {
+    padding-top: 2.5rem;
+  }
 
   /* Controls section */
   .controls-container {
@@ -394,14 +399,20 @@
 
   /* Piano section */
   .piano-section {
-    padding-bottom: 5rem;
+    padding: 0.5rem 0 2rem 0;
   }
 
   .piano-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3rem 2rem;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  /* Allow extended piano to use full width and scroll */
+  .chord-dictionary-wrapper .piano-container {
+    max-width: none; /* Remove width constraint for extended piano */
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   /* Score section spacing */
@@ -482,11 +493,11 @@
     }
 
     .piano-container {
-      padding: 2rem 1.25rem;
+      padding: 0 0.5rem;
     }
 
     .piano-section {
-      padding-bottom: 3rem;
+      padding: 0.5rem 0 2rem 0;
     }
   }
 
@@ -495,7 +506,7 @@
       padding-bottom: 1.5rem;
     }
     .piano-container {
-      padding: 1.5rem 1rem;
+      padding: 0 0.5rem;
     }
 
     .header-section {
@@ -507,7 +518,7 @@
     }
 
     .piano-section {
-      padding-bottom: 1rem;
+      padding: 0.5rem 0 1rem 0;
     }
   }
 </style>
