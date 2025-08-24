@@ -370,7 +370,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano chordNotes={activeNotes} stickyOnMobile={true} keyRange="extended" forceAutoScrollOnAllScreens={true} showOctaveMarkers={true} scrollToRootNote={currentNote}/>
+        <Piano chordNotes={activeNotes} stickyOnMobile={true} keyRange="extended" showOctaveMarkers={true} scrollToRootNote={currentNote}/>
       </div>
     </section>
   </div>

@@ -5,6 +5,7 @@
   // Props to control which enharmonic notation to show
   export let chordNotes: string[] = []; // Notes in the current chord to determine correct notation
   export let autoScrollToActiveKey: boolean = true; // Enable/disable auto-scroll feature
+  export let scrollToRootNote: string = ''; // If provided, scroll to this specific root note instead of the first active key
   export let stickyOnMobile: boolean = false; // Enable sticky positioning on mobile devices
   export let showOctaveMarkers: boolean = false; // Show octave reference markers
   export let keyRange: 'standard' | 'extended' = 'standard'; // Control piano key range: standard (C3-B4) or extended (C2-C6)
@@ -160,41 +161,127 @@
     return sharpNote;
   };
 
-  // Function to scroll to the first active key
-  function scrollToFirstActiveKey() {
+  // Function to scroll to the target key (root note if specified, otherwise first active key)
+  function scrollToTargetKey() {
     if (!autoScrollToActiveKey || typeof window === 'undefined') return;
-
-    // Only scroll on mobile/tablet devices
-    if (window.innerWidth > 1100) return;
 
     const pianoContainer = document.querySelector('.piano') as HTMLElement;
     if (!pianoContainer) return;
 
-    // Find the first active key (with chord-active, scale-active, or practice-correct class)
-    const firstActiveKey = pianoContainer.querySelector(
-      '.key.chord-active, .key.scale-active, .key.practice-correct, .key.practice-failed'
-    ) as HTMLElement;
+    let targetKey: HTMLElement | null = null;
 
-    if (firstActiveKey) {
-      // Calculate the scroll position to center the first active key
+    // If scrollToRootNote is provided, look for that specific note first
+    if (scrollToRootNote) {
+      const rootNoteName = scrollToRootNote.replace(/[0-9]/g, ''); // Remove octave numbers
+      const allActiveKeys = pianoContainer.querySelectorAll(
+        '.key.chord-active, .key.scale-active, .key.practice-correct, .key.practice-failed'
+      );
+      
+      for (const key of allActiveKeys) {
+        const keyNote = key.getAttribute('data-note');
+        if (keyNote && keyNote.replace(/[0-9]/g, '') === rootNoteName) {
+          targetKey = key as HTMLElement;
+          break;
+        }
+      }
+    }
+
+    // If no root note specified or found, fall back to the first active key
+    if (!targetKey) {
+      targetKey = pianoContainer.querySelector(
+        '.key.chord-active, .key.scale-active, .key.practice-correct, .key.practice-failed'
+      ) as HTMLElement;
+    }
+    
+    if (targetKey) {
       const containerWidth = pianoContainer.clientWidth;
-      const keyPosition = firstActiveKey.offsetLeft;
-      const keyWidth = firstActiveKey.offsetWidth;
+      const keyPosition = targetKey.offsetLeft;
+      const keyWidth = targetKey.offsetWidth;
+      const currentScroll = pianoContainer.scrollLeft;
 
-      // Center the key in the viewport, but don't scroll past the beginning
-      const scrollPosition = Math.max(0, keyPosition - containerWidth / 2 + keyWidth / 2);
+      // Calculate scroll position based on screen size and piano type
+      let scrollPosition;
+      
+      if (keyRange === 'extended') {
+        if (window.innerWidth > 1100) {
+          // Large screens: position the key at 20% from left edge
+          scrollPosition = Math.max(0, keyPosition - (containerWidth * 0.2));
+          
+          if (scrollPosition === 0 && keyPosition > containerWidth * 0.8) {
+            scrollPosition = Math.max(0, keyPosition - 200);
+          }
+        } else {
+          // Medium/small screens: center the key
+          scrollPosition = Math.max(0, keyPosition - containerWidth / 2 + keyWidth / 2);
+        }
+      } else {
+        // Standard piano: center the key
+        scrollPosition = Math.max(0, keyPosition - containerWidth / 2 + keyWidth / 2);
+      }
+      
+      // Ensure we don't scroll past the maximum scroll position
+      const maxScroll = pianoContainer.scrollWidth - containerWidth;
+      
+      if (maxScroll <= 0 && keyRange === 'extended' && window.innerWidth > 1100) {
+        // Don't clamp scrollPosition for parent scrolling on large screens
+      } else {
+        scrollPosition = Math.min(scrollPosition, Math.max(0, maxScroll));
+      }
 
-      pianoContainer.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
+      const keyVisible = keyPosition >= currentScroll && (keyPosition + keyWidth) <= (currentScroll + containerWidth);
+      
+      let shouldScroll;
+      
+      if (window.innerWidth > 1100) {
+        const keyInLeftQuarter = keyPosition < (containerWidth * 0.25);
+        const forceScrollForExtended = keyRange === 'extended' && keyInLeftQuarter && currentScroll === 0;
+        shouldScroll = Math.abs(currentScroll - scrollPosition) > 10 || !keyVisible || forceScrollForExtended;
+      } else {
+        shouldScroll = Math.abs(currentScroll - scrollPosition) > 10 || !keyVisible;
+      }
+      
+      if (shouldScroll) {
+        try {
+          if (window.innerWidth > 1100) {
+            // Large screens: try parent containers if piano isn't scrollable
+            if (pianoContainer.scrollWidth <= pianoContainer.clientWidth) {
+              let scrollTarget = pianoContainer.parentElement;
+              while (scrollTarget && scrollTarget !== document.body) {
+                if (scrollTarget.scrollWidth > scrollTarget.clientWidth) {
+                  scrollTarget.scrollTo({
+                    left: scrollPosition,
+                    behavior: 'smooth'
+                  });
+                  break;
+                }
+                scrollTarget = scrollTarget.parentElement;
+              }
+            } else {
+              pianoContainer.scrollTo({
+                left: scrollPosition,
+                behavior: 'smooth'
+              });
+            }
+          } else {
+            pianoContainer.scrollTo({
+              left: scrollPosition,
+              behavior: 'smooth'
+            });
+          }
+        } catch (e) {
+          pianoContainer.style.scrollBehavior = 'smooth';
+          pianoContainer.scrollLeft = scrollPosition;
+        }
+      }
     }
   }
 
   // Scroll to active key when component mounts or updates
   onMount(() => {
     // Small delay to ensure DOM is fully rendered and CSS classes are applied
-    setTimeout(scrollToFirstActiveKey, 100);
+    setTimeout(() => {
+      scrollToTargetKey();
+    }, 200);
     
     // Add global keyboard event listeners
     if (typeof window !== 'undefined') {
@@ -206,12 +293,23 @@
   // Scroll when chordNotes change (when new chord/scale is selected)
   afterUpdate(() => {
     // Small delay to ensure CSS classes are updated
-    setTimeout(scrollToFirstActiveKey, 50);
+    setTimeout(() => {
+      scrollToTargetKey();
+    }, 100);
   });
 
   // Expose function to parent components for manual triggering
   export function scrollToActiveKey() {
-    scrollToFirstActiveKey();
+    scrollToTargetKey();
+  }
+
+  // Reactive statement to trigger scroll when key props change
+  $: if (scrollToRootNote || chordNotes) {
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        scrollToTargetKey();
+      }, 150);
+    }
   }
 
   // Handle body padding for sticky piano (client-side only)
@@ -845,7 +943,7 @@
   }
 
   :global(.key.black.keyboard-active) {
-    background: linear-gradient(to bottom, #111 0%, #333 100%);
+    background: linear-gradient(to bottom, #111 0%, #333 100%) !important;
   }
 
   /* Practice highlighting styles - used across practice pages */
@@ -1047,6 +1145,7 @@
 
   :global(.key.practice-failed) .octave-marker, 
   :global(.key.practice-success) .octave-marker, 
+  :global(.key.chord-active) .octave-marker, 
   :global(.key.practice-correct) .octave-marker {
     color: white;
   }
