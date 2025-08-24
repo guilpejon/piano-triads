@@ -8,22 +8,22 @@ let preloadPromise: Promise<void> | null = null;
 // Audio file lists for different key ranges
 const standardAudioFiles = [
   // Standard range: Octave 3-4 (C3 to B4)
-  'c3', 'cs3', 'd3', 'ds3', 'e3', 'f3', 'fs3', 'g3', 'gs3', 'a3', 'as3', 'b3',
-  'c4', 'cs4', 'd4', 'ds4', 'e4', 'f4', 'fs4', 'g4', 'gs4', 'a4', 'as4', 'b4'
+  'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3',
+  'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4'
 ];
 
 const extendedAudioFiles = [
   // Extended range: Octave 2-6 (C2 to C6)
   // Octave 2
-  'c2', 'cs2', 'd2', 'ds2', 'e2', 'f2', 'fs2', 'g2', 'gs2', 'a2', 'as2', 'b2',
+  'C2', 'Db2', 'D2', 'Eb2', 'E2', 'F2', 'Gb2', 'G2', 'Ab2', 'A2', 'Bb2', 'B2',
   // Octave 3
-  'c3', 'cs3', 'd3', 'ds3', 'e3', 'f3', 'fs3', 'g3', 'gs3', 'a3', 'as3', 'b3',
+  'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3',
   // Octave 4
-  'c4', 'cs4', 'd4', 'ds4', 'e4', 'f4', 'fs4', 'g4', 'gs4', 'a4', 'as4', 'b4',
+  'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4',
   // Octave 5
-  'c5', 'cs5', 'd5', 'ds5', 'e5', 'f5', 'fs5', 'g5', 'gs5', 'a5', 'as5', 'b5',
-  // C6
-  'c6'
+  'C5', 'Db5', 'D5', 'Eb5', 'E5', 'F5', 'Gb5', 'G5', 'Ab5', 'A5', 'Bb5', 'B5',
+  // Octave 6
+  'C6', 'Db6', 'D6', 'Eb6', 'E6', 'F6', 'Gb6', 'G6', 'Ab6', 'A6', 'Bb6', 'B6'
 ];
 
 // Current audio files (defaults to standard for backward compatibility)
@@ -141,25 +141,26 @@ function getNoteFileName(noteData: string): string {
   // Extract the first note from compound notes like "C#3/Db3"
   let primaryNote = noteData.split('/')[0];
 
-  // Convert flat notes to their sharp equivalents to match MP3 filenames
-  const flatToSharpMap: { [key: string]: string } = {
-    Db: 'C#',
-    Eb: 'D#',
-    Gb: 'F#',
-    Ab: 'G#',
-    Bb: 'A#'
+  // Convert sharp notes to their flat equivalents to match MP3 filenames
+  // Examples: C#3 → Db3, D#4 → Eb4, F#3 → Gb3, G#4 → Ab4, A#3 → Bb3
+  const sharpToFlatMap: { [key: string]: string } = {
+    'C#': 'Db',
+    'D#': 'Eb', 
+    'F#': 'Gb',
+    'G#': 'Ab',
+    'A#': 'Bb'
   };
 
-  // Check if the note contains a flat and convert it
-  for (const [flat, sharp] of Object.entries(flatToSharpMap)) {
-    if (primaryNote.includes(flat)) {
-      primaryNote = primaryNote.replace(flat, sharp);
+  // Check if the note contains a sharp and convert it
+  for (const [sharp, flat] of Object.entries(sharpToFlatMap)) {
+    if (primaryNote.includes(sharp)) {
+      primaryNote = primaryNote.replace(sharp, flat);
       break;
     }
   }
 
-  // Convert sharp (#) to 's' for filename (C#3 -> Cs3) and make lowercase
-  return primaryNote.replace('#', 's').toLowerCase();
+  // Return the note name as-is (already in correct format: C3, Db3, D3, etc.)
+  return primaryNote;
 }
 
 // Function to play audio for a given note
