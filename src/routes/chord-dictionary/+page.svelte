@@ -397,23 +397,7 @@
     margin: 0 auto;
   }
 
-  /* Piano section */
-  .piano-section {
-    padding: 0.5rem 0 2rem 0;
-  }
-
-  .piano-container {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-
-  /* Allow extended piano to use full width and scroll */
-  .chord-dictionary-wrapper .piano-container {
-    max-width: none; /* Remove width constraint for extended piano */
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
+  /* Piano overrides handled in app.css */
 
   /* Score section spacing */
   .score-section {
@@ -492,22 +476,14 @@
       width: 100%;
     }
 
-    .piano-container {
-      padding: 0 0.5rem;
-    }
-
-    .piano-section {
-      padding: 0.5rem 0 2rem 0;
-    }
+    /* Piano responsive styles handled in app.css */
   }
 
   @media (max-width: 480px) {
     .score-section {
       padding-bottom: 1.5rem;
     }
-    .piano-container {
-      padding: 0 0.5rem;
-    }
+    /* Piano responsive styles handled in app.css */
 
     .header-section {
       padding: 2rem 0;
@@ -515,10 +491,6 @@
 
     .controls-section {
       padding-bottom: 1rem;
-    }
-
-    .piano-section {
-      padding: 0.5rem 0 1rem 0;
     }
   }
 </style>

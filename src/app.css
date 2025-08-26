@@ -154,3 +154,40 @@
     padding-bottom: 0.75rem;
   }
 }
+
+/* Piano Component Shared Styles */
+.piano-section {
+  padding: 0.5rem 0 2rem 0;
+}
+
+.piano-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Extended Piano Overrides - Applied per page wrapper */
+.chord-dictionary-wrapper .piano-container,
+.learn-music-reading-wrapper .piano-container,
+.music-reading-wrapper .piano-container {
+  max-width: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Responsive Piano Styles */
+@media (max-width: 768px) {
+  .piano-container {
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .piano-section {
+    padding: 0.5rem 0 1rem 0;
+  }
+  
+  .piano-container {
+    padding: 0 0.5rem;
+  }
+}

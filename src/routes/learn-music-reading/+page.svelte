@@ -511,22 +511,7 @@
     font-style: italic;
   }
 
-  /* Piano Section */
-  .piano-section {
-    padding: 0.5rem 0 2rem 0;
-  }
-
-  .piano-container {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-
-  /* Allow extended piano to use full width and scroll */
-  .learn-music-reading-wrapper .piano-container {
-    max-width: 100%; /* Override for extended piano */
-    overflow-x: auto;
-  }
+  /* Piano styles handled in app.css */
 
 
 
@@ -547,9 +532,7 @@
       padding: 1rem 0;
     }
 
-    .piano-container {
-      padding: 0 0.5rem;
-    }
+    /* Piano responsive styles handled in app.css */
 
     .mnemonic-group.clickable {
       padding: 0.75rem;

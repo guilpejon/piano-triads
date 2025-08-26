@@ -2,7 +2,7 @@
   import Piano from '$lib/components/Piano.svelte';
   import MusicScore from '$lib/components/MusicScore.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import { playNote } from '$lib/utils/audioUtils';
+  import { playNote, preloadAudio } from '$lib/utils/audioUtils';
   import {
     loadProgress,
     saveProgress,
@@ -37,16 +37,19 @@
   let userProgress: UserProgress;
   let roundStartTime: number;
 
-  // Available notes for each clef range (matching available audio files C3-B4)
-  const trebleNotes = [
-    'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'
+  // Available notes for extended piano range (C2-C6 including accidentals)
+  const allNotes = [
+    // Octave 2
+    'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2',
+    // Octave 3
+    'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3',
+    // Octave 4
+    'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4',
+    // Octave 5
+    'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', 'A#5', 'B5',
+    // Octave 6
+    'C6'
   ];
-
-  const bassNotes = [
-    'C3', 'D3', 'E3', 'F3', 'G3', 'A3'
-  ];
-
-  const allNotes = [...trebleNotes, ...bassNotes];
 
   // Reactive accuracy calculation
   $: accuracy = totalRounds > 0 ? Math.round((successfulRounds / totalRounds) * 100) : 0;
@@ -231,6 +234,9 @@
     // Load user progress
     userProgress = loadProgress();
 
+    // Preload audio for extended piano range
+    preloadAudio('extended');
+
     // Initialize progress structure if needed
     if (!userProgress.modules.musicReading) {
       userProgress.modules.musicReading = {
@@ -395,7 +401,7 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={showCorrectAnswer ? currentScoreNotes : []} stickyOnMobile={true} showOctaveMarkers={true} />
+        <Piano bind:this={pianoComponent} keyRange="extended" chordNotes={showCorrectAnswer ? currentScoreNotes : []} stickyOnMobile={true} showOctaveMarkers={true} />
       </div>
     </section>
 
@@ -429,7 +435,10 @@
 </div>
 
 <style>
-  /* Music score practice wrapper */
+  .controls-section {
+    padding-bottom: 2.5rem;
+  }
+
   .music-reading-wrapper {
     min-height: calc(90vh - 4rem);
     padding: 2rem 0;
@@ -501,14 +510,15 @@
   /* Result Display */
   .result-display {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     padding: 1.5rem;
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-light);
+    justify-content: center;
   }
 
   .result-icon {
@@ -534,12 +544,6 @@
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-text-primary);
-  }
-
-  /* Controls */
-  .controls-section {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
   }
 
   .controls-container {
@@ -573,17 +577,7 @@
     box-shadow: var(--shadow-lg);
   }
 
-  /* Piano section */
-  .piano-section {
-    padding-bottom: 2rem;
-  }
-
-  .piano-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-  }
+  /* Piano styles handled in app.css */
 
   /* Statistics section */
   .stats-section {
@@ -646,9 +640,7 @@
   /* Responsive Design */
   @media (max-width: 768px) {
 
-    .piano-container {
-      padding: 1rem;
-    }
+    /* Piano responsive styles handled in app.css */
 
     .stats-container {
       padding: 1.5rem;
