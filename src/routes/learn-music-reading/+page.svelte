@@ -249,8 +249,7 @@
       </div>
     </section>
 
-    <!-- Memory Aids Section -->
-    <!-- <section class="mnemonics-section">
+    <section class="mnemonics-section">
       <div class="mnemonics-container">
         <h2 class="mnemonics-title">Memory Aids for Note Reading</h2>
         <p class="mnemonics-subtitle">Click any phrase to hear and see the notes on the piano</p>
@@ -311,7 +310,7 @@
           </div>
         </div>
       </div>
-    </section> -->
+    </section>
 
   </div>
 </div>
