@@ -1,13 +1,19 @@
-# Deploy Piano Triads to Raspberry Pi with Cloudflare Tunnel
+# Deploy Piano Triads to Raspberry Pi with Docker and Cloudflare Tunnel
 
-This guide will help you deploy your Piano Triads application to a Raspberry Pi using Cloudflare Tunnel.
+This guide will help you deploy your Piano Triads application to a Raspberry Pi using Docker, GitHub Container Registry, and Cloudflare Tunnel.
 
-### Initial System Setup
+## Overview
+
+- **Docker image** is built on GitHub Actions and pushed to GHCR
+- **Deployments** happen automatically when pushing to the `main` branch
+- **Cloudflared** runs outside Docker to route traffic to multiple services on the Pi
+
+## Step 1: Initial System Setup
 
 SSH into your Raspberry Pi:
 
 ```bash
-ssh guilpejon@raspberrypi.local
+ssh guilpejon@raspberrypi
 ```
 
 Update the system and install essential packages:
@@ -21,7 +27,8 @@ sudo apt install -y \
     curl \
     wget \
     git \
-    ufw
+    ufw \
+    vim
 
 # Clean up
 sudo apt autoremove -y
@@ -30,7 +37,7 @@ sudo apt autoremove -y
 On the Pi, disable password authentication for better security:
 
 ```bash
-sudo vi /etc/ssh/sshd_config
+sudo vim /etc/ssh/sshd_config
 ```
 
 Find and modify these lines:
@@ -55,98 +62,49 @@ sudo ufw enable
 # Allow SSH
 sudo ufw allow ssh
 
-# Allow HTTP and HTTPS (for Cloudflare Tunnel)
-sudo ufw allow 80
-sudo ufw allow 443
-
 # Check status
 sudo ufw status
 ```
 
-### Install Node.js
+Note: With Cloudflare Tunnel, you don't need to open ports 80 or 443 on the firewall.
 
-Install Node.js using NodeSource repository:
+## Step 2: Install Docker
 
-```bash
-# Add NodeSource repository for latest LTS
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-
-# Install Node.js
-sudo apt-get install nodejs -y
-
-# Verify installation
-node --version
-npm --version
-```
-
-### Create Application Directory
+Install Docker using the official convenience script:
 
 ```bash
-# Create directory for the app
-sudo mkdir -p /var/www/piano-triads
-sudo chown guilpejon:guilpejon /var/www/piano-triads
+# Download and run the Docker install script
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Add your user to the docker group (to run docker without sudo)
+sudo usermod -aG docker $USER
+
+# Log out and back in for the group change to take effect
+exit
 ```
 
-## Step 3: Build Locally and Deploy to Pi
-
-### Build on Your Development Machine
+SSH back in and verify Docker installation:
 
 ```bash
-# On your development machine (where Vite works)
-npm run build    # Build with @sveltejs/adapter-node
+ssh guilpejon@raspberrypi
 
-# This creates the production server in the build/ directory:
-# - build/index.js (standalone server)
-# - build/handler.js (for custom servers)
-# - build/client/ (static assets)
-# - build/server/ (server components)
+# Verify Docker is running
+docker --version
+docker compose version
+
+# Test Docker works without sudo
+docker run hello-world
 ```
 
-### Transfer Built Files to Pi
+## Step 3: Install and Configure Cloudflare Tunnel
 
-```bash
-# Transfer the built application to Pi
-scp -r build/ guilpejon@raspberrypi.local:/var/www/piano-triads/
-```
-
-### Set Up Dependencies on Pi
-
-```bash
-# SSH into your Pi
-ssh guilpejon@raspberrypi.local
-
-# Navigate to app directory
-cd /var/www/piano-triads
-```
-
-### Testing the build locally (optional)
-
-Before deploying, you can test the production build on your Raspberry Pi:
-
-```bash
-# Set environment variables (optional - defaults work fine)
-export PORT=3000
-export NODE_ENV=production
-export HOST=0.0.0.0
-
-# Temporary allow connections to por 3000
-sudo ufw allow 3000
-
-# Run the production server (adapter-node way)
-node build
-
-# Remember to block port 3000 again after the test
-sudo ufw deny 3000
-```
-
-Visit `http://raspberrypi.local:3000` to verify everything works correctly.
-
-## Step 4: Install and Configure Cloudflare Tunnel
+Cloudflared runs outside Docker so it can route traffic to multiple services on the Pi.
 
 ### Install cloudflared
 
 ```bash
-# For Pi 4 (ARM64):
+# For Raspberry Pi (ARM64)
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
 sudo dpkg -i cloudflared-linux-arm64.deb
 
@@ -161,25 +119,25 @@ cloudflared --version
 cloudflared tunnel login
 ```
 
-### Create a tunnel
+### Create a Tunnel
 
 ```bash
-# Create a new tunnel (replace 'piano-triads' with your preferred name)
-cloudflared tunnel create piano-triads
+# Create a new tunnel
+cloudflared tunnel create raspberrypi
 
-# Note the tunnel ID that's generated - you'll need it
+# Note the tunnel ID that's generated
 ```
 
-### Configure the tunnel
+### Configure the Tunnel
 
 Create a configuration file:
 
 ```bash
 sudo mkdir -p /etc/cloudflared
-sudo vi /etc/cloudflared/config.yml
+sudo vim /etc/cloudflared/config.yml
 ```
 
-Add the following content (replace values with your actual details):
+Add the following content (replace YOUR_TUNNEL_ID with your actual tunnel ID):
 
 ```yaml
 tunnel: YOUR_TUNNEL_ID
@@ -190,51 +148,24 @@ ingress:
     service: http://localhost:3000
   - hostname: www.pianotriads.com
     service: http://localhost:3000
+  # Add more hostnames for other services here
   - service: http_status:404
 ```
 
-## Step 5: Set up DNS
+### Set Up DNS
 
 In your Cloudflare dashboard:
 
 1. Go to DNS settings for your domain
 2. Add a CNAME record:
-   - Name: `piano-triads`
+   - Name: `@` (or subdomain)
    - Target: `YOUR_TUNNEL_ID.cfargotunnel.com`
    - Proxy status: Proxied (orange cloud)
-3. Repeat for more subdomains like www.piano-triads
 
-## Step 6: Create Systemd Services
-
-### Create service for the app
+### Create Systemd Service for Cloudflared
 
 ```bash
-sudo vi /etc/systemd/system/piano-triads.service
-```
-
-Add:
-
-```ini
-[Unit]
-Description=Piano Triads Web Application
-After=network.target
-
-[Service]
-Type=simple
-User=guilpejon
-WorkingDirectory=/var/www/piano-triads
-ExecStart=/var/www/piano-triads/deploy/start-app.sh
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Create service for Cloudflare Tunnel
-
-```bash
-sudo vi /etc/systemd/system/cloudflared.service
+sudo vim /etc/systemd/system/cloudflared.service
 ```
 
 Add:
@@ -255,60 +186,158 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-## Step 7: Enable and Start Services
+Enable and start the service:
 
 ```bash
-# Reload systemd
 sudo systemctl daemon-reload
-
-# Enable services to start on boot
-sudo systemctl enable piano-triads
 sudo systemctl enable cloudflared
-
-# Start services
-sudo systemctl start piano-triads
 sudo systemctl start cloudflared
-
-# Check status
-sudo systemctl status piano-triads
 sudo systemctl status cloudflared
 ```
 
-## Troubleshooting
+## Step 4: Configure SSH Access via Cloudflare
 
-### Check logs
+To allow GitHub Actions to deploy via SSH through Cloudflare Tunnel:
+
+### Add SSH to the Tunnel Config
+
+Update `/etc/cloudflared/config.yml` to include SSH:
+
+```yaml
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /home/guilpejon/.cloudflared/YOUR_TUNNEL_ID.json
+
+ingress:
+  - hostname: pianotriads.com
+    service: http://localhost:3000
+  - hostname: www.pianotriads.com
+    service: http://localhost:3000
+  - hostname: ssh.pianotriads.com
+    service: ssh://localhost:22
+  - service: http_status:404
+```
+
+Add DNS record for SSH:
+
+- Name: `ssh`
+- Target: `YOUR_TUNNEL_ID.cfargotunnel.com`
+- Proxy status: Proxied
+
+Restart cloudflared:
 
 ```bash
-# App logs
-sudo journalctl -u piano-triads -f
+sudo systemctl restart cloudflared
+```
 
-# Cloudflare tunnel logs
+### Configure Cloudflare Access (Optional but Recommended)
+
+In Cloudflare Zero Trust dashboard:
+
+1. Go to **Access** > **Applications**
+2. Create an application for `ssh.pianotriads.com`
+3. Set up a service token for GitHub Actions
+
+## Step 5: Set Up GitHub Repository
+
+### Configure GitHub Secrets
+
+In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions** and add:
+
+- `SSH_PRIVATE_KEY`: Your private SSH key that can access the Pi
+- `SSH_HOSTNAME`: Your SSH tunnel hostname (e.g., `ssh.pianotriads.com`)
+
+### Make GHCR Package Public (Optional)
+
+After the first deployment, go to your GitHub profile > **Packages** > **piano-triads** > **Package settings** and change visibility to public if you want the Pi to pull without authentication.
+
+Otherwise, log in to GHCR on the Pi:
+
+```bash
+echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u guilpejon --password-stdin
+```
+
+## Step 6: Initial Deployment
+
+### Create Application Directory
+
+```bash
+ssh guilpejon@raspberrypi
+
+# Create directory for the app
+sudo mkdir -p /var/www/piano-triads
+sudo chown guilpejon:guilpejon /var/www/piano-triads
+```
+
+### Copy Production Compose File
+
+From your development machine:
+
+```bash
+scp docker-compose.prod.yml guilpejon@raspberrypi:/var/www/piano-triads/
+```
+
+### First Deploy
+
+Push to the `main` branch to trigger the GitHub Actions workflow, or manually pull and start:
+
+```bash
+ssh guilpejon@raspberrypi
+cd /var/www/piano-triads
+
+# Pull the image
+docker pull ghcr.io/guilpejon/piano-triads:latest
+
+# Start the container
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Automatic Deployments
+
+After initial setup, deployments happen automatically:
+
+1. Push code to `main` branch
+2. GitHub Actions builds the Docker image for ARM64
+3. Image is pushed to GitHub Container Registry
+4. GitHub Actions SSHs into the Pi via Cloudflare Tunnel
+5. Pi pulls the new image and restarts the container
+
+## Troubleshooting
+
+### Check App Logs
+
+```bash
+ssh guilpejon@raspberrypi
+cd /var/www/piano-triads
+docker compose -f docker-compose.prod.yml logs -f
+```
+
+### Check Cloudflare Tunnel Logs
+
+```bash
 sudo journalctl -u cloudflared -f
 ```
 
-## Updating Your Application
-
-### Method 1: Build Locally and Transfer (Recommended)
+### Manually Pull and Restart
 
 ```bash
-# On your development machine
-git pull  # Get latest code
-npm run build  # Build new version with adapter-node
-
-# Transfer updated files to Pi
-scp -r build/ guilpejon@raspberrypi.local:/var/www/piano-triads/
-
-# On Pi, restart the service
-ssh guilpejon@raspberrypi.local << 'EOF'
-sudo systemctl restart piano-triads
-EOF
+cd /var/www/piano-triads
+docker pull ghcr.io/guilpejon/piano-triads:latest
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-### Method 2: Using Deploy Script (Easiest)
+### Check GitHub Actions
+
+View the workflow runs at: `https://github.com/guilpejon/piano-triads/actions`
+
+## Local Development
+
+For local development and testing, use the regular `docker-compose.yml` which builds locally:
 
 ```bash
-# On your development machine
-./deploy.sh raspberrypi.local piano-triads.com
-```
+# Build and run locally
+docker compose up --build
 
-This automatically builds locally and deploys to your Pi.
+# Or use npm directly
+npm run dev
+```

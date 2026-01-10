@@ -1,65 +1,51 @@
 #!/bin/bash
 
-# Piano Triads Update Script for Raspberry Pi
-# Usage: ./deploy.sh <raspberry-pi-host>
-# Example: ./deploy.sh raspberrypi.local
-# Example: ./deploy.sh guilpejon@raspberrypi.local
+# Piano Triads Manual Deploy Script
+# Usage: ./deploy.sh [raspberry-pi-host]
+# Example: ./deploy.sh
+# Example: ./deploy.sh raspberrypi
+# Example: ./deploy.sh guilpejon@raspberrypi
+#
+# Note: Deployments happen automatically via GitHub Actions when pushing to main.
+# This script is for manual deployments when needed.
 
 set -e
 
-PI_HOST=$1
+PI_HOST=${1:-raspberrypi}
 
-if [ -z "$PI_HOST" ]; then
-    echo "Usage: ./deploy.sh <raspberry-pi-host>"
-    echo "Example: ./deploy.sh raspberrypi.local"
-    echo "Example: ./deploy.sh guilpejon@raspberrypi.local"
-    exit 1
-fi
-
-# Parse the host to handle both formats: "raspberrypi.local" and "user@raspberrypi.local"
+# Parse the host to handle both formats
 if [[ "$PI_HOST" == *"@"* ]]; then
-    # Already includes username
     SSH_TARGET="$PI_HOST"
 else
-    # Add default username
     SSH_TARGET="guilpejon@$PI_HOST"
 fi
 
-echo "🎹 Updating Piano Triads on Raspberry Pi..."
-echo "📍 Target: $SSH_TARGET"
+echo "Deploying Piano Triads to Raspberry Pi..."
+echo "Target: $SSH_TARGET"
 
-# Pull latest changes from git
-echo "📥 Pulling latest changes from git..."
-git pull origin main --rebase
+ssh "$SSH_TARGET" << 'EOF'
+    cd /var/www/piano-triads
 
-# Build the application locally
-echo "🔨 Building latest version..."
-npm run build    # Build with @sveltejs/adapter-node
+    echo "Pulling latest image from GHCR..."
+    docker pull ghcr.io/guilpejon/piano-triads:latest
 
-# Transfer updated build to Raspberry Pi
-echo "🚀 Transferring updated build..."
-scp -r build/ $SSH_TARGET:/var/www/piano-triads/
+    echo "Restarting container..."
+    docker compose -f docker-compose.prod.yml down
+    docker compose -f docker-compose.prod.yml up -d
 
-# SSH into Pi and restart the service
-echo "🔄 Restarting service on Raspberry Pi..."
-ssh $SSH_TARGET << EOF
-    # Restart the piano-triads service
-    sudo systemctl restart piano-triads
-    
-    # Check if service started successfully
-    sleep 2
-    if sudo systemctl is-active piano-triads > /dev/null; then
-        echo "✅ Service restarted successfully"
+    echo "Cleaning up old images..."
+    docker image prune -f
+
+    sleep 3
+    if docker compose -f docker-compose.prod.yml ps | grep -q "running"; then
+        echo "Deployment successful!"
+        docker compose -f docker-compose.prod.yml ps
     else
-        echo "❌ Service failed to start"
-        sudo systemctl status piano-triads --no-pager
+        echo "Deployment failed!"
+        docker compose -f docker-compose.prod.yml logs --tail=50
         exit 1
     fi
 EOF
 
 echo ""
-echo "🎉 Update completed!"
-echo "🌐 Your app should now be running with the latest changes"
-echo ""
-echo "📋 To check status:"
-echo "   ssh $SSH_TARGET 'sudo systemctl status piano-triads'"
+echo "Done! Your app should now be running with the latest image."
