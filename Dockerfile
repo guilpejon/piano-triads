@@ -34,13 +34,13 @@ FROM node:22-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=80
 ENV HOST=0.0.0.0
 
 # Copy built application from builder stage
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["node", "build"]
