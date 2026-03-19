@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(docker build:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm view:*)"
     ]
   }
 }

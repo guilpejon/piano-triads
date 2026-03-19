@@ -28,6 +28,10 @@
     "vite": "^7.0.4",
     "vite-plugin-pwa": "^1.0.2"
   },
+  "overrides": {
+    "cookie": ">=0.7.0",
+    "serialize-javascript": ">=7.0.3"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
