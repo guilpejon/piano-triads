@@ -1,5 +1,21 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+  import { theme, initTheme, setTheme, cycleTheme, type Theme } from '$lib/utils/themeUtils';
+
+  // The inline script in app.html has already applied the stored theme to <html>; this only
+  // syncs the store so the button renders the right icon.
+  onMount(initTheme);
+
+  const themeLabels: Record<Theme, string> = {
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System'
+  };
+
+  function toggleTheme() {
+    setTheme(cycleTheme($theme));
+  }
 
   // Type definitions
   interface NavItem {
@@ -161,17 +177,72 @@
       {/each}
     </div>
 
-    <!-- Mobile Menu Button -->
-    <button
-      class="mobile-menu-btn"
-      class:active={mobileMenuOpen}
-      on:click={toggleMobileMenu}
-      aria-label="Toggle menu"
-    >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
+    <div class="nav-actions">
+      <!-- Theme Toggle: light → dark → system -->
+      <button
+        class="theme-toggle"
+        on:click={toggleTheme}
+        aria-label="Theme: {themeLabels[$theme]}. Switch to {themeLabels[cycleTheme($theme)]}."
+        title="Theme: {themeLabels[$theme]}"
+      >
+        {#if $theme === 'light'}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            />
+          </svg>
+        {:else if $theme === 'dark'}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+        {:else}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="4" width="20" height="14" rx="2" />
+            <path d="M8 21h8M12 18v3" />
+          </svg>
+        {/if}
+      </button>
+
+      <!-- Mobile Menu Button -->
+      <button
+        class="mobile-menu-btn"
+        class:active={mobileMenuOpen}
+        on:click={toggleMobileMenu}
+        aria-label="Toggle menu"
+        aria-expanded={mobileMenuOpen}
+      >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile Menu -->
@@ -230,9 +301,40 @@
   .navbar {
     position: relative;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* Right-hand controls. Wrapped so the container keeps three flex children and the desktop
+     links stay hugged to the right as before. */
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1.5rem;
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.625rem;
+    background: var(--color-surface-subtle);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .theme-toggle:hover {
+    background: var(--color-surface-subtle-hover);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-medium);
   }
 
   /* Container */
@@ -275,6 +377,7 @@
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    margin-left: auto;
   }
 
   .nav-link {
@@ -290,12 +393,12 @@
 
   .nav-link:hover {
     color: var(--color-text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--color-surface-subtle-hover);
   }
 
   .nav-link.active {
     color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   /* Desktop dropdown styles */
@@ -323,12 +426,12 @@
   .nav-dropdown-btn:hover,
   .nav-dropdown-btn.active {
     color: var(--color-text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--color-surface-subtle-hover);
   }
 
   .nav-dropdown.active .nav-dropdown-btn {
     color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   .dropdown-arrow {
@@ -345,11 +448,11 @@
     top: 100%;
     left: 0;
     min-width: 200px;
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-light);
     border-radius: 0.75rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-lg);
     padding: 0.5rem;
     margin-top: 0.5rem;
     z-index: 1001;
@@ -369,12 +472,12 @@
 
   .nav-dropdown-item:hover {
     color: var(--color-text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--color-surface-subtle-hover);
   }
 
   .nav-dropdown-item.active {
     color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   /* Mobile menu button */
@@ -429,11 +532,11 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--color-border-light);
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
   }
 
   .mobile-nav-links {
@@ -455,12 +558,12 @@
 
   .mobile-nav-link:hover {
     color: var(--color-text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--color-surface-subtle-hover);
   }
 
   .mobile-nav-link.active {
     color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   /* Mobile section styles */
@@ -503,12 +606,12 @@
 
   .mobile-nav-section-item:hover {
     color: var(--color-text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--color-surface-subtle-hover);
   }
 
   .mobile-nav-section-item.active {
     color: var(--color-accent);
-    background: rgba(0, 122, 255, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
   }
 
   /* Responsive */

@@ -572,7 +572,7 @@
     flex-shrink: 0;
     max-width: 400px;
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--color-surface);
     border: 2px solid transparent;
     background-clip: padding-box;
     position: relative;

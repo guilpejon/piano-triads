@@ -8,6 +8,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- Apply the saved theme before first paint so the page never flashes the wrong one.
+         No stored value means follow the OS, which app.css handles via prefers-color-scheme,
+         so the attribute is deliberately left off. Key matches THEME_KEY in themeUtils.ts. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('piano-triads-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1HV1DFHRMM"></script>
     <script>

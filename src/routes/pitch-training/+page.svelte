@@ -644,7 +644,7 @@
     padding: 0.75rem 2rem;
     border: 2px solid var(--color-border-medium);
     border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     color: var(--color-text-primary);
     font-weight: 600;
     cursor: pointer;
@@ -660,18 +660,18 @@
   }
 
   .mode-button:hover:not(.active) {
-    background: rgba(255, 255, 255, 1);
+    background: var(--color-surface-solid);
     transform: translateY(-1px);
   }
 
   /* Note Mode - subtle green tint */
   .mode-button.note-mode:not(.active) {
-    background: rgba(240, 253, 244, 0.9);
+    background: color-mix(in srgb, #22c55e 10%, var(--color-surface));
     border-color: rgba(34, 197, 94, 0.2);
   }
 
   .mode-button.note-mode:hover:not(.active) {
-    background: rgba(240, 253, 244, 1);
+    background: color-mix(in srgb, #22c55e 16%, var(--color-surface-solid));
     border-color: rgba(34, 197, 94, 0.3);
   }
 
@@ -684,12 +684,12 @@
 
   /* Chord Mode - orange/red tint for difficulty */
   .mode-button.chord-mode:not(.active) {
-    background: rgba(255, 247, 237, 0.9);
+    background: color-mix(in srgb, #f97316 10%, var(--color-surface));
     border-color: rgba(249, 115, 22, 0.2);
   }
 
   .mode-button.chord-mode:hover:not(.active) {
-    background: rgba(255, 247, 237, 1);
+    background: color-mix(in srgb, #f97316 16%, var(--color-surface-solid));
     border-color: rgba(249, 115, 22, 0.3);
   }
 
@@ -723,7 +723,7 @@
   .info-item {
     text-align: center;
     padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     backdrop-filter: blur(20px);
@@ -870,7 +870,7 @@
     max-width: 32rem;
     margin: 0 auto;
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1.5rem;
     backdrop-filter: blur(20px);

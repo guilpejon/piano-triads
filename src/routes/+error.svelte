@@ -151,14 +151,14 @@
 
   .piano-key {
     transition: var(--transition-smooth);
-    border-right: 1px solid #ddd;
+    border-right: 1px solid var(--color-border-medium);
   }
 
   .piano-key.white {
     width: 24px;
     height: 120px;
-    background: linear-gradient(to bottom, #fefefe 0%, #f8f8f8 100%);
-    border-bottom: 3px solid #ccc;
+    background: linear-gradient(to bottom, var(--color-surface-solid) 0%, var(--color-surface-raised) 100%);
+    border-bottom: 3px solid var(--color-border-strong);
   }
 
   .piano-key.black {
@@ -255,13 +255,13 @@
   }
 
   .action-button.secondary {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border-light);
   }
 
   .action-button.secondary:hover {
-    background: rgba(255, 255, 255, 1);
+    background: var(--color-surface-solid);
     border-color: var(--color-border-medium);
     transform: translateY(-2px);
   }

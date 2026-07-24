@@ -219,7 +219,7 @@
     bottom: 20px;
     left: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-light);
     border-radius: 16px;

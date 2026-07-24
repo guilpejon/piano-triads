@@ -404,8 +404,8 @@
                 cy="6"
                 rx="7"
                 ry="4.5"
-                fill="#1d1d1f"
-                stroke="white"
+                fill="var(--color-text-primary)"
+                stroke="var(--color-surface-solid)"
                 stroke-width="0.5"
                 transform="rotate(-20 8 6)"
               />
@@ -480,8 +480,8 @@
                 cy="6"
                 rx="7"
                 ry="4.5"
-                fill="#1d1d1f"
-                stroke="white"
+                fill="var(--color-text-primary)"
+                stroke="var(--color-surface-solid)"
                 stroke-width="0.5"
                 transform="rotate(-20 8 6)"
               />
@@ -495,12 +495,12 @@
 
 <style>
   .music-score {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-medium);
     border-radius: 16px;
     padding: 2.5rem 1.5rem;
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-md);
     max-width: 500px;
     margin: 0 auto;
     width: fit-content;
@@ -514,7 +514,7 @@
   .chord-name {
     font-size: 24px;
     font-weight: 600;
-    color: #1d1d1f;
+    color: var(--color-text-primary);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
@@ -548,7 +548,7 @@
     left: 5px;
     bottom: 15px;
     font-family: 'Times New Roman', serif;
-    color: #1d1d1f;
+    color: var(--color-text-primary);
     z-index: 2;
   }
 
@@ -574,7 +574,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background-color: #1d1d1f;
+    background-color: var(--color-text-primary);
     opacity: 0.8;
   }
 
@@ -588,7 +588,7 @@
   .ledger-line {
     position: absolute;
     height: 1.6px;
-    background-color: #1d1d1f;
+    background-color: var(--color-text-primary);
     z-index: 1;
   }
 
@@ -628,14 +628,14 @@
   }
 
   .quarter-note:hover ellipse {
-    fill: #000000;
+    fill: var(--color-text-primary);
   }
 
   .accidental {
     position: absolute;
     font-size: 30px;
     left: -5px;
-    color: #1d1d1f;
+    color: var(--color-text-primary);
     transform: translateX(-20px);
     z-index: 2;
     /* Ensure consistent bold rendering across platforms */

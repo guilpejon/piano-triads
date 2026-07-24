@@ -853,6 +853,10 @@
 </div>
 
 <style>
+  /* The keyboard has its own local palette. Dark mode retunes these rather than touching the
+     ~70 places that reference them: the keys stay recognisably a piano (white keys still
+     read as white) but dimmed so they don't glare against a dark page, with deeper shadows
+     and a lighter key border to keep the black/white edge visible. */
   :root {
     --text-primary: #333;
     --text-light: #fff;
@@ -864,6 +868,35 @@
     --shadow-light: rgba(0, 0, 0, 0.1);
     --shadow-medium: rgba(0, 0, 0, 0.2);
     --shadow-dark: rgba(0, 0, 0, 0.5);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --text-primary: #2a2a2e;
+      --text-light: #f5f5f7;
+      --bg-primary: #dcdce0;
+      --bg-secondary: #c4c4c9;
+      --bg-dark: #131317;
+      --border-light: #85858c;
+      --border-dark: #000;
+      --shadow-light: rgba(0, 0, 0, 0.35);
+      --shadow-medium: rgba(0, 0, 0, 0.5);
+      --shadow-dark: rgba(0, 0, 0, 0.8);
+    }
+  }
+
+  /* Keep in sync with the block above. */
+  :root[data-theme='dark'] {
+    --text-primary: #2a2a2e;
+    --text-light: #f5f5f7;
+    --bg-primary: #dcdce0;
+    --bg-secondary: #c4c4c9;
+    --bg-dark: #131317;
+    --border-light: #85858c;
+    --border-dark: #000;
+    --shadow-light: rgba(0, 0, 0, 0.35);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-dark: rgba(0, 0, 0, 0.8);
   }
 
   .piano {
@@ -909,26 +942,26 @@
     border-radius: 0 0 5px 5px;
     box-shadow:
       -1px 0 0 rgba(255, 255, 255, 0.8) inset,
-      0 0 5px #ccc inset,
+      0 0 5px var(--shadow-light) inset,
       0 0 3px var(--shadow-medium);
     background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   }
 
   .key.white:active,
   .key.white:focus {
-    border-top: 1px solid #777;
-    border-left: 1px solid #999;
-    border-bottom: 1px solid #999;
+    border-top: 1px solid var(--border-light);
+    border-left: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
     box-shadow:
       2px 0 3px var(--shadow-light) inset,
       -5px 5px 20px var(--shadow-medium) inset,
       0 0 3px var(--shadow-medium);
-    background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
+    background: linear-gradient(to bottom, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   }
   .key.white:hover {
-    border-left: 1px solid #999;
-    border-bottom: 1px solid #999;
-    background: linear-gradient(to bottom, var(--bg-primary) 0%, #e9e9e9 100%);
+    border-left: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    background: linear-gradient(to bottom, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   }
 
   /* Keyboard control visual feedback */
@@ -938,8 +971,8 @@
   }
 
   :global(.key.white.keyboard-active) {
-    background: linear-gradient(to bottom, #d0d0d0 0%, #c0c0c0 100%);
-    border-color: #777;
+    background: linear-gradient(to bottom, var(--bg-secondary) 0%, var(--border-light) 100%);
+    border-color: var(--border-light);
   }
 
   :global(.key.black.keyboard-active) {

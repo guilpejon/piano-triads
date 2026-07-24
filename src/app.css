@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 
-/* Design System - Shared Variables */
+/* Design System - Shared Variables
+ *
+ * Light is the default. Dark is applied in two places, and both are needed:
+ *   - the prefers-color-scheme block, for visitors who have never used the toggle
+ *   - the [data-theme='dark'] block, for an explicit choice, which must also be able to
+ *     force light back on a system that is set to dark
+ * The two dark blocks are kept identical on purpose; change them together.
+ */
 :root {
   /* Colors */
   --color-text-primary: #1d1d1f;
@@ -14,12 +21,33 @@
   --color-accent: #3480f1;
   --color-accent-hover: #2563eb;
 
+  /* Surfaces — cards, controls and chrome that sit on top of the background */
+  --color-surface: rgba(255, 255, 255, 0.95);
+  --color-surface-solid: #ffffff;
+  --color-surface-raised: #f5f5f7;
+  --color-surface-subtle: rgba(0, 0, 0, 0.02);
+  --color-surface-subtle-hover: rgba(0, 0, 0, 0.05);
+  --color-footer-bg: #1f2937;
+  --color-footer-text: #ffffff;
+
+  /* Piano keys */
+  --piano-white-key: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+  --piano-white-key-border: #d1d5db;
+  --piano-white-key-text: #6b7280;
+  --piano-black-key: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+  --piano-black-key-text: #e5e7eb;
+  --piano-shadow: rgba(0, 0, 0, 0.1);
+
   /* Gradients */
   --gradient-text: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
   --gradient-blue: linear-gradient(135deg, #3480f1 0%, #2563eb 100%);
   --gradient-green: linear-gradient(135deg, #34c759 0%, #248a3d 100%);
   --gradient-purple: linear-gradient(135deg, #af52de 0%, #8e44ad 100%);
   --gradient-orange: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
+
+  /* Feedback — practice correct/incorrect states */
+  --color-success: #34c759;
+  --color-danger: #ff3b30;
 
   /* Shadows */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -29,6 +57,101 @@
   /* Transitions */
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition-gentle: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  color-scheme: light;
+}
+
+/* Dark — system preference, unless the user has explicitly chosen light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-text-primary: #f5f5f7;
+    --color-text-secondary: #a1a1a6;
+    --color-text-tertiary: #8e8e93;
+    --color-text-light: #6e6e73;
+    --color-background: #0a0a0b;
+    --color-border-light: rgba(255, 255, 255, 0.08);
+    --color-border-medium: rgba(255, 255, 255, 0.12);
+    --color-border-strong: rgba(255, 255, 255, 0.2);
+    --color-accent: #57a0ff;
+    --color-accent-hover: #7cb5ff;
+
+    --color-surface: rgba(28, 28, 30, 0.95);
+    --color-surface-solid: #1c1c1e;
+    --color-surface-raised: #2c2c2e;
+    --color-surface-subtle: rgba(255, 255, 255, 0.05);
+    --color-surface-subtle-hover: rgba(255, 255, 255, 0.09);
+    --color-footer-bg: #111114;
+    --color-footer-text: #f5f5f7;
+
+    --piano-white-key: linear-gradient(180deg, #e8e8ea 0%, #d6d6d9 100%);
+    --piano-white-key-border: #4a4a4f;
+    --piano-white-key-text: #4b5563;
+    --piano-black-key: linear-gradient(180deg, #1c1c22 0%, #0d0d11 100%);
+    --piano-black-key-text: #d1d5db;
+    --piano-shadow: rgba(0, 0, 0, 0.6);
+
+    --gradient-text: linear-gradient(135deg, #f5f5f7 0%, #c7c7cc 100%);
+
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.65);
+
+    color-scheme: dark;
+  }
+}
+
+/* Dark — explicit user choice. Keep in sync with the block above. */
+:root[data-theme='dark'] {
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #a1a1a6;
+  --color-text-tertiary: #8e8e93;
+  --color-text-light: #6e6e73;
+  --color-background: #0a0a0b;
+  --color-border-light: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.12);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-accent: #57a0ff;
+  --color-accent-hover: #7cb5ff;
+
+  --color-surface: rgba(28, 28, 30, 0.95);
+  --color-surface-solid: #1c1c1e;
+  --color-surface-raised: #2c2c2e;
+  --color-surface-subtle: rgba(255, 255, 255, 0.05);
+  --color-surface-subtle-hover: rgba(255, 255, 255, 0.09);
+  --color-footer-bg: #111114;
+  --color-footer-text: #f5f5f7;
+
+  --piano-white-key: linear-gradient(180deg, #e8e8ea 0%, #d6d6d9 100%);
+  --piano-white-key-border: #4a4a4f;
+  --piano-white-key-text: #4b5563;
+  --piano-black-key: linear-gradient(180deg, #1c1c22 0%, #0d0d11 100%);
+  --piano-black-key-text: #d1d5db;
+  --piano-shadow: rgba(0, 0, 0, 0.6);
+
+  --gradient-text: linear-gradient(135deg, #f5f5f7 0%, #c7c7cc 100%);
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.65);
+
+  color-scheme: dark;
+}
+
+/* Respect a reduced-motion preference across every shared transition */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-smooth: none;
+    --transition-gentle: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Shared Component Styles */
@@ -82,7 +205,7 @@
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: 20px;
   backdrop-filter: blur(20px);
@@ -103,7 +226,7 @@
   border-radius: 0.75rem;
   font-size: 0.875rem;
   font-weight: 400;
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--color-surface-subtle);
   backdrop-filter: blur(20px);
   border: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
@@ -112,7 +235,7 @@
 }
 
 .btn-glass:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-surface-subtle-hover);
   border-color: var(--color-border-medium);
   transform: translateY(-1px);
 }

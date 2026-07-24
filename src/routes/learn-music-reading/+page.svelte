@@ -330,7 +330,7 @@
   .clear-button {
     padding: 0.75rem 1.5rem;
     border: 1px solid var(--color-border-light);
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     color: var(--color-text-primary);
     font-weight: 500;
     border-radius: 0.5rem;
@@ -415,7 +415,7 @@
   }
 
   .mnemonic-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     padding: 2rem;

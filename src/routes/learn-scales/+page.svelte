@@ -395,7 +395,7 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-medium);
     border-radius: 0.75rem;
@@ -448,7 +448,7 @@
     max-width: 46rem;
     margin: 0 auto;
     padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     backdrop-filter: blur(20px);
@@ -467,7 +467,7 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 0.5rem;
     min-width: 3rem;

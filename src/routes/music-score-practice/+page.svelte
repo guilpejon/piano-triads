@@ -472,7 +472,7 @@
   .info-item {
     text-align: center;
     padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1rem;
     backdrop-filter: blur(20px);
@@ -515,7 +515,7 @@
     gap: 1rem;
     padding: 1.5rem;
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-light);
     justify-content: center;
@@ -588,7 +588,7 @@
     max-width: 32rem;
     margin: 0 auto;
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1.5rem;
     backdrop-filter: blur(20px);

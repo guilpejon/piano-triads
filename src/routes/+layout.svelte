@@ -60,8 +60,8 @@
   }
 
   .app-footer {
-    background: #1f2937;
-    color: white;
+    background: var(--color-footer-bg);
+    color: var(--color-footer-text);
     padding: 1.5rem 0;
     margin-top: auto;
   }
@@ -79,7 +79,7 @@
   }
 
   .heart {
-    color: #ef4444;
+    color: #ff6b6b;
   }
 
   .footer-link {

@@ -615,7 +615,7 @@
   .current-progression-container {
     max-width: 48rem;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1.5rem;
     padding: 2rem;
@@ -674,7 +674,7 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     backdrop-filter: blur(20px);
     border: 1px solid var(--color-border-medium);
     border-radius: 0.5rem;
@@ -746,7 +746,7 @@
     justify-content: center;
     width: 3rem;
     height: 3rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-medium);
     border-radius: 50%;
     cursor: pointer;
@@ -838,7 +838,7 @@
   .scale-chords-container {
     max-width: 48rem;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: 1.5rem;
     padding: 2rem;
@@ -863,7 +863,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     border: 2px solid var(--color-border-light);
     border-radius: 1rem;
     padding: 1rem 0.5rem;

@@ -921,7 +921,7 @@
   }
 
   .modal-content {
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--color-surface);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
     padding: 1.5rem;
@@ -963,7 +963,7 @@
 
   .btn-cancel {
     padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--color-surface);
     border: 1px solid #d1d5db;
     border-radius: 8px;
     color: #374151;
@@ -975,7 +975,7 @@
   }
 
   .btn-cancel:hover {
-    background: rgba(255, 255, 255, 1);
+    background: var(--color-surface-solid);
     border-color: #9ca3af;
   }
 
