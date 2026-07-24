@@ -69,14 +69,50 @@ Match the surrounding style rather than mixing idioms in.
 
 - **`progressUtils.ts`** — `UserProgress` persisted to `localStorage` under
   `piano-triads-progress`. Every practice page ends a round with the same sequence:
-  `completePracticeSession()` → `checkAchievements()` → `saveProgress()`.
-  `loadProgress()` has **no migration path**, so any new field must be defaulted there or
-  existing users hit `undefined`.
+  `recordItemResult()` → `completePracticeSession()` → `checkAchievements()` →
+  `saveProgress()`.
+
+  `loadProgress()` does a **shallow merge**, so any new field must be top-level _and_
+  defaulted there explicitly, or existing users get `undefined`. Nested additions under
+  `modules` will not be defaulted.
+
+  Beyond the lifetime counters it holds two maps:
+  - `dailyStats`, keyed by local calendar day, backing the activity chart and the daily
+    streak, pruned to a year.
+  - `itemStats`, keyed `'<practiceKey>:<itemId>'`, holding per-item accuracy. This drives
+    `pickWeightedItem()`, which is how the practice modes choose the next item — weighted
+    toward what you keep missing (weight 1 when mastered, up to 4 when always missed, 3 when
+    never seen) rather than uniform random. Change those constants and you change how hard
+    practice feels.
+
+  `exportProgress()` / `importProgress()` are the only way progress survives a cleared
+  browser or a device change.
+
+- **`themeUtils.ts`** — light/dark/system. Only an explicit choice is stored, so 'system'
+  keeps following the OS. The `data-theme` attribute is applied by an inline script in
+  `app.html` before first paint; `THEME_KEY` must stay in sync with it. `app.css` defines
+  dark **twice** — under `prefers-color-scheme` and under `[data-theme='dark']` — because an
+  explicit light choice has to win on a machine set to dark. Change both together.
 
 - **`seoUtils.ts`** — `pageSEOConfigs` keyed by route id. `SEOHead.svelte` is rendered once
   in `+layout.svelte` and looks up `$page.route.id`. **Adding a route means adding an entry
   here**, or the page inherits homepage metadata. Each entry repeats title/description across
   primary, OG, Twitter, and structuredData blocks.
+
+  A route with per-instance metadata (the chord pages) returns `seo` from its `load` instead,
+  which `SEOHead` prefers. Don't emit a `<title>` from the page itself — layout head content
+  renders first and wins.
+
+  The JSON-LD block is emitted as a whole `<script>` tag through `{@html}`. That looks odd but
+  is required: Svelte does not interpolate expressions inside a literal `<script>` element, so
+  writing `{@html ...}` between script tags shipped the template source to crawlers instead of
+  the data.
+
+- **`chordUtils.ts` slugs** — chord names contain `#` and `♭`, which can't sit in a URL path,
+  so `chordSlug()`/`chordFromSlug()` map `C#maj7` ↔ `c-sharp-major-7th`. These are **public
+  URLs** for the 160 prerendered pages under `/chord-dictionary/`; changing the mapping
+  changes live URLs. `getSluggedChords()` feeds both the prerender `entries()` and
+  `sitemap.xml`, so a new chord in the dictionary gets a page and a sitemap entry for free.
 
 ### The Piano contract is DOM classes, not props
 
@@ -99,11 +135,11 @@ change; if you're doing anything substantial, converting `Piano` to a
 Every practice page (`chord-practice`, `pitch-training`, `music-score-practice`) is the same
 state machine: `gameState: 'waiting' | 'playing' | 'completed' | 'failed'`, a `setInterval`
 countdown (30 s / 15 s / 20 s respectively), a mistake cap of 3, then the progress-save
-sequence. Round items are chosen with uniform `Math.random()` — there is no adaptive
-selection or spaced repetition.
+sequence. Round items come from `pickWeightedItem()`, not `Math.random()`. The timers and
+mistake caps are still hard-coded per page with no difficulty setting.
 
-`/chord-dictionary/[chord]/+page.js` is not a page: it 302-redirects to
-`/chord-dictionary?chord=X`, so there are no per-chord indexable URLs and no `sitemap.xml`.
+`/chord-dictionary/[chord]` is a prerendered page per chord (160 of them), driven by the slug
+helpers above. Requests using the old raw chord name 301 to the canonical slug.
 
 ### Styling
 
@@ -134,9 +170,13 @@ Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) builds a `lin
 → pushes to GHCR → SSHes to a Raspberry Pi over a Cloudflare tunnel →
 `docker compose -f docker-compose.prod.yml up -d`.
 
-**The workflow runs no checks** — not `npm run check`, not `npm run lint`, no tests. A type
-error reaches production as long as Vite can build it. Run `npm run check` yourself before
-pushing.
+A `check` job runs `npm ci && npm run check` and the deploy job `needs` it, so a type error
+blocks the deploy. `npm run lint` is deliberately not in CI — it fails on `main` (see above),
+so adding it would block every deploy until the repo is formatted.
+
+Note the deploy also runs `npm run build`, which **prerenders**, and prerendering fails the
+build on a dangling internal link. That is a feature — it has already caught one — but it
+means a broken `href` breaks the deploy, not just a page.
 
 ## Testing changes on iOS
 

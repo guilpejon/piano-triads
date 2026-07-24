@@ -7,6 +7,8 @@
     loadProgress,
     saveProgress,
     completePracticeSession,
+    pickWeightedItem,
+    recordItemResult,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -103,7 +105,7 @@
 
     if (currentMode === 'note') {
       // Pick a random note
-      currentTarget = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+      currentTarget = pickWeightedItem(userProgress, 'pitchNote', availableNotes, currentTarget);
       currentTargetNotes = [currentTarget];
       // Play the note
       setTimeout(() => {
@@ -111,7 +113,7 @@
       }, 500);
     } else {
       // Pick a random chord
-      currentTarget = availableChords[Math.floor(Math.random() * availableChords.length)];
+      currentTarget = pickWeightedItem(userProgress, 'pitchChord', availableChords, currentTarget);
       const chordData = getChord(currentTarget);
       currentTargetNotes = chordData ? chordData.root_position : [];
       // Play the chord
@@ -153,6 +155,12 @@
     // Update progress tracking for the specific mode
     const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
     const subModule = currentMode === 'note' ? 'notes' : 'chords';
+    userProgress = recordItemResult(
+      userProgress,
+      currentMode === 'note' ? 'pitchNote' : 'pitchChord',
+      currentTarget,
+      success
+    );
     userProgress = completePracticeSession(
       userProgress,
       'pitchTraining',

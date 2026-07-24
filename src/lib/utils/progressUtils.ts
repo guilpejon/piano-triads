@@ -36,12 +36,24 @@ export interface DailyStat {
   seconds: number;
 }
 
+// Per-item accuracy, keyed '<practiceKey>:<itemId>' (e.g. 'chordPractice:CM').
+// Practice modes previously drew items with a uniform Math.random(), so a chord you always
+// miss came up exactly as often as one you always get. This is what lets selection lean
+// toward weak items.
+export interface ItemStat {
+  seen: number;
+  correct: number;
+}
+
+export type PracticeKey = 'chordPractice' | 'pitchNote' | 'pitchChord' | 'scoreNote';
+
 export interface UserProgress {
   modules: ModuleProgress;
   achievements: Achievement[];
   totalPlayTime: number; // in minutes
   lastActive: string; // ISO date string
   dailyStats: Record<string, DailyStat>;
+  itemStats: Record<string, ItemStat>;
 }
 
 export interface Achievement {
@@ -124,7 +136,8 @@ export function getDefaultProgress(): UserProgress {
     achievements: [],
     totalPlayTime: 0,
     lastActive: now,
-    dailyStats: {}
+    dailyStats: {},
+    itemStats: {}
   };
 }
 
@@ -219,7 +232,12 @@ export function loadProgress(): UserProgress {
       const parsed = JSON.parse(stored);
       // Merge with default to handle new fields. This is a shallow merge, so any field added
       // to UserProgress must be top-level or it will be undefined for existing users.
-      return { ...getDefaultProgress(), ...parsed, dailyStats: parsed.dailyStats ?? {} };
+      return {
+        ...getDefaultProgress(),
+        ...parsed,
+        dailyStats: parsed.dailyStats ?? {},
+        itemStats: parsed.itemStats ?? {}
+      };
     }
   } catch (error) {
     console.warn('Failed to load progress from localStorage:', error);
@@ -566,6 +584,74 @@ export function formatDate(isoString: string): string {
     day: 'numeric',
     year: 'numeric'
   });
+}
+
+/** Fold one answered item into its per-item record. */
+export function recordItemResult(
+  progress: UserProgress,
+  practiceKey: PracticeKey,
+  itemId: string,
+  wasSuccessful: boolean
+): UserProgress {
+  const key = `${practiceKey}:${itemId}`;
+  const itemStats = { ...(progress.itemStats ?? {}) };
+  const current = itemStats[key] ?? { seen: 0, correct: 0 };
+
+  itemStats[key] = {
+    seen: current.seen + 1,
+    correct: current.correct + (wasSuccessful ? 1 : 0)
+  };
+
+  return { ...progress, itemStats };
+}
+
+/** Accuracy for one item, or null when it has never been shown. */
+export function getItemAccuracy(
+  progress: UserProgress,
+  practiceKey: PracticeKey,
+  itemId: string
+): number | null {
+  const stat = (progress.itemStats ?? {})[`${practiceKey}:${itemId}`];
+  if (!stat || stat.seen === 0) return null;
+  return stat.correct / stat.seen;
+}
+
+/**
+ * Pick the next item, biased toward the ones being answered worst.
+ *
+ * Weight is 1 for an item answered perfectly, up to 4 for one always missed, and 3 for an
+ * item never seen so the full set still gets covered early. Every item keeps a non-zero
+ * weight, so this stays practice rather than drilling the same two chords forever.
+ */
+export function pickWeightedItem(
+  progress: UserProgress,
+  practiceKey: PracticeKey,
+  items: string[],
+  excludeId?: string
+): string {
+  if (items.length === 0) return '';
+
+  // Avoid handing back the same item twice in a row when there is any alternative.
+  const pool = items.length > 1 && excludeId ? items.filter((item) => item !== excludeId) : items;
+
+  // Callers pick the first item from onMount, so progress may not be loaded yet.
+  if (!progress) return pool[Math.floor(Math.random() * pool.length)];
+
+  const weights = pool.map((item) => {
+    const accuracy = getItemAccuracy(progress, practiceKey, item);
+    if (accuracy === null) return 3;
+    return 1 + 3 * (1 - accuracy);
+  });
+
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  let cursor = Math.random() * total;
+
+  for (let i = 0; i < pool.length; i++) {
+    cursor -= weights[i];
+    if (cursor <= 0) return pool[i];
+  }
+
+  return pool[pool.length - 1];
 }
 
 // Progress lives only in this browser's localStorage, so clearing site data or switching

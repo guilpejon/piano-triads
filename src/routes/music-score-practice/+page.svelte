@@ -7,6 +7,8 @@
     loadProgress,
     saveProgress,
     completePracticeSession,
+    pickWeightedItem,
+    recordItemResult,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -71,7 +73,7 @@
 
     // Pick a random note based on current clef mode
     const availableNotes = getAvailableNotes();
-    currentTarget = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+    currentTarget = pickWeightedItem(userProgress, 'scoreNote', availableNotes, currentTarget);
     currentScoreNotes = [currentTarget];
 
     startTimer();
@@ -116,6 +118,7 @@
     // Update progress tracking
     const roundTime = (Date.now() - roundStartTime) / 1000;
     const subModule = `${currentClefMode}Clef` as 'trebleClef' | 'bassClef' | 'bothClef';
+    userProgress = recordItemResult(userProgress, 'scoreNote', currentTarget, success);
     userProgress = completePracticeSession(
       userProgress,
       'musicReading',

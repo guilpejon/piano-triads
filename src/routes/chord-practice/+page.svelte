@@ -19,6 +19,8 @@
     loadProgress,
     saveProgress,
     completePracticeSession,
+    pickWeightedItem,
+    recordItemResult,
     checkAchievements,
     type UserProgress
   } from '$lib/utils/progressUtils';
@@ -83,7 +85,8 @@
     roundStartTime = Date.now();
 
     // Select random chord
-    currentChord = availableChords[Math.floor(Math.random() * availableChords.length)];
+    // Weighted toward the chords being missed, rather than uniform.
+    currentChord = pickWeightedItem(userProgress, 'chordPractice', availableChords, currentChord);
     const chord = getChord(currentChord);
     currentChordNotes = chord ? chord.root_position : [];
 
@@ -133,6 +136,7 @@
 
     // Update progress tracking
     const roundTime = (Date.now() - roundStartTime) / 1000; // Convert to seconds
+    userProgress = recordItemResult(userProgress, 'chordPractice', currentChord, success);
     userProgress = completePracticeSession(userProgress, 'chordPractice', null, success, roundTime);
 
     // Check for achievements
