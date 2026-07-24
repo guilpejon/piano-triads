@@ -154,6 +154,19 @@
   }
 }
 
+/* Visible to screen readers only. For announcing state that is already conveyed visually. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Shared Component Styles */
 .page-container {
   max-width: 72rem;

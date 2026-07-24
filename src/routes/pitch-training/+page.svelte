@@ -1,5 +1,6 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
+  import RoundStatus from '$lib/components/RoundStatus.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { playNote, playChord, isAudioReady } from '$lib/utils/audioUtils';
   import {
@@ -567,6 +568,12 @@
             {/if}
           </div>
         {/if}
+
+        <RoundStatus
+          state={gameState}
+          successText="Correct — that was {currentTarget}"
+          failText="Incorrect — that was {currentTarget}"
+        />
       </div>
     </section>
 

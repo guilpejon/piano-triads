@@ -384,6 +384,16 @@
             {/if}
           </div>
         {/if}
+
+        <!-- The result above is already glyph-plus-text, but it mounts and unmounts with the
+             round, so it is not reliably announced. This region is always present. -->
+        <div class="sr-only" role="status" aria-live="polite">
+          {#if gameState === 'completed'}
+            Correct. The note was {currentTarget}.
+          {:else if gameState === 'failed'}
+            Incorrect. The note was {currentTarget}.
+          {/if}
+        </div>
       </div>
     </section>
 

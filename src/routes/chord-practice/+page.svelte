@@ -1,5 +1,6 @@
 <script lang="ts">
   import Piano from '$lib/components/Piano.svelte';
+  import RoundStatus from '$lib/components/RoundStatus.svelte';
   import { onMount, onDestroy } from 'svelte';
 
   // Reference to Piano component for auto-scroll
@@ -425,6 +426,14 @@
             {/if}
           </div>
         {/if}
+
+        <RoundStatus
+          state={gameState}
+          successText="Correct — you built {chordDisplayName}"
+          failText="Incorrect — {chordDisplayName} is {currentChordNotes
+            .map(getNoteNameOnly)
+            .join(', ')}"
+        />
       </div>
     </section>
 

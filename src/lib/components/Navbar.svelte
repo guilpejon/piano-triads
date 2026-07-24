@@ -88,6 +88,14 @@
     activeDropdown = null;
   }
 
+  // Escape closes whatever is open. Handled at the window rather than on the backdrop, so it
+  // works no matter where focus currently sits.
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Escape') return;
+    if (mobileMenuOpen) closeMobileMenu();
+    if (activeDropdown !== null) closeDropdown();
+  }
+
   // Close dropdown when clicking outside
   function handleDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -251,9 +259,7 @@
     <div
       class="mobile-menu-overlay"
       on:click={closeMobileMenu}
-      on:keydown={(e) => e.key === 'Escape' && closeMobileMenu()}
-      role="button"
-      tabindex="0"
+      aria-hidden="true"
     ></div>
 
     <!-- Menu -->
@@ -294,7 +300,7 @@
 </nav>
 
 <!-- Document click listener to close dropdowns when clicking outside -->
-<svelte:window on:click={handleDocumentClick} />
+<svelte:window on:click={handleDocumentClick} on:keydown={handleWindowKeydown} />
 
 <style>
   /* Static navbar */
