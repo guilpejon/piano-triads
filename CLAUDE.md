@@ -18,15 +18,11 @@ docker compose up --build   # prod-like container on :3000
 Node 24.5.0 (`.tool-versions`). No ESLint. **No test framework is installed** — there is no
 way to run a single test; verification is manual or via `npm run check`.
 
-Two things to know before you trust the tooling:
-
-- **`npm ci` fails**: `package-lock.json` is out of sync with `package.json` (missing
-  platform-specific `@tailwindcss/oxide-*` and `lightningcss-*` optional deps). Use
-  `npm install`. This also means the `npm ci` branch in the `Dockerfile` is fragile.
-- **`npm run lint` already fails on `main`** — 23 files have never been Prettier-formatted.
-  Don't "fix" this with a repo-wide `npm run format`: it produces an enormous unrelated diff
-  and reflows deliberately grouped data (e.g. the per-octave note arrays in `audioUtils.ts`).
-  Format only what you touch, and only if that file was already clean.
+One thing to know before you trust the tooling: **`npm run lint` already fails on `main`** —
+most files have never been Prettier-formatted. Don't "fix" this with a repo-wide
+`npm run format`; it produces an enormous unrelated diff. Format only the files you touch,
+and only if they were already clean. Where deliberately grouped data would be reflowed (the
+per-octave note arrays in `audioUtils.ts`), a `// prettier-ignore` keeps both.
 
 ## Architecture
 
@@ -50,13 +46,12 @@ Match the surrounding style rather than mixing idioms in.
 - **`audioUtils.ts`** — sample playback over the **Web Audio API**.
 
   Two traps live here:
-
   1. **The MP3 filename convention is irregular.** Octaves 3–4 use lowercase naturals
-     (`c3.mp3`), octaves 2/5/6 use uppercase (`C2.mp3`), and accidentals are *always* flats
-     and *always* uppercase (`Db3.mp3` — there is no `cs3.mp3`). `getNoteFileName()` converts
+     (`c3.mp3`), octaves 2/5/6 use uppercase (`C2.mp3`), and accidentals are _always_ flats
+     and _always_ uppercase (`Db3.mp3` — there is no `cs3.mp3`). `getNoteFileName()` converts
      sharps→flats and fixes the case before lookup. Anything that references audio paths
      directly must follow the same rules.
-  2. **It must stay on Web Audio.** iOS Safari unlocks `HTMLAudioElement` *per element*, so a
+  2. **It must stay on Web Audio.** iOS Safari unlocks `HTMLAudioElement` _per element_, so a
      cloned `<audio>` is never unlocked and its `play()` rejects with `NotAllowedError`; it
      also ignores `preload` before a user gesture, and flushes blocked `play()` calls
      together once a gesture arrives. That combination produced the old symptoms — notes

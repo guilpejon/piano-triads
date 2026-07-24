@@ -27,7 +27,10 @@ const RETRIGGER_FADE = 0.03;
 // Attack ramp, in seconds. Avoids a click on note start.
 const ATTACK = 0.002;
 
-// Audio file lists for different key ranges (matching actual MP3 file names)
+// Audio file lists for different key ranges (matching actual MP3 file names).
+// Kept grouped one octave per line — prettier would otherwise put each note on its own line
+// and make the naming pattern impossible to read at a glance.
+// prettier-ignore
 const standardAudioFiles = [
   // Standard range: Octave 3-4 (C3 to B4)
   // Octave 3: lowercase naturals, uppercase flats
@@ -36,6 +39,7 @@ const standardAudioFiles = [
   'c4', 'Db4', 'd4', 'Eb4', 'e4', 'f4', 'Gb4', 'g4', 'Ab4', 'a4', 'Bb4', 'b4'
 ];
 
+// prettier-ignore
 const extendedAudioFiles = [
   // Extended range: Octave 2-6 (matching actual file case)
   // Octave 2: uppercase naturals, uppercase flats
