@@ -14,7 +14,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run check
+
   deploy:
+    # Nothing ships unless svelte-check passes. Before this job existed, a type error
+    # reached the Raspberry Pi as long as Vite could still build it.
+    needs: check
     runs-on: ubuntu-latest
 
     steps:
