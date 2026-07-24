@@ -7,6 +7,10 @@
     formatDuration,
     formatDate,
     resetAllProgress,
+    exportProgress,
+    importProgress,
+    getDailyStreak,
+    getRecentDays,
     ACHIEVEMENTS,
     type UserProgress,
     type Achievement
@@ -109,6 +113,57 @@
 
   function cancelReset() {
     showResetConfirmation = false;
+  }
+
+  // Activity history
+  const HISTORY_DAYS = 30;
+  $: dailyStreak = progress ? getDailyStreak(progress) : 0;
+  $: recentDays = progress ? getRecentDays(progress, HISTORY_DAYS) : [];
+  $: busiestDay = recentDays.reduce((max, day) => Math.max(max, day.rounds), 0);
+  $: hasHistory = recentDays.some((day) => day.rounds > 0);
+
+  // A bar chart is invisible to a screen reader, so describe it in one sentence.
+  $: activityChartLabel = `Practice activity for the last ${HISTORY_DAYS} days: ${recentDays.reduce(
+    (sum, day) => sum + day.rounds,
+    0
+  )} rounds across ${recentDays.filter((day) => day.rounds > 0).length} days.`;
+
+  // Export / import
+  let importError = '';
+  let importSuccess = '';
+  let fileInput: HTMLInputElement;
+
+  function handleExport() {
+    if (progress) exportProgress(progress);
+  }
+
+  async function handleImportFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    importError = '';
+    importSuccess = '';
+
+    try {
+      const restored = importProgress(await file.text());
+      progress = restored;
+      overallStats = getOverallStats(restored);
+      recentAchievements = restored.achievements
+        .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
+        .slice(0, 5);
+      const unlockedIds = new Set(restored.achievements.map((a) => a.id));
+      allAchievements = ACHIEVEMENTS.map((achievement) => {
+        const unlocked = restored.achievements.find((a) => a.id === achievement.id);
+        return unlocked ?? { ...achievement, locked: true as const };
+      });
+      importSuccess = 'Progress restored.';
+    } catch (error) {
+      importError = error instanceof Error ? error.message : 'Could not read that file.';
+    } finally {
+      // Reset so choosing the same file again still fires a change event.
+      input.value = '';
+    }
   }
 
   function handleOverlayClick(event: MouseEvent) {
@@ -421,6 +476,74 @@
             </div>
           {/each}
         </div>
+      </section>
+
+      <!-- Activity History -->
+      <section class="activity-section">
+        <h2 class="section-title tight">Activity</h2>
+        <p class="section-description">
+          {#if dailyStreak > 0}
+            {dailyStreak}-day streak — last {HISTORY_DAYS} days
+          {:else}
+            Last {HISTORY_DAYS} days
+          {/if}
+        </p>
+
+        <div class="glass-card activity-card">
+          {#if hasHistory}
+            <div class="activity-chart" role="img" aria-label={activityChartLabel}>
+              {#each recentDays as day (day.key)}
+                <div
+                  class="activity-bar"
+                  class:empty={day.rounds === 0}
+                  style="--fill: {busiestDay ? (day.rounds / busiestDay) * 100 : 0}%"
+                  title="{day.date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}: {day.rounds} round{day.rounds === 1 ? '' : 's'}"
+                ></div>
+              {/each}
+            </div>
+            <div class="activity-axis">
+              <span>{recentDays[0]?.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+              <span>Today</span>
+            </div>
+          {:else}
+            <p class="activity-empty">
+              No practice recorded yet. Finish a round and it will show up here.
+            </p>
+          {/if}
+        </div>
+      </section>
+
+      <!-- Backup -->
+      <section class="backup-section">
+        <h2 class="section-title tight">Backup</h2>
+        <p class="section-description">
+          Progress is stored only in this browser. Export a copy to keep it.
+        </p>
+
+        <div class="backup-actions">
+          <button class="btn-glass" on:click={handleExport} disabled={!hasProgressData}>
+            Export progress
+          </button>
+          <button class="btn-glass" on:click={() => fileInput.click()}> Import progress </button>
+          <input
+            bind:this={fileInput}
+            type="file"
+            accept="application/json,.json"
+            class="sr-only"
+            on:change={handleImportFile}
+          />
+        </div>
+
+        <p class="backup-message" role="status" aria-live="polite">
+          {#if importError}
+            <span class="backup-error">{importError}</span>
+          {:else if importSuccess}
+            <span class="backup-success">{importSuccess}</span>
+          {/if}
+        </p>
       </section>
 
       <!-- Reset Progress Button -->
@@ -861,6 +984,96 @@
       flex-direction: column;
       text-align: center;
     }
+  }
+
+  .section-title.tight {
+    margin-bottom: 0.5rem;
+  }
+
+  .section-description {
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    margin: 0 0 1.5rem;
+  }
+
+  /* Activity history */
+  .activity-card {
+    padding: 1.5rem;
+  }
+
+  .activity-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+  }
+
+  .activity-bar {
+    flex: 1;
+    min-width: 4px;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(
+      to top,
+      var(--color-accent) 0%,
+      var(--color-accent) var(--fill),
+      var(--color-surface-subtle) var(--fill),
+      var(--color-surface-subtle) 100%
+    );
+  }
+
+  .activity-bar.empty {
+    background: var(--color-surface-subtle);
+  }
+
+  .activity-axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+  }
+
+  .activity-empty {
+    margin: 0;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+  }
+
+  /* Backup */
+  .backup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .backup-actions .btn-glass {
+    cursor: pointer;
+    font-size: 0.9375rem;
+    padding: 0.625rem 1rem;
+  }
+
+  .backup-actions .btn-glass:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .backup-message {
+    min-height: 1.5rem;
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .backup-error {
+    color: var(--color-danger);
+  }
+
+  .backup-success {
+    color: var(--color-success);
   }
 
   /* Reset Progress Button */

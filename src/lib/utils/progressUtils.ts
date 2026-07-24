@@ -27,11 +27,21 @@ export interface ModuleProgress {
   };
 }
 
+// One entry per calendar day the user practised, keyed 'YYYY-MM-DD' in local time.
+// Lifetime counters alone can't show a trend, so this is what the progress chart and the
+// daily streak are built from.
+export interface DailyStat {
+  rounds: number;
+  successes: number;
+  seconds: number;
+}
+
 export interface UserProgress {
   modules: ModuleProgress;
   achievements: Achievement[];
   totalPlayTime: number; // in minutes
   lastActive: string; // ISO date string
+  dailyStats: Record<string, DailyStat>;
 }
 
 export interface Achievement {
@@ -113,8 +123,87 @@ export function getDefaultProgress(): UserProgress {
     },
     achievements: [],
     totalPlayTime: 0,
-    lastActive: now
+    lastActive: now,
+    dailyStats: {}
   };
+}
+
+/** Local-time day key. Deliberately not UTC — a practice session belongs to the user's day. */
+export function toDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Roughly a year of history is plenty for the chart and keeps localStorage small.
+const MAX_DAILY_ENTRIES = 365;
+
+/** Fold one finished round into today's bucket, pruning anything beyond the retention window. */
+export function recordDailyActivity(
+  progress: UserProgress,
+  wasSuccessful: boolean,
+  timeSpentSeconds: number
+): UserProgress {
+  const key = toDayKey(new Date());
+  const dailyStats = { ...(progress.dailyStats ?? {}) };
+  const today = dailyStats[key] ?? { rounds: 0, successes: 0, seconds: 0 };
+
+  dailyStats[key] = {
+    rounds: today.rounds + 1,
+    successes: today.successes + (wasSuccessful ? 1 : 0),
+    seconds: today.seconds + timeSpentSeconds
+  };
+
+  const keys = Object.keys(dailyStats).sort();
+  if (keys.length > MAX_DAILY_ENTRIES) {
+    for (const stale of keys.slice(0, keys.length - MAX_DAILY_ENTRIES)) {
+      delete dailyStats[stale];
+    }
+  }
+
+  return { ...progress, dailyStats };
+}
+
+/**
+ * Consecutive days practised, counting back from today. A day that is still in progress does
+ * not break the streak, so we start from yesterday when there is nothing recorded today yet.
+ */
+export function getDailyStreak(progress: UserProgress): number {
+  const dailyStats = progress.dailyStats ?? {};
+  const cursor = new Date();
+
+  if (!dailyStats[toDayKey(cursor)]) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!dailyStats[toDayKey(cursor)]) return 0;
+  }
+
+  let streak = 0;
+  while (dailyStats[toDayKey(cursor)]) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+/** The last `days` days, oldest first, with zero-filled gaps so charts stay evenly spaced. */
+export function getRecentDays(
+  progress: UserProgress,
+  days: number
+): Array<{ key: string; date: Date } & DailyStat> {
+  const dailyStats = progress.dailyStats ?? {};
+  const out: Array<{ key: string; date: Date } & DailyStat> = [];
+
+  for (let offset = days - 1; offset >= 0; offset--) {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - offset);
+    const key = toDayKey(date);
+    const stat = dailyStats[key] ?? { rounds: 0, successes: 0, seconds: 0 };
+    out.push({ key, date, ...stat });
+  }
+
+  return out;
 }
 
 // Local storage key
@@ -128,8 +217,9 @@ export function loadProgress(): UserProgress {
     const stored = localStorage.getItem(PROGRESS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Merge with default to handle new fields
-      return { ...getDefaultProgress(), ...parsed };
+      // Merge with default to handle new fields. This is a shallow merge, so any field added
+      // to UserProgress must be top-level or it will be undefined for existing users.
+      return { ...getDefaultProgress(), ...parsed, dailyStats: parsed.dailyStats ?? {} };
     }
   } catch (error) {
     console.warn('Failed to load progress from localStorage:', error);
@@ -197,7 +287,7 @@ export function completePracticeSession(
   wasSuccessful: boolean,
   timeSpentSeconds: number
 ): UserProgress {
-  const newProgress = { ...progress };
+  const newProgress = recordDailyActivity(progress, wasSuccessful, timeSpentSeconds);
   const timeSpentMinutes = timeSpentSeconds / 60;
 
   // Update total play time
@@ -476,6 +566,63 @@ export function formatDate(isoString: string): string {
     day: 'numeric',
     year: 'numeric'
   });
+}
+
+// Progress lives only in this browser's localStorage, so clearing site data or switching
+// devices loses everything. Export/import is the only way to carry it across.
+
+const EXPORT_VERSION = 1;
+
+/** Download the current progress as a JSON file. */
+export function exportProgress(progress: UserProgress): void {
+  if (typeof document === 'undefined') return;
+
+  const payload = JSON.stringify(
+    { version: EXPORT_VERSION, exportedAt: new Date().toISOString(), progress },
+    null,
+    2
+  );
+
+  const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `piano-triads-progress-${toDayKey(new Date())}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Parse and persist a previously exported file. Returns the restored progress, or throws with
+ * a message suitable for showing to the user — importing overwrites everything, so a
+ * malformed file must fail loudly rather than silently reset someone's history.
+ */
+export function importProgress(fileContents: string): UserProgress {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fileContents);
+  } catch {
+    throw new Error("That file isn't valid JSON.");
+  }
+
+  const candidate = (parsed as { progress?: unknown })?.progress ?? parsed;
+  if (!candidate || typeof candidate !== 'object') {
+    throw new Error("That doesn't look like a Piano Triads export.");
+  }
+
+  const source = candidate as Partial<UserProgress>;
+  if (!source.modules || typeof source.modules !== 'object') {
+    throw new Error("That doesn't look like a Piano Triads export.");
+  }
+
+  const restored: UserProgress = {
+    ...getDefaultProgress(),
+    ...source,
+    dailyStats: source.dailyStats ?? {},
+    achievements: Array.isArray(source.achievements) ? source.achievements : []
+  };
+
+  saveProgress(restored);
+  return restored;
 }
 
 // Reset all progress data
