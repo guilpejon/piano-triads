@@ -15,6 +15,7 @@
   ].filter((voicing): voicing is { label: string; notes: string[] } => Boolean(voicing.notes));
 
   $: noteNames = data.chord.root_position.map(getNoteNameOnly);
+  $: related = data.related;
 </script>
 
 <div class="chord-page-wrapper">
@@ -86,6 +87,38 @@
         </p>
       {/if}
     </section>
+
+    {#if related.sameRoot.length || related.sameQuality.length}
+      <section class="related">
+        <h2 class="section-title">Related chords</h2>
+        {#if related.sameRoot.length}
+          <div class="related-group">
+            <h3 class="related-label">Other {noteNames[0]} chords</h3>
+            <ul class="related-list">
+              {#each related.sameRoot as chord}
+                <li>
+                  <a class="related-chip" href="/chord-dictionary/{chord.slug}">{chord.display}</a>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+        {#if related.sameQuality.length}
+          <div class="related-group">
+            <h3 class="related-label">
+              Same type, other roots
+            </h3>
+            <ul class="related-list">
+              {#each related.sameQuality as chord}
+                <li>
+                  <a class="related-chip" href="/chord-dictionary/{chord.slug}">{chord.display}</a>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+      </section>
+    {/if}
 
     <section class="explore">
       <a href="/chord-dictionary?chord={data.name}" class="explore-link">
@@ -202,6 +235,54 @@
     color: var(--color-text-tertiary);
     font-size: 0.875rem;
     margin-top: 1rem;
+  }
+
+  .related {
+    margin-top: 3rem;
+  }
+
+  .related-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .related-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .related-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin: 0 0 0.75rem;
+  }
+
+  .related-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .related-chip {
+    display: inline-block;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.625rem;
+    background: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+  }
+
+  .related-chip:hover {
+    background: var(--color-surface-subtle-hover);
+    border-color: var(--color-border-medium);
+    transform: translateY(-1px);
   }
 
   .explore {

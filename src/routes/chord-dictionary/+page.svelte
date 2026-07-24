@@ -14,7 +14,9 @@
   import {
     getChordDictionary,
     type ChordDefinition,
-    getChordToneRule
+    getChordToneRule,
+    chordSlug,
+    getChord
   } from '$lib/utils/chordUtils';
 
   const chordDictionary = getChordDictionary();
@@ -50,6 +52,15 @@
   // Reactive chord tone rule that explains how to build the chord with semitone steps
   // Use centralized chord tone rule function
   $: chordToneRule = getChordToneRule(currentChordType);
+
+  // Slug of the dedicated reference page for the current chord, or null when this exact
+  // spelling isn't enumerated in the dictionary (some enharmonic roots aren't). Inversion is
+  // ignored — the detail page covers all inversions on one page.
+  $: detailSlug = (() => {
+    const name = `${currentNote}${currentChordType}`;
+    const slug = chordSlug(name);
+    return slug && getChord(name) ? slug : null;
+  })();
 
   // Function to update URL based on current chord selection
   function updateURL() {
@@ -367,6 +378,23 @@
       </div>
     </section>
 
+    <!-- Link to the dedicated, shareable reference page for this chord -->
+    {#if detailSlug}
+      <section class="detail-link-section">
+        <a class="detail-link" href="/chord-dictionary/{detailSlug}">
+          <span>View the full {fullChordName} page</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </a>
+      </section>
+    {/if}
+
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
@@ -398,6 +426,33 @@
   }
 
   /* Piano overrides handled in app.css */
+
+  /* Link to dedicated chord page */
+  .detail-link-section {
+    display: flex;
+    justify-content: center;
+    padding-top: 1.5rem;
+  }
+
+  .detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.875rem;
+    background: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+  }
+
+  .detail-link:hover {
+    background: var(--color-surface-subtle-hover);
+    border-color: var(--color-border-medium);
+    transform: translateY(-1px);
+  }
 
   /* Score section spacing */
   .score-section {

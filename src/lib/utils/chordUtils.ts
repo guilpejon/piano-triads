@@ -1220,3 +1220,36 @@ export function getSluggedChords(): Array<{ name: string; slug: string }> {
   }
   return out;
 }
+
+export interface RelatedChord {
+  name: string;
+  slug: string;
+  display: string;
+}
+
+/**
+ * Sibling chords for lateral browsing between the prerendered chord pages: same root with a
+ * different quality (e.g. E Major → E Minor), and same quality with a different root
+ * (E Sus4 → A Sus4). A chord is placed in at most one group, root taking precedence, and the
+ * source chord is excluded. Order follows the dictionary so the lists are stable at build time.
+ */
+export function getRelatedChords(chordName: string): {
+  sameRoot: RelatedChord[];
+  sameQuality: RelatedChord[];
+} {
+  const parts = splitChordName(chordName);
+  const sameRoot: RelatedChord[] = [];
+  const sameQuality: RelatedChord[] = [];
+  if (!parts) return { sameRoot, sameQuality };
+
+  for (const { name, slug } of getSluggedChords()) {
+    if (name === chordName) continue;
+    const other = splitChordName(name);
+    if (!other) continue;
+    const entry: RelatedChord = { name, slug, display: chordDisplayName(name) };
+    if (other.root === parts.root) sameRoot.push(entry);
+    else if (other.quality === parts.quality) sameQuality.push(entry);
+  }
+
+  return { sameRoot, sameQuality };
+}

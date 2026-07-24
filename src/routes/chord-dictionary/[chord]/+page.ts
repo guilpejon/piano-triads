@@ -5,6 +5,7 @@ import {
   chordDisplayName,
   getChord,
   getChordToneRule,
+  getRelatedChords,
   getSluggedChords
 } from '$lib/utils/chordUtils';
 import type { EntryGenerator, PageLoad } from './$types';
@@ -44,6 +45,7 @@ export const load: PageLoad = ({ params }) => {
     slug: params.chord,
     display,
     chord,
+    related: getRelatedChords(name),
     toneRule: getChordToneRule(name.replace(/^[A-G][#b♭]?/, '')),
     seo: {
       title: `${display} Chord on Piano — Notes & Inversions | Piano Triads`,
