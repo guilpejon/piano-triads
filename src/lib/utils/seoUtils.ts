@@ -76,8 +76,8 @@ export const SHARED_OG_META = {
   locale: "en_US",
   image: {
     url: "https://www.pianotriads.com/og-images/piano-triads-main.jpg",
-    width: "1536",
-    height: "1024"
+    width: "1200",
+    height: "630"
   }
 };
 
