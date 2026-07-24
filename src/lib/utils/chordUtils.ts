@@ -1140,3 +1140,83 @@ export function getPracticeScales(): string[] {
     'chromatic'
   ];
 }
+
+// URL slugs for chord names.
+//
+// Chord names contain '#' and '♭', neither of which can sit in a URL path ('#' would start a
+// fragment), so each name maps to a readable slug: 'C#maj7' <-> 'c-sharp-major-7th'. These
+// back the prerendered pages under /chord-dictionary/, so the mapping must be stable —
+// changing it changes public URLs.
+
+const QUALITY_SLUGS: Record<string, string> = {
+  M: 'major',
+  m: 'minor',
+  dim: 'diminished',
+  'm♭5': 'minor-flat-5',
+  sus4: 'sus4',
+  maj7: 'major-7th',
+  '7': 'dominant-7th',
+  m7: 'minor-7th',
+  '9': '9th',
+  '11': '11th'
+};
+
+const QUALITY_LABELS: Record<string, string> = {
+  M: 'Major',
+  m: 'Minor',
+  dim: 'Diminished',
+  'm♭5': 'Minor Flat 5',
+  sus4: 'Suspended 4th',
+  maj7: 'Major 7th',
+  '7': 'Dominant 7th',
+  m7: 'Minor 7th',
+  '9': '9th',
+  '11': '11th'
+};
+
+function splitChordName(chordName: string): { root: string; quality: string } | null {
+  const match = chordName.match(/^([A-G][#b♭]?)(.*)$/);
+  if (!match) return null;
+  return { root: match[1], quality: match[2] };
+}
+
+function rootSlug(root: string): string {
+  return root.replace('#', '-sharp').replace('♭', '-flat').replace(/^([A-G])b$/, '$1-flat').toLowerCase();
+}
+
+/** 'C#maj7' -> 'c-sharp-major-7th'. Returns null for names that don't parse. */
+export function chordSlug(chordName: string): string | null {
+  const parts = splitChordName(chordName);
+  if (!parts) return null;
+  const quality = QUALITY_SLUGS[parts.quality];
+  if (!quality) return null;
+  return `${rootSlug(parts.root)}-${quality}`;
+}
+
+/** Inverse of chordSlug. Returns null when the slug matches no known chord. */
+export function chordFromSlug(slug: string): string | null {
+  for (const name of getAllChordNames()) {
+    if (chordSlug(name) === slug) return name;
+  }
+  return null;
+}
+
+/** Human-readable chord name, e.g. 'C#maj7' -> 'C# Major 7th'. */
+export function chordDisplayName(chordName: string): string {
+  const parts = splitChordName(chordName);
+  if (!parts) return chordName;
+  return `${parts.root} ${QUALITY_LABELS[parts.quality] ?? parts.quality}`;
+}
+
+/** Every chord that has a stable slug, for prerendering and the sitemap. */
+export function getSluggedChords(): Array<{ name: string; slug: string }> {
+  const out: Array<{ name: string; slug: string }> = [];
+  const seen = new Set<string>();
+  for (const name of getAllChordNames()) {
+    const slug = chordSlug(name);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    out.push({ name, slug });
+  }
+  return out;
+}

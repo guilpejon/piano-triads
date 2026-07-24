@@ -4,7 +4,10 @@
   
   // Get the current route for dynamic SEO
   $: currentRoute = $page.route.id?.replace(/^\//, '') || '';  // Remove leading slash
-  $: pageConfig = pageSEOConfigs[currentRoute] || {};
+  // Routes with per-instance metadata (the prerendered chord pages) return it from load as
+  // `seo`. Emitting a second <title> from the page itself would lose to this component's,
+  // since layout head content is rendered first.
+  $: pageConfig = ($page.data?.seo as Partial<SEOData>) || pageSEOConfigs[currentRoute] || {};
   $: seoData = mergeSEO(pageConfig);
 </script>
 
@@ -59,8 +62,9 @@
   <meta name="msapplication-TileColor" content="#3480f1" />
   <meta name="msapplication-tap-highlight" content="no" />
 
-  <!-- Web App Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <!-- The manifest link is injected by vite-plugin-pwa (manifest.webmanifest); do not add a
+       second one here. This used to point at the hand-written /manifest.json, which no
+       longer exists. -->
 
   <!-- Apple Touch Icons -->
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
@@ -78,8 +82,13 @@
 
   <!-- Structured Data (JSON-LD) -->
   {#if seoData.structuredData}
-    <script type="application/ld+json">
-      {@html JSON.stringify(seoData.structuredData, null, 2)}
-    </script>
+    <!-- The whole tag has to be emitted through {@html}: Svelte does not interpolate
+         expressions inside a literal <script> element, so writing {@html ...} between script
+         tags shipped the template source to crawlers instead of the JSON. Escaping '<'
+         prevents a nested </script> in the data from closing the block early. -->
+    {@html `<script type="application/ld+json">${JSON.stringify(seoData.structuredData).replace(
+      /</g,
+      '\\u003c'
+    )}</script>`}
   {/if}
 </svelte:head>
