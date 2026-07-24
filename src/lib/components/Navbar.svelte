@@ -30,7 +30,8 @@
         { href: '/chord-dictionary', label: 'Chord Dictionary' },
         { href: '/chord-progressions', label: 'Chord Progressions' },
         { href: '/learn-scales', label: 'Scales' },
-        { href: '/circle-of-fifths', label: 'Circle of Fifths' }
+        { href: '/circle-of-fifths', label: 'Circle of Fifths' },
+        { href: '/learn-music-reading', label: 'Music Reading' }
       ]
     },
     {
