@@ -6,34 +6,14 @@
   import { preloadAudio } from '$lib/utils/audioUtils';
   import { onMount } from 'svelte';
 
-  // Preload audio files and register service worker when the app loads
+  // Preload audio files when the app loads.
+  // The service worker is registered by vite-plugin-pwa (see InstallPrompt.svelte) — do not
+  // register one by hand here, or two workers end up fighting over the same scope.
   onMount(() => {
     // Start preloading audio files in the background
     preloadAudio().catch((error) => {
       console.warn('Failed to preload some audio files:', error);
     });
-
-    // Register service worker for PWA functionality (client-side only)
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content is available, prompt user to refresh
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
-    }
   });
 </script>
 

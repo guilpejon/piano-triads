@@ -20,6 +20,8 @@ export default defineConfig({
         orientation: 'portrait-primary',
         scope: '/',
         start_url: '/',
+        lang: 'en',
+        categories: ['music', 'education', 'entertainment'],
         icons: [
           {
             src: 'icons/icon-72x72.png',

@@ -6,6 +6,40 @@
   let isInstalled = false;
   let isMobileDevice = false;
 
+  // Service worker update state. vite-plugin-pwa is configured with registerType: 'prompt',
+  // so a new build waits for the user to accept it rather than swapping under them.
+  let needsRefresh = false;
+  let applyUpdate: (reloadPage?: boolean) => Promise<void> = async () => {};
+
+  // Register the service worker. Imported dynamically so the virtual module never runs during
+  // SSR. This is the app's only registration — nothing else may call navigator.serviceWorker.
+  onMount(async () => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    try {
+      const { registerSW } = await import('virtual:pwa-register');
+      applyUpdate = registerSW({
+        onNeedRefresh() {
+          needsRefresh = true;
+        },
+        onRegisterError(error) {
+          console.error('Service Worker registration failed:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  });
+
+  function reloadForUpdate() {
+    needsRefresh = false;
+    void applyUpdate(true);
+  }
+
+  function dismissUpdate() {
+    needsRefresh = false;
+  }
+
   onMount(() => {
     // Ensure we're running in the browser
     if (typeof window === 'undefined') return;
@@ -105,6 +139,44 @@
     }
   });
 </script>
+
+{#if needsRefresh}
+  <div class="install-prompt" role="banner" aria-label="Update available">
+    <div class="install-content">
+      <div class="install-icon">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 0 0-14.1-3.4L4 10m16 4-1.9 4.4A8 8 0 0 1 4 15"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="install-text">
+        <h3>Update available</h3>
+        <p>Reload to get the latest version.</p>
+      </div>
+      <div class="install-actions">
+        <button on:click={reloadForUpdate} class="install-button primary"> Reload </button>
+        <button
+          on:click={dismissUpdate}
+          class="install-button secondary"
+          aria-label="Dismiss update prompt"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 {#if showInstallPrompt && !isInstalled && isMobileDevice}
   <div class="install-prompt" role="banner" aria-label="Install app prompt">
