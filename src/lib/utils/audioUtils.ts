@@ -101,15 +101,19 @@ function attachUnlockListeners(): void {
     if (!ctx) return;
 
     // Must be called synchronously within the gesture handler, not from a .then().
-    ctx.resume();
+    // Only stand down once the context is genuinely running — a rejected resume used to
+    // still remove these listeners and set isUnlocked, leaving playback permanently dead.
+    void ctx.resume().then(() => {
+      if (ctx.state !== 'running') return;
 
-    const source = ctx.createBufferSource();
-    source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
-    source.connect(ctx.destination);
-    source.start(0);
+      const source = ctx.createBufferSource();
+      source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      source.connect(ctx.destination);
+      source.start();
 
-    isUnlocked = true;
-    events.forEach((event) => window.removeEventListener(event, unlock, true));
+      isUnlocked = true;
+      events.forEach((event) => window.removeEventListener(event, unlock, true));
+    });
   };
 
   events.forEach((event) => window.addEventListener(event, unlock, true));
@@ -287,35 +291,54 @@ function startVoice(ctx: AudioContext, fileName: string, when: number): void {
   activeVoices.set(fileName, { source, gain });
 }
 
-// Resolve the context, resuming it if a previous interruption left it suspended.
-function getRunningContext(): AudioContext | null {
+/**
+ * Run `play` against a context that is actually running.
+ *
+ * A suspended context has a frozen currentTime, so anything scheduled against it is played
+ * "at" a moment that never arrives and is silently dropped — the note is simply lost. That is
+ * exactly what happened to the first sound after a page load, when the context had not been
+ * resumed yet.
+ *
+ * resume() is still called synchronously here so it inherits the user gesture; only the
+ * scheduling waits, and it re-reads currentTime once the clock is really moving.
+ */
+function withRunningContext(play: (ctx: AudioContext) => void): void {
   const ctx = getContext();
-  if (!ctx) return null;
-  if (ctx.state === 'suspended') {
-    // playNote is normally called from within a gesture handler, so this resumes immediately.
-    ctx.resume();
+  if (!ctx) return;
+
+  if (ctx.state === 'running') {
+    play(ctx);
+    return;
   }
-  return ctx;
+
+  void ctx.resume().then(
+    () => {
+      if (ctx.state === 'running') play(ctx);
+    },
+    (error) => {
+      console.warn('Audio could not start; a user interaction is required first.', error);
+    }
+  );
 }
 
 // Function to play audio for a given note
 export function playNote(noteData: string): void {
-  const ctx = getRunningContext();
-  if (!ctx) return;
-
   const fileName = getNoteFileName(noteData);
 
+  const start = () =>
+    withRunningContext((ctx) => {
+      startVoice(ctx, fileName, ctx.currentTime);
+    });
+
   if (bufferCache.has(fileName)) {
-    startVoice(ctx, fileName, ctx.currentTime);
+    start();
     return;
   }
 
   // Not decoded yet (first visit, or a sample outside the preloaded range). Fetch it and play
   // as soon as it lands.
   void loadSample(fileName).then(() => {
-    if (bufferCache.has(fileName)) {
-      startVoice(ctx, fileName, ctx.currentTime);
-    }
+    if (bufferCache.has(fileName)) start();
   });
 }
 
@@ -323,20 +346,18 @@ export function playNote(noteData: string): void {
 // All voices are scheduled at the same context time so the chord sounds as one event. Pass
 // arpeggiateMs to deliberately roll the notes instead.
 export function playChord(notes: string[], arpeggiateMs = 0): void {
-  const ctx = getRunningContext();
-  if (!ctx) return;
-
   const fileNames = notes.map(getNoteFileName);
   const missing = fileNames.filter((fileName) => !bufferCache.has(fileName));
 
-  const schedule = () => {
-    // Re-read the clock after any loading, and give the scheduler a small lead so every voice
-    // starts on the same tick rather than drifting across callbacks.
-    const start = ctx.currentTime + 0.02;
-    fileNames.forEach((fileName, index) => {
-      startVoice(ctx, fileName, start + (index * arpeggiateMs) / 1000);
+  const schedule = () =>
+    withRunningContext((ctx) => {
+      // Re-read the clock after any loading, and give the scheduler a small lead so every
+      // voice starts on the same tick rather than drifting across callbacks.
+      const start = ctx.currentTime + 0.02;
+      fileNames.forEach((fileName, index) => {
+        startVoice(ctx, fileName, start + (index * arpeggiateMs) / 1000);
+      });
     });
-  };
 
   if (missing.length === 0) {
     schedule();
