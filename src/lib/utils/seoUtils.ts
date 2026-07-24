@@ -189,6 +189,47 @@ export const pageSEOConfigs: Record<string, Partial<SEOData>> = {
     }
   },
 
+  'chord-quiz': {
+    title: "Chord Quiz - Name That Piano Chord | Piano Triads",
+    description: "Test your chord knowledge with the reverse chord quiz. See the notes highlighted on the piano, hear the chord, and pick the right name before time runs out.",
+    keywords: "chord quiz, name that chord, piano chord recognition, chord identification, music theory quiz, piano quiz, ear training game",
+    canonical: "https://www.pianotriads.com/chord-quiz",
+    og: {
+      title: "Chord Quiz - Name That Piano Chord | Piano Triads",
+      description: "Test your chord knowledge with the reverse chord quiz. See the notes highlighted on the piano, hear the chord, and pick the right name before time runs out.",
+      url: "https://www.pianotriads.com/chord-quiz",
+      imageAlt: "Piano Chord Quiz - Identify the highlighted chord on the keyboard"
+    },
+    twitter: {
+      title: "Chord Quiz - Name That Piano Chord | Piano Triads",
+      description: "See the notes highlighted on the piano, hear the chord, and pick the right name before time runs out.",
+      imageAlt: "Piano Chord Quiz - Interactive chord identification game"
+    },
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Chord Quiz - Name That Piano Chord",
+      "url": "https://www.pianotriads.com/chord-quiz",
+      "description": "Test your chord knowledge with the reverse chord quiz. See the notes highlighted on the piano, hear the chord, and pick the right name before time runs out.",
+      "mainEntity": {
+        "@type": "Game",
+        "name": "Piano Chord Quiz",
+        "description": "Interactive quiz where players identify the chord highlighted on a piano keyboard from multiple-choice options.",
+        "genre": "Educational Game",
+        "gameItem": {
+          "@type": "Thing",
+          "name": "Piano Chord Identification"
+        },
+        "teaches": [
+          "Chord Recognition",
+          "Keyboard Reading",
+          "Music Theory",
+          "Ear Training"
+        ]
+      }
+    }
+  },
+
   'circle-of-fifths': {
     title: "Circle of Fifths - Interactive Key Signature & Music Theory Tool | Piano Triads",
     description: "Master the Circle of Fifths with our interactive visual tool. Learn key signatures, chord relationships, and music theory fundamentals through an engaging, clickable interface.",

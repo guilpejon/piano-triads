@@ -2,10 +2,18 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { theme, initTheme, setTheme, cycleTheme, type Theme } from '$lib/utils/themeUtils';
+  import { loadProgress, progressStore, getDailyStreak } from '$lib/utils/progressUtils';
 
   // The inline script in app.html has already applied the stored theme to <html>; this only
-  // syncs the store so the button renders the right icon.
-  onMount(initTheme);
+  // syncs the store so the button renders the right icon. loadProgress seeds progressStore
+  // so the streak chip has data before any practice page runs.
+  onMount(() => {
+    initTheme();
+    loadProgress();
+  });
+
+  // Daily practice streak for the 🔥 chip; progressStore updates on every progress save.
+  $: dailyStreak = $progressStore ? getDailyStreak($progressStore) : 0;
 
   const themeLabels: Record<Theme, string> = {
     light: 'Light',
@@ -55,6 +63,7 @@
       label: 'Practice',
       items: [
         { href: '/chord-practice', label: 'Chord Practice' },
+        { href: '/chord-quiz', label: 'Chord Quiz' },
         { href: '/pitch-training', label: 'Pitch Practice' },
         { href: '/music-score-practice', label: 'Music Score Practice' }
       ]
@@ -186,6 +195,19 @@
     </div>
 
     <div class="nav-actions">
+      <!-- Daily streak chip -->
+      {#if dailyStreak >= 1}
+        <a
+          href="/progress"
+          class="streak-chip"
+          title="{dailyStreak}-day practice streak"
+          aria-label="{dailyStreak}-day practice streak"
+          on:click={closeMobileMenu}
+        >
+          <span aria-hidden="true">🔥</span><span class="streak-count">{dailyStreak}</span>
+        </a>
+      {/if}
+
       <!-- Theme Toggle: light → dark → system -->
       <button
         class="theme-toggle"
@@ -319,6 +341,30 @@
     align-items: center;
     gap: 0.5rem;
     margin-left: 1.5rem;
+  }
+
+  /* Daily streak chip */
+  .streak-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    background: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-light);
+    text-decoration: none;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    transition: var(--transition-smooth);
+  }
+
+  .streak-chip:hover {
+    background: var(--color-surface-subtle-hover);
+  }
+
+  .streak-count {
+    font-weight: 600;
+    color: var(--color-text-primary);
   }
 
   /* Theme toggle */

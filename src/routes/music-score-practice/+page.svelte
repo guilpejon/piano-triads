@@ -10,8 +10,18 @@
     pickWeightedItem,
     recordItemResult,
     checkAchievements,
+    getNewAchievements,
+    DIFFICULTY_SETTINGS,
+    type Difficulty,
     type UserProgress
   } from '$lib/utils/progressUtils';
+  import DifficultyPicker from '$lib/components/DifficultyPicker.svelte';
+  import {
+    celebrateAchievement,
+    celebrateStreak,
+    isStreakMilestone
+  } from '$lib/stores/celebrationStore';
+  import { fireConfetti } from '$lib/utils/confetti';
   import { getNoteNameOnly, areNotesEquivalent } from '$lib/utils/chordUtils';
 
   // Reference to Piano component for auto-scroll
@@ -56,6 +66,21 @@
   // Reactive accuracy calculation
   $: accuracy = totalRounds > 0 ? Math.round((successfulRounds / totalRounds) * 100) : 0;
 
+  // Difficulty (shared across practice modes via progress preferences)
+  let difficulty: Difficulty = 'standard';
+  $: difficultySettings = DIFFICULTY_SETTINGS[difficulty].musicReading;
+
+  function setDifficulty(next: Difficulty) {
+    difficulty = next;
+    if (userProgress) {
+      userProgress = {
+        ...userProgress,
+        preferences: { ...userProgress.preferences, difficulty: next }
+      };
+      saveProgress(userProgress);
+    }
+  }
+
   function getAvailableNotes(): string[] {
     return allNotes;
   }
@@ -63,7 +88,7 @@
   function startNewRound() {
     gameState = 'playing';
     totalRounds++;
-    timeLeft = 20;
+    timeLeft = difficultySettings.seconds;
     incorrectAttempts = 0;
     showCorrectAnswer = false;
     roundStartTime = Date.now();
@@ -128,10 +153,21 @@
     );
 
     // Check for achievements
+    const progressBeforeCheck = userProgress;
     userProgress = checkAchievements(userProgress);
 
     // Save progress
     saveProgress(userProgress);
+
+    // Celebrate new unlocks and in-session streak milestones
+    for (const achievement of getNewAchievements(progressBeforeCheck, userProgress)) {
+      celebrateAchievement(achievement);
+      fireConfetti();
+    }
+    if (success && isStreakMilestone(currentStreak)) {
+      celebrateStreak(currentStreak);
+      fireConfetti();
+    }
   }
 
   function handlePianoClick(clickedNote: string) {
@@ -159,8 +195,8 @@
         removeKeyHighlight(clickedNote);
       }, 800);
 
-      // Fail after 3 incorrect attempts
-      if (incorrectAttempts >= 3) {
+      // Fail after too many incorrect attempts
+      if (incorrectAttempts >= difficultySettings.mistakes) {
         endRound(false);
       }
     }
@@ -236,6 +272,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
+    difficulty = userProgress.preferences?.difficulty ?? 'standard';
 
     // Preload audio for extended piano range
     preloadAudio('extended');
@@ -368,7 +405,9 @@
                 </div>
                 <div class="info-item">
                   <div class="info-label">Mistakes</div>
-                  <div class="info-value mistakes">{incorrectAttempts}/3</div>
+                  <div class="info-value mistakes">
+                    {incorrectAttempts}/{difficultySettings.mistakes}
+                  </div>
                 </div>
 
               </div>
@@ -404,6 +443,11 @@
     {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
       <section class="controls-section">
         <div class="controls-container">
+          <DifficultyPicker
+            value={difficulty}
+            mode="musicReading"
+            on:change={(event) => setDifficulty(event.detail)}
+          />
           <button on:click={startNewRound} class="game-button primary">
             {gameState === 'waiting' ? 'Start Practice' : 'Next Round'}
           </button>
@@ -562,6 +606,8 @@
   .controls-container {
     display: flex;
     justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .game-button {

@@ -1,4 +1,84 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import {
+    loadProgress,
+    getDailyStreak,
+    toDayKey,
+    type UserProgress
+  } from '$lib/utils/progressUtils';
+  import { getSluggedChords } from '$lib/utils/chordUtils';
 
+  const DAILY_GOAL_ROUNDS = 10;
+
+  // Progress lives in localStorage, so the Today section renders its zero state on the
+  // server and fills in after mount.
+  let progress: UserProgress | null = null;
+
+  onMount(() => {
+    progress = loadProgress();
+  });
+
+  $: dailyStreak = progress ? getDailyStreak(progress) : 0;
+  $: todayRounds = progress ? (progress.dailyStats[toDayKey(new Date())]?.rounds ?? 0) : 0;
+  $: goalFraction = Math.min(todayRounds / DAILY_GOAL_ROUNDS, 1);
+
+  // r=18 ring; circumference drives the stroke-dash goal indicator.
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 18;
+
+  // The practice mode played most recently, so returning users can jump straight back in.
+  function getContinueTarget(p: UserProgress): { href: string; label: string } | null {
+    const pitch = p.modules.pitchTraining;
+    const reading = p.modules.musicReading;
+    const candidates = [
+      {
+        href: '/chord-practice',
+        label: 'Chord Practice',
+        rounds: p.modules.chordPractice.totalRounds,
+        lastPlayed: p.modules.chordPractice.lastPlayed
+      },
+      {
+        href: '/chord-quiz',
+        label: 'Chord Quiz',
+        rounds: p.modules.chordQuiz?.totalRounds || 0,
+        lastPlayed: p.modules.chordQuiz?.lastPlayed || ''
+      },
+      {
+        href: '/pitch-training',
+        label: 'Pitch Practice',
+        rounds: pitch.notes.totalRounds + pitch.chords.totalRounds,
+        lastPlayed: pitch.lastPlayed
+      },
+      {
+        href: '/music-score-practice',
+        label: 'Music Score Practice',
+        rounds:
+          (reading?.trebleClef?.totalRounds || 0) +
+          (reading?.bassClef?.totalRounds || 0) +
+          (reading?.bothClef?.totalRounds || 0),
+        lastPlayed: reading?.lastPlayed || ''
+      }
+    ].filter((candidate) => candidate.rounds > 0 && candidate.lastPlayed);
+
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => Date.parse(b.lastPlayed) - Date.parse(a.lastPlayed));
+    return candidates[0];
+  }
+
+  $: continueTarget = progress ? getContinueTarget(progress) : null;
+
+  // Same chord for everyone on a given day: hash the local day key into the slugged list.
+  function getChordOfTheDay(): { name: string; slug: string } {
+    const chords = getSluggedChords();
+    const key = toDayKey(new Date());
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    }
+    return chords[hash % chords.length];
+  }
+
+  let chordOfTheDay = getChordOfTheDay();
+</script>
 
 <div class="home-wrapper">
   <div class="page-container">
@@ -11,6 +91,76 @@
         </p>
       </div>
     </header>
+
+    <!-- Today Section -->
+    <section class="today-section" aria-label="Today's practice">
+      <div class="today-grid">
+        <div class="glass-card today-card">
+          <svg class="goal-ring" viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="goal-ring-track" cx="22" cy="22" r="18" />
+            <circle
+              class="goal-ring-fill"
+              cx="22"
+              cy="22"
+              r="18"
+              stroke-dasharray={RING_CIRCUMFERENCE}
+              stroke-dashoffset={RING_CIRCUMFERENCE * (1 - goalFraction)}
+            />
+          </svg>
+          <div class="today-card-content">
+            <span class="today-card-title">Daily goal</span>
+            <span class="today-card-value">{todayRounds}/{DAILY_GOAL_ROUNDS} rounds</span>
+            <span class="today-card-hint">
+              {#if todayRounds >= DAILY_GOAL_ROUNDS}
+                Goal reached — nice work!
+              {:else if todayRounds > 0}
+                {DAILY_GOAL_ROUNDS - todayRounds} more to hit today's goal
+              {:else}
+                Play any practice mode to get started
+              {/if}
+            </span>
+          </div>
+        </div>
+
+        <div class="glass-card today-card">
+          <span class="today-emoji" aria-hidden="true">🔥</span>
+          <div class="today-card-content">
+            <span class="today-card-title">Daily streak</span>
+            <span class="today-card-value">
+              {dailyStreak}
+              {dailyStreak === 1 ? 'day' : 'days'}
+            </span>
+            <span class="today-card-hint">
+              {#if dailyStreak > 0}
+                Practice today to keep it alive
+              {:else}
+                Practice once a day to build a streak
+              {/if}
+            </span>
+          </div>
+        </div>
+
+        <a href="/chord-dictionary/{chordOfTheDay.slug}" class="glass-card today-card">
+          <span class="today-emoji" aria-hidden="true">🎹</span>
+          <div class="today-card-content">
+            <span class="today-card-title">Chord of the day</span>
+            <span class="today-card-value">{chordOfTheDay.name}</span>
+            <span class="today-card-hint">See how it's built and hear it</span>
+          </div>
+        </a>
+
+        {#if continueTarget}
+          <a href={continueTarget.href} class="glass-card today-card">
+            <span class="today-emoji" aria-hidden="true">▶️</span>
+            <div class="today-card-content">
+              <span class="today-card-title">Pick up where you left off</span>
+              <span class="today-card-value">{continueTarget.label}</span>
+              <span class="today-card-hint">Jump back into your last practice mode</span>
+            </div>
+          </a>
+        {/if}
+      </div>
+    </section>
 
     <!-- Theory Section -->
     <section class="features-section theory-section">
@@ -227,6 +377,33 @@
           </div>
         </a>
 
+        <a href="/chord-quiz" class="glass-card feature-card">
+          <div class="card-icon quiz-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Chord Quiz</h2>
+            <p class="card-description">See the keys, hear the sound, name the chord</p>
+          </div>
+          <div class="card-arrow">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </a>
+
         <a href="/pitch-training" class="glass-card feature-card">
           <div class="card-icon pitch-icon">
             <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,6 +510,85 @@
     margin-bottom: 2rem;
   }
 
+  /* Today section */
+  .today-section {
+    padding-bottom: 3rem;
+  }
+
+  .today-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .today-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .today-emoji {
+    font-size: 1.75rem;
+    line-height: 1.3;
+    flex-shrink: 0;
+  }
+
+  .today-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .today-card-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-secondary);
+  }
+
+  .today-card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+  }
+
+  .today-card-hint {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .goal-ring {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex-shrink: 0;
+    transform: rotate(-90deg);
+  }
+
+  .goal-ring-track,
+  .goal-ring-fill {
+    fill: none;
+    stroke-width: 5;
+  }
+
+  .goal-ring-track {
+    stroke: var(--color-border-medium);
+  }
+
+  .goal-ring-fill {
+    stroke: var(--color-accent);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
   /* Section Headers */
   .section-header {
     text-align: center;
@@ -428,6 +684,11 @@
 
   .pitch-icon {
     background: var(--gradient-orange);
+    color: white;
+  }
+
+  .quiz-icon {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
     color: white;
   }
 

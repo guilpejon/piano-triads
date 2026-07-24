@@ -2,6 +2,7 @@
   import '../app.css';
   import Navbar from '$lib/components/Navbar.svelte';
   import InstallPrompt from '$lib/components/InstallPrompt.svelte';
+  import CelebrationToast from '$lib/components/CelebrationToast.svelte';
   import SEOHead from '$lib/components/SEOHead.svelte';
   import { preloadAudio } from '$lib/utils/audioUtils';
   import { onMount } from 'svelte';
@@ -46,6 +47,9 @@
 
 <!-- PWA Install Prompt -->
 <InstallPrompt />
+
+<!-- Achievement / streak celebration toasts -->
+<CelebrationToast />
 
 <style>
   .app-layout {

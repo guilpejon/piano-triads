@@ -70,6 +70,7 @@
 
   // Calculate module-specific stats
   $: chordPracticeRate = progress ? getSuccessRate(progress.modules.chordPractice) : 0;
+  $: chordQuizRate = progress?.modules.chordQuiz ? getSuccessRate(progress.modules.chordQuiz) : 0;
   $: pitchTrainingNotesRate = progress ? getSuccessRate(progress.modules.pitchTraining.notes) : 0;
   $: pitchTrainingChordsRate = progress ? getSuccessRate(progress.modules.pitchTraining.chords) : 0;
   $: musicReadingRate = progress && progress.modules.musicReading ? 
@@ -86,6 +87,7 @@
   // Check if user has any progress data worth resetting
   $: hasProgressData = progress
     ? progress.modules.chordPractice.totalRounds > 0 ||
+      (progress.modules.chordQuiz?.totalRounds || 0) > 0 ||
       progress.modules.pitchTraining.notes.totalRounds > 0 ||
       progress.modules.pitchTraining.chords.totalRounds > 0 ||
       (progress.modules.musicReading?.trebleClef?.totalRounds || 0) > 0 ||
@@ -312,11 +314,56 @@
                 <span class="module-stat-number">{progress.modules.chordPractice.bestStreak}</span>
                 <span class="module-stat-label">Best Streak</span>
               </div>
+              {#if progress.bestSurvival?.chordPractice}
+                <div class="module-stat">
+                  <span class="module-stat-number">{progress.bestSurvival.chordPractice}</span>
+                  <span class="module-stat-label">Best Survival</span>
+                </div>
+              {/if}
             </div>
             <div class="module-last-played">
               Last played: {formatDate(progress.modules.chordPractice.lastPlayed)}
             </div>
           </div>
+
+          <!-- Chord Quiz -->
+          {#if progress.modules.chordQuiz?.totalRounds}
+            <div class="glass-card module-card">
+              <div class="module-header">
+                <div class="module-icon chord-practice-icon">
+                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <h3 class="module-title">Chord Quiz</h3>
+                  <p class="module-subtitle">Name the highlighted chord</p>
+                </div>
+              </div>
+              <div class="module-stats">
+                <div class="module-stat">
+                  <span class="module-stat-number">{progress.modules.chordQuiz.totalRounds}</span>
+                  <span class="module-stat-label">Rounds</span>
+                </div>
+                <div class="module-stat">
+                  <span class="module-stat-number">{chordQuizRate}%</span>
+                  <span class="module-stat-label">Success</span>
+                </div>
+                <div class="module-stat">
+                  <span class="module-stat-number">{progress.modules.chordQuiz.bestStreak}</span>
+                  <span class="module-stat-label">Best Streak</span>
+                </div>
+              </div>
+              <div class="module-last-played">
+                Last played: {formatDate(progress.modules.chordQuiz.lastPlayed)}
+              </div>
+            </div>
+          {/if}
 
           <!-- Pitch Training - Note Training -->
           <div class="glass-card module-card">

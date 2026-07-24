@@ -15,6 +15,7 @@ const STATIC_ROUTES: Array<{ path: string; priority: string; changefreq: string 
   { path: '/circle-of-fifths', priority: '0.8', changefreq: 'monthly' },
   { path: '/learn-music-reading', priority: '0.8', changefreq: 'monthly' },
   { path: '/chord-practice', priority: '0.7', changefreq: 'monthly' },
+  { path: '/chord-quiz', priority: '0.7', changefreq: 'monthly' },
   { path: '/pitch-training', priority: '0.7', changefreq: 'monthly' },
   { path: '/music-score-practice', priority: '0.7', changefreq: 'monthly' }
 ];

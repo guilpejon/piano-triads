@@ -10,8 +10,18 @@
     pickWeightedItem,
     recordItemResult,
     checkAchievements,
+    getNewAchievements,
+    DIFFICULTY_SETTINGS,
+    type Difficulty,
     type UserProgress
   } from '$lib/utils/progressUtils';
+  import DifficultyPicker from '$lib/components/DifficultyPicker.svelte';
+  import {
+    celebrateAchievement,
+    celebrateStreak,
+    isStreakMilestone
+  } from '$lib/stores/celebrationStore';
+  import { fireConfetti } from '$lib/utils/confetti';
 
   // Reference to Piano component for auto-scroll
   let pianoComponent: Piano;
@@ -88,11 +98,27 @@
   // Reactive accuracy calculation
   $: accuracy = totalRounds > 0 ? Math.round((successfulRounds / totalRounds) * 100) : 0;
 
+  // Difficulty (shared across practice modes via progress preferences). Note mode is always
+  // a single guess; the cap only applies to chord mode.
+  let difficulty: Difficulty = 'standard';
+  $: difficultySettings = DIFFICULTY_SETTINGS[difficulty].pitchTraining;
+
+  function setDifficulty(next: Difficulty) {
+    difficulty = next;
+    if (userProgress) {
+      userProgress = {
+        ...userProgress,
+        preferences: { ...userProgress.preferences, difficulty: next }
+      };
+      saveProgress(userProgress);
+    }
+  }
+
   function startNewRound() {
     // Set game state and reset counters
     gameState = 'playing';
     totalRounds++;
-    timeLeft = 15;
+    timeLeft = difficultySettings.seconds;
     incorrectAttempts = 0;
     chordMistakes = 0;
     correctNotesClicked.clear();
@@ -170,10 +196,21 @@
     );
 
     // Check for achievements
+    const progressBeforeCheck = userProgress;
     userProgress = checkAchievements(userProgress);
 
     // Save progress
     saveProgress(userProgress);
+
+    // Celebrate new unlocks and in-session streak milestones
+    for (const achievement of getNewAchievements(progressBeforeCheck, userProgress)) {
+      celebrateAchievement(achievement);
+      fireConfetti();
+    }
+    if (success && isStreakMilestone(currentStreak)) {
+      celebrateStreak(currentStreak);
+      fireConfetti();
+    }
 
     if (!success) {
       // Show correct notes in green when failing
@@ -278,8 +315,8 @@
           removeKeyHighlight(clickedNote);
         }, 500);
 
-        // Fail after 3 wrong notes
-        if (chordMistakes >= 3) {
+        // Fail after too many wrong notes
+        if (chordMistakes >= difficultySettings.mistakes) {
           endRound(false);
         }
       }
@@ -430,6 +467,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
+    difficulty = userProgress.preferences?.difficulty ?? 'standard';
 
     // Load existing stats from progress based on current mode
     const pitchStats =
@@ -561,7 +599,7 @@
                     {#if currentMode === 'note'}
                       {incorrectAttempts}/1
                     {:else}
-                      {chordMistakes}/3
+                      {chordMistakes}/{difficultySettings.mistakes}
                     {/if}
                   </div>
                 </div>
@@ -589,6 +627,14 @@
     {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
       <section class="controls-section">
         <div class="controls-container">
+          <DifficultyPicker
+            value={difficulty}
+            mode="pitchTraining"
+            mistakesText={currentMode === 'note'
+              ? 'single guess'
+              : `${difficultySettings.mistakes} mistakes allowed`}
+            on:change={(event) => setDifficulty(event.detail)}
+          />
           <button on:click={startNewRound} class="game-button primary"> Start New Round </button>
         </div>
       </section>

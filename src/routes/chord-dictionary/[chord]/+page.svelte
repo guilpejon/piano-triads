@@ -98,7 +98,7 @@
 
 <style>
   .chord-page-wrapper {
-    padding-bottom: 4rem;
+    padding: 2rem 0 4rem;
   }
 
   .chord-detail {

@@ -22,8 +22,19 @@
     pickWeightedItem,
     recordItemResult,
     checkAchievements,
+    getNewAchievements,
+    DIFFICULTY_SETTINGS,
+    type Difficulty,
     type UserProgress
   } from '$lib/utils/progressUtils';
+  import DifficultyPicker from '$lib/components/DifficultyPicker.svelte';
+  import {
+    celebrateAchievement,
+    celebrateStreak,
+    celebrateRecord,
+    isStreakMilestone
+  } from '$lib/stores/celebrationStore';
+  import { fireConfetti } from '$lib/utils/confetti';
 
   // Game state
   let gameState: 'waiting' | 'playing' | 'completed' | 'failed' = 'waiting';
@@ -46,6 +57,46 @@
 
   // Get all available chords for practice
   let availableChords: string[] = getPracticeChords();
+
+  // Difficulty (shared across practice modes via progress preferences)
+  let difficulty: Difficulty = 'standard';
+  $: difficultySettings = DIFFICULTY_SETTINGS[difficulty].chordPractice;
+
+  // Practice mode: 'timed' is the classic per-round game; 'survival' shares 3 lives across
+  // rounds — every wrong key or timeout costs one — and counts chords built until they run out.
+  type PracticeMode = 'timed' | 'survival';
+  let practiceMode: PracticeMode = 'timed';
+  const SURVIVAL_LIVES = 3;
+  let lives = SURVIVAL_LIVES;
+  let survivalScore = 0;
+  let survivalOver = false;
+  let beatBestThisRun = false;
+
+  $: survivalBest = userProgress?.bestSurvival?.chordPractice || 0;
+
+  function setPracticeMode(next: PracticeMode) {
+    if (gameState === 'playing' || practiceMode === next) return;
+    practiceMode = next;
+    resetSurvivalRun();
+  }
+
+  function resetSurvivalRun() {
+    lives = SURVIVAL_LIVES;
+    survivalScore = 0;
+    survivalOver = false;
+    beatBestThisRun = false;
+  }
+
+  function setDifficulty(next: Difficulty) {
+    difficulty = next;
+    if (userProgress) {
+      userProgress = {
+        ...userProgress,
+        preferences: { ...userProgress.preferences, difficulty: next }
+      };
+      saveProgress(userProgress);
+    }
+  }
 
   // Reactive chord name display - just show the chord as it is from chordUtils
   $: chordDisplayName = currentChord || '';
@@ -75,10 +126,15 @@
 
   // Function to start a new round
   function startNewRound() {
+    // A finished survival run starts over from full lives
+    if (practiceMode === 'survival' && survivalOver) {
+      resetSurvivalRun();
+    }
+
     // Reset game state
     gameState = 'playing';
     mistakes = 0;
-    timeLeft = 30;
+    timeLeft = difficultySettings.seconds;
     correctNotesClicked.clear();
 
     // Track round start time
@@ -106,6 +162,11 @@
     timer = setInterval(() => {
       timeLeft--;
       if (timeLeft <= 0) {
+        // In survival, running out of time costs a life; the run ends when they're gone
+        if (practiceMode === 'survival') {
+          lives--;
+          if (lives <= 0) survivalOver = true;
+        }
         endRound(false); // Time ran out
       }
     }, 1000);
@@ -124,6 +185,23 @@
       currentStreak++;
       // Play the complete chord so user can hear what it sounds like
       playChord(currentChordNotes);
+
+      if (practiceMode === 'survival') {
+        survivalScore++;
+        // Persist a new best as soon as it happens, so leaving mid-run can't lose it
+        if (userProgress && survivalScore > (userProgress.bestSurvival?.chordPractice || 0)) {
+          const previousBest = userProgress.bestSurvival?.chordPractice || 0;
+          userProgress = {
+            ...userProgress,
+            bestSurvival: { ...userProgress.bestSurvival, chordPractice: survivalScore }
+          };
+          if (!beatBestThisRun && previousBest > 0) {
+            beatBestThisRun = true;
+            celebrateRecord(`${survivalScore} chords in one survival run`);
+            fireConfetti();
+          }
+        }
+      }
     } else {
       gameState = 'failed';
       failedRounds++;
@@ -140,10 +218,21 @@
     userProgress = completePracticeSession(userProgress, 'chordPractice', null, success, roundTime);
 
     // Check for achievements
+    const progressBeforeCheck = userProgress;
     userProgress = checkAchievements(userProgress);
 
     // Save progress
     saveProgress(userProgress);
+
+    // Celebrate new unlocks and in-session streak milestones
+    for (const achievement of getNewAchievements(progressBeforeCheck, userProgress)) {
+      celebrateAchievement(achievement);
+      fireConfetti();
+    }
+    if (success && isStreakMilestone(currentStreak)) {
+      celebrateStreak(currentStreak);
+      fireConfetti();
+    }
 
     // Scroll to show the correct answer on mobile (only on failure)
     if (!success) {
@@ -184,7 +273,6 @@
       }
     } else {
       // Incorrect note clicked - show red feedback
-      mistakes++;
       highlightKey(clickedNote, 'practice-failed');
 
       // Remove red highlighting after 500ms
@@ -192,8 +280,18 @@
         removeKeyHighlight(clickedNote);
       }, 500);
 
-      if (mistakes >= 3) {
-        endRound(false); // Too many mistakes
+      if (practiceMode === 'survival') {
+        // Survival has no per-round mistake cap; every wrong key costs a shared life
+        lives--;
+        if (lives <= 0) {
+          survivalOver = true;
+          endRound(false);
+        }
+      } else {
+        mistakes++;
+        if (mistakes >= difficultySettings.mistakes) {
+          endRound(false); // Too many mistakes
+        }
       }
     }
   }
@@ -320,6 +418,7 @@
   onMount(() => {
     // Load user progress
     userProgress = loadProgress();
+    difficulty = userProgress.preferences?.difficulty ?? 'standard';
 
     // Load existing stats from progress
     const chordStats = userProgress.modules.chordPractice;
@@ -418,10 +517,25 @@
                   <div class="info-label">Time Left</div>
                   <div class="info-value timer">{timeLeft}s</div>
                 </div>
-                <div class="info-item">
-                  <div class="info-label">Mistakes</div>
-                  <div class="info-value mistakes">{mistakes}/3</div>
-                </div>
+                {#if practiceMode === 'survival'}
+                  <div class="info-item">
+                    <div class="info-label">Lives</div>
+                    <div class="info-value lives" aria-label="{lives} of {SURVIVAL_LIVES} lives left">
+                      {#each Array(SURVIVAL_LIVES) as _, index}
+                        <span class="life" class:lost={index >= lives} aria-hidden="true">♥</span>
+                      {/each}
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Run</div>
+                    <div class="info-value">{survivalScore}</div>
+                  </div>
+                {:else}
+                  <div class="info-item">
+                    <div class="info-label">Mistakes</div>
+                    <div class="info-value mistakes">{mistakes}/{difficultySettings.mistakes}</div>
+                  </div>
+                {/if}
                 <div class="info-item">
                   <div class="info-label">Found Notes</div>
                   <div class="info-value">{foundNotesCount}/{currentChordNotes.length}</div>
@@ -438,6 +552,16 @@
             .map(getNoteNameOnly)
             .join(', ')}"
         />
+
+        {#if practiceMode === 'survival' && survivalOver && gameState === 'failed'}
+          <div class="survival-summary" role="status">
+            <p class="survival-headline">
+              Run over — you built {survivalScore}
+              {survivalScore === 1 ? 'chord' : 'chords'}
+            </p>
+            <p class="survival-best">Best run: {survivalBest}</p>
+          </div>
+        {/if}
       </div>
     </section>
 
@@ -445,7 +569,47 @@
     {#if gameState === 'waiting' || gameState === 'completed' || gameState === 'failed'}
       <section class="controls-section">
         <div class="controls-container">
-          <button on:click={startNewRound} class="game-button primary"> Start New Round </button>
+          <div class="mode-picker" role="group" aria-label="Practice mode">
+            <button
+              type="button"
+              class="mode-option"
+              class:selected={practiceMode === 'timed'}
+              aria-pressed={practiceMode === 'timed'}
+              on:click={() => setPracticeMode('timed')}
+            >
+              Timed
+            </button>
+            <button
+              type="button"
+              class="mode-option"
+              class:selected={practiceMode === 'survival'}
+              aria-pressed={practiceMode === 'survival'}
+              on:click={() => setPracticeMode('survival')}
+            >
+              Survival
+            </button>
+          </div>
+          <DifficultyPicker
+            value={difficulty}
+            mode="chordPractice"
+            mistakesText={practiceMode === 'survival'
+              ? 'wrong keys cost a life'
+              : `${difficultySettings.mistakes} mistakes allowed`}
+            on:change={(event) => setDifficulty(event.detail)}
+          />
+          {#if practiceMode === 'survival' && !survivalOver && gameState === 'waiting'}
+            <p class="survival-intro">
+              {SURVIVAL_LIVES} lives — wrong keys and timeouts each cost one. How many chords can
+              you build?{#if survivalBest > 0}{' '}Best so far: {survivalBest}.{/if}
+            </p>
+          {/if}
+          <button on:click={startNewRound} class="game-button primary">
+            {#if practiceMode === 'survival'}
+              {gameState === 'waiting' || survivalOver ? 'Start Survival Run' : 'Next Chord'}
+            {:else}
+              Start New Round
+            {/if}
+          </button>
         </div>
       </section>
     {/if}
@@ -522,6 +686,82 @@
     color: var(--color-text-secondary) !important;
     text-align: center;
     letter-spacing: 0.02em;
+  }
+
+  /* Practice mode picker (Timed | Survival) */
+  .mode-picker {
+    display: inline-flex;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    background: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-light);
+    border-radius: 999px;
+    flex-basis: 100%;
+    justify-content: center;
+    align-self: center;
+    max-width: fit-content;
+    margin: 0 auto;
+  }
+
+  .mode-option {
+    padding: 0.375rem 1.25rem;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .mode-option:hover {
+    color: var(--color-text-primary);
+  }
+
+  .mode-option.selected {
+    background: var(--color-surface-solid);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .survival-intro {
+    flex-basis: 100%;
+    text-align: center;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* Survival lives + run summary */
+  .info-value.lives {
+    letter-spacing: 0.15em;
+  }
+
+  .life {
+    color: #ff2d55;
+  }
+
+  .life.lost {
+    color: var(--color-border-strong);
+  }
+
+  .survival-summary {
+    text-align: center;
+    padding: 0.5rem 0 0;
+  }
+
+  .survival-headline {
+    margin: 0 0 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .survival-best {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
   }
 
   .game-info {

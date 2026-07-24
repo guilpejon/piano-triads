@@ -1,5 +1,7 @@
 // Progress tracking utilities for Piano Triads app
 
+import { writable } from 'svelte/store';
+
 export interface SessionStats {
   totalRounds: number;
   successfulRounds: number;
@@ -12,6 +14,7 @@ export interface SessionStats {
 
 export interface ModuleProgress {
   chordPractice: SessionStats;
+  chordQuiz: SessionStats;
   pitchTraining: {
     notes: SessionStats;
     chords: SessionStats;
@@ -45,7 +48,50 @@ export interface ItemStat {
   correct: number;
 }
 
-export type PracticeKey = 'chordPractice' | 'pitchNote' | 'pitchChord' | 'scoreNote';
+export type PracticeKey = 'chordPractice' | 'pitchNote' | 'pitchChord' | 'scoreNote' | 'chordQuiz';
+
+export type Difficulty = 'relaxed' | 'standard' | 'challenge';
+
+export interface Preferences {
+  difficulty: Difficulty;
+}
+
+// Per-mode round timer and mistake cap for each difficulty. 'standard' matches the values
+// that were previously hard-coded in each practice page, so existing users notice no change.
+// Pitch training's note mode always fails on the first wrong guess (it's identification, not
+// construction), so only its timer varies; the mistake cap applies to chord mode.
+export const DIFFICULTY_SETTINGS: Record<
+  Difficulty,
+  Record<
+    'chordPractice' | 'pitchTraining' | 'musicReading' | 'chordQuiz',
+    { seconds: number; mistakes: number }
+  >
+> = {
+  relaxed: {
+    chordPractice: { seconds: 60, mistakes: 5 },
+    pitchTraining: { seconds: 30, mistakes: 5 },
+    musicReading: { seconds: 40, mistakes: 5 },
+    chordQuiz: { seconds: 30, mistakes: 5 }
+  },
+  standard: {
+    chordPractice: { seconds: 30, mistakes: 3 },
+    pitchTraining: { seconds: 15, mistakes: 3 },
+    musicReading: { seconds: 20, mistakes: 3 },
+    chordQuiz: { seconds: 15, mistakes: 3 }
+  },
+  challenge: {
+    chordPractice: { seconds: 15, mistakes: 2 },
+    pitchTraining: { seconds: 8, mistakes: 2 },
+    musicReading: { seconds: 10, mistakes: 2 },
+    chordQuiz: { seconds: 8, mistakes: 2 }
+  }
+};
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  relaxed: 'Relaxed',
+  standard: 'Standard',
+  challenge: 'Challenge'
+};
 
 export interface UserProgress {
   modules: ModuleProgress;
@@ -54,6 +100,9 @@ export interface UserProgress {
   lastActive: string; // ISO date string
   dailyStats: Record<string, DailyStat>;
   itemStats: Record<string, ItemStat>;
+  preferences: Preferences;
+  // Best score per survival-capable mode, keyed by module name (e.g. 'chordPractice').
+  bestSurvival: Record<string, number>;
 }
 
 export interface Achievement {
@@ -71,6 +120,15 @@ export function getDefaultProgress(): UserProgress {
   return {
     modules: {
       chordPractice: {
+        totalRounds: 0,
+        successfulRounds: 0,
+        failedRounds: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averageTime: 0,
+        lastPlayed: now
+      },
+      chordQuiz: {
         totalRounds: 0,
         successfulRounds: 0,
         failedRounds: 0,
@@ -137,7 +195,9 @@ export function getDefaultProgress(): UserProgress {
     totalPlayTime: 0,
     lastActive: now,
     dailyStats: {},
-    itemStats: {}
+    itemStats: {},
+    preferences: { difficulty: 'standard' },
+    bestSurvival: {}
   };
 }
 
@@ -222,28 +282,43 @@ export function getRecentDays(
 // Local storage key
 const PROGRESS_KEY = 'piano-triads-progress';
 
+// Mirrors the last loaded/saved progress so components outside the practice pages (navbar
+// streak, home page) can react to progress changes without re-reading localStorage.
+export const progressStore = writable<UserProgress | null>(null);
+
+/** Fill in any fields a stored (possibly older) progress object is missing. */
+function normalizeProgress(parsed: Partial<UserProgress>): UserProgress {
+  const defaults = getDefaultProgress();
+  return {
+    ...defaults,
+    ...parsed,
+    // One-level merge so a newly added module (e.g. chordQuiz) gets its default for
+    // existing users instead of coming back undefined.
+    modules: { ...defaults.modules, ...(parsed.modules ?? {}) },
+    dailyStats: parsed.dailyStats ?? {},
+    itemStats: parsed.itemStats ?? {},
+    // Key-by-key so preferences added later still get their defaults.
+    preferences: { ...defaults.preferences, ...(parsed.preferences ?? {}) },
+    bestSurvival: parsed.bestSurvival ?? {}
+  };
+}
+
 // Load progress from localStorage
 export function loadProgress(): UserProgress {
   if (typeof window === 'undefined') return getDefaultProgress();
 
+  let progress = getDefaultProgress();
   try {
     const stored = localStorage.getItem(PROGRESS_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      // Merge with default to handle new fields. This is a shallow merge, so any field added
-      // to UserProgress must be top-level or it will be undefined for existing users.
-      return {
-        ...getDefaultProgress(),
-        ...parsed,
-        dailyStats: parsed.dailyStats ?? {},
-        itemStats: parsed.itemStats ?? {}
-      };
+      progress = normalizeProgress(JSON.parse(stored));
     }
   } catch (error) {
     console.warn('Failed to load progress from localStorage:', error);
   }
 
-  return getDefaultProgress();
+  progressStore.set(progress);
+  return progress;
 }
 
 // Save progress to localStorage
@@ -256,6 +331,8 @@ export function saveProgress(progress: UserProgress): void {
   } catch (error) {
     console.warn('Failed to save progress to localStorage:', error);
   }
+
+  progressStore.set(progress);
 }
 
 // Update session stats for practice modules
@@ -300,7 +377,7 @@ export function updateTotalPlayTime(
 // Complete practice session - updates both session stats and total play time
 export function completePracticeSession(
   progress: UserProgress,
-  module: 'chordPractice' | 'pitchTraining' | 'musicReading',
+  module: 'chordPractice' | 'chordQuiz' | 'pitchTraining' | 'musicReading',
   subModule: 'notes' | 'chords' | 'trebleClef' | 'bassClef' | 'bothClef' | null,
   wasSuccessful: boolean,
   timeSpentSeconds: number
@@ -315,6 +392,12 @@ export function completePracticeSession(
   if (module === 'chordPractice') {
     newProgress.modules.chordPractice = updateSessionStats(
       newProgress.modules.chordPractice,
+      wasSuccessful,
+      timeSpentSeconds
+    );
+  } else if (module === 'chordQuiz') {
+    newProgress.modules.chordQuiz = updateSessionStats(
+      newProgress.modules.chordQuiz ?? getDefaultProgress().modules.chordQuiz,
       wasSuccessful,
       timeSpentSeconds
     );
@@ -373,7 +456,11 @@ export function getSuccessRate(stats: SessionStats): number {
 
 // Calculate overall progress
 export function getOverallStats(progress: UserProgress) {
-  const { chordPractice, pitchTraining, musicReading } = progress.modules;
+  const { chordPractice, chordQuiz, pitchTraining, musicReading } = progress.modules;
+
+  const chordQuizTotalRounds = chordQuiz?.totalRounds || 0;
+  const chordQuizSuccessful = chordQuiz?.successfulRounds || 0;
+  const chordQuizBestStreak = chordQuiz?.bestStreak || 0;
 
   const pitchTrainingTotalRounds =
     pitchTraining.notes.totalRounds + pitchTraining.chords.totalRounds;
@@ -398,9 +485,22 @@ export function getOverallStats(progress: UserProgress) {
     musicReading?.bothClef?.bestStreak || 0
   );
 
-  const totalRounds = chordPractice.totalRounds + pitchTrainingTotalRounds + musicReadingTotalRounds;
-  const totalSuccessful = chordPractice.successfulRounds + pitchTrainingSuccessful + musicReadingSuccessful;
-  const bestStreak = Math.max(chordPractice.bestStreak, pitchTrainingBestStreak, musicReadingBestStreak);
+  const totalRounds =
+    chordPractice.totalRounds +
+    chordQuizTotalRounds +
+    pitchTrainingTotalRounds +
+    musicReadingTotalRounds;
+  const totalSuccessful =
+    chordPractice.successfulRounds +
+    chordQuizSuccessful +
+    pitchTrainingSuccessful +
+    musicReadingSuccessful;
+  const bestStreak = Math.max(
+    chordPractice.bestStreak,
+    chordQuizBestStreak,
+    pitchTrainingBestStreak,
+    musicReadingBestStreak
+  );
 
   return {
     totalRounds,
@@ -408,6 +508,14 @@ export function getOverallStats(progress: UserProgress) {
     overallSuccessRate: totalRounds > 0 ? Math.round((totalSuccessful / totalRounds) * 100) : 0,
     bestStreak,
     totalPlayTime: progress.totalPlayTime,
+
+    chordQuiz: {
+      totalRounds: chordQuizTotalRounds,
+      successfulRounds: chordQuizSuccessful,
+      successRate:
+        chordQuizTotalRounds > 0 ? Math.round((chordQuizSuccessful / chordQuizTotalRounds) * 100) : 0,
+      bestStreak: chordQuizBestStreak
+    },
 
     pitchTraining: {
       notes: pitchTraining.notes,
@@ -509,12 +617,83 @@ export const ACHIEVEMENTS: Omit<Achievement, 'unlockedAt'>[] = [
     description: 'Successfully read 50 notes from sheet music',
     icon: '📖',
     category: 'mastery'
+  },
+  {
+    id: 'streak-3',
+    name: 'Warming Up',
+    description: 'Practice 3 days in a row',
+    icon: '🔥',
+    category: 'streak'
+  },
+  {
+    id: 'streak-7',
+    name: 'On Fire',
+    description: 'Practice 7 days in a row',
+    icon: '🔥',
+    category: 'streak'
+  },
+  {
+    id: 'streak-30',
+    name: 'Unstoppable',
+    description: 'Practice 30 days in a row',
+    icon: '🏅',
+    category: 'streak'
+  },
+  {
+    id: 'well-rounded',
+    name: 'Well-Rounded',
+    description: 'Try chord practice, pitch training, and score reading',
+    icon: '🎼',
+    category: 'practice'
+  },
+  {
+    id: 'century',
+    name: 'Centurion',
+    description: 'Complete 100 practice rounds',
+    icon: '💯',
+    category: 'mastery'
+  },
+  {
+    id: 'dedicated',
+    name: 'Dedicated',
+    description: 'Complete 500 practice rounds',
+    icon: '🌟',
+    category: 'mastery'
+  },
+  {
+    id: 'survivor-10',
+    name: 'Survivor',
+    description: 'Build 10 chords in one survival run',
+    icon: '🛡️',
+    category: 'practice'
+  },
+  {
+    id: 'survivor-25',
+    name: 'Ironclad',
+    description: 'Build 25 chords in one survival run',
+    icon: '⚔️',
+    category: 'mastery'
+  },
+  {
+    id: 'quiz-whiz',
+    name: 'Quiz Whiz',
+    description: 'Name 25 chords correctly in the chord quiz',
+    icon: '🧠',
+    category: 'mastery'
   }
 ];
 
+/** Achievements present in `after` but not `before` — for celebration toasts on unlock. */
+export function getNewAchievements(before: UserProgress, after: UserProgress): Achievement[] {
+  const knownIds = new Set(before.achievements.map((a) => a.id));
+  return after.achievements.filter((a) => !knownIds.has(a.id));
+}
+
 // Check and unlock achievements
 export function checkAchievements(progress: UserProgress): UserProgress {
-  const newProgress = { ...progress };
+  // Copy the array (not just the object) so the input's achievements stay untouched and
+  // getNewAchievements can diff the before/after objects.
+  const newProgress = { ...progress, achievements: [...progress.achievements] };
   const unlockedIds = new Set(progress.achievements.map((a) => a.id));
   const now = new Date().toISOString();
   const stats = getOverallStats(progress);
@@ -547,11 +726,41 @@ export function checkAchievements(progress: UserProgress): UserProgress {
         shouldUnlock = (progress.modules.musicReading?.bothClef?.bestStreak || 0) >= 10;
         break;
       case 'score-reader':
-        const allMusicReadingSuccessful = 
+        const allMusicReadingSuccessful =
           (progress.modules.musicReading?.trebleClef?.successfulRounds || 0) +
           (progress.modules.musicReading?.bassClef?.successfulRounds || 0) +
           (progress.modules.musicReading?.bothClef?.successfulRounds || 0);
         shouldUnlock = allMusicReadingSuccessful >= 50;
+        break;
+      case 'streak-3':
+        shouldUnlock = getDailyStreak(progress) >= 3;
+        break;
+      case 'streak-7':
+        shouldUnlock = getDailyStreak(progress) >= 7;
+        break;
+      case 'streak-30':
+        shouldUnlock = getDailyStreak(progress) >= 30;
+        break;
+      case 'well-rounded':
+        shouldUnlock =
+          progress.modules.chordPractice.totalRounds > 0 &&
+          stats.pitchTraining.combined.totalRounds > 0 &&
+          stats.musicReading.combined.totalRounds > 0;
+        break;
+      case 'century':
+        shouldUnlock = stats.totalRounds >= 100;
+        break;
+      case 'dedicated':
+        shouldUnlock = stats.totalRounds >= 500;
+        break;
+      case 'survivor-10':
+        shouldUnlock = (progress.bestSurvival?.chordPractice || 0) >= 10;
+        break;
+      case 'survivor-25':
+        shouldUnlock = (progress.bestSurvival?.chordPractice || 0) >= 25;
+        break;
+      case 'quiz-whiz':
+        shouldUnlock = (progress.modules.chordQuiz?.successfulRounds || 0) >= 25;
         break;
     }
 
@@ -701,9 +910,7 @@ export function importProgress(fileContents: string): UserProgress {
   }
 
   const restored: UserProgress = {
-    ...getDefaultProgress(),
-    ...source,
-    dailyStats: source.dailyStats ?? {},
+    ...normalizeProgress(source),
     achievements: Array.isArray(source.achievements) ? source.achievements : []
   };
 
