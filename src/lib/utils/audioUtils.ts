@@ -1,9 +1,31 @@
-// Audio utility functions for piano playback
+// Audio utility functions for piano playback.
+//
+// This module uses the Web Audio API rather than HTMLAudioElement, and that choice is
+// load-bearing for iOS. Safari on iOS:
+//   - unlocks HTMLAudioElement *per element*, so a cloned <audio> is never unlocked and its
+//     play() rejects with NotAllowedError (this made notes silently fail at random),
+//   - ignores preload='auto' and load() until a user gesture, so preloading never completed,
+//   - queues blocked play() calls and flushes them together once a gesture arrives, which is
+//     why several notes used to fire at once.
+// Decoding into AudioBuffers is not gesture-gated, one AudioContext unlock covers every note,
+// and AudioBufferSourceNodes give unlimited polyphony. Do not "simplify" this back to
+// new Audio() — it works on Android and breaks on iOS.
 
-// Audio cache to store preloaded audio files
-const audioCache = new Map<string, HTMLAudioElement>();
-let isAudioPreloaded = false;
-let preloadPromise: Promise<void> | null = null;
+// Decoded samples, keyed by MP3 basename (see getNoteFileName for the naming rules).
+const bufferCache = new Map<string, AudioBuffer>();
+// In-flight decodes, so concurrent callers share one fetch per file.
+const pendingLoads = new Map<string, Promise<void>>();
+// Currently sounding notes, so retriggering a key can fade the previous voice out.
+const activeVoices = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>();
+
+let audioContext: AudioContext | null = null;
+let isUnlocked = false;
+let unlockListenersAttached = false;
+
+// Fade applied when the same note is retriggered while still ringing, in seconds.
+const RETRIGGER_FADE = 0.03;
+// Attack ramp, in seconds. Avoids a click on note start.
+const ATTACK = 0.002;
 
 // Audio file lists for different key ranges (matching actual MP3 file names)
 const standardAudioFiles = [
@@ -30,112 +52,150 @@ const extendedAudioFiles = [
 
 // Current audio files (defaults to standard for backward compatibility)
 let currentAudioFiles = standardAudioFiles;
+let currentKeyRange: 'standard' | 'extended' = 'standard';
 
-// Function to set the key range for audio files
-export function setAudioKeyRange(keyRange: 'standard' | 'extended' = 'standard'): void {
-  currentAudioFiles = keyRange === 'extended' ? extendedAudioFiles : standardAudioFiles;
-  // Clear the cache when range changes to force reloading
-  audioCache.clear();
-  isAudioPreloaded = false;
-  preloadPromise = null;
+// Lazily create the single AudioContext. Safe to call before any user gesture: the context
+// starts suspended and is resumed by unlockAudio(). Returns null during SSR.
+function getContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  if (audioContext) return audioContext;
+
+  const Ctor = window.AudioContext ?? (window as any).webkitAudioContext;
+  if (!Ctor) {
+    console.error('Web Audio API is not available in this browser.');
+    return null;
+  }
+
+  audioContext = new Ctor();
+
+  // iOS 16.4+: opt into the "playback" audio session so the physical ringer/silent switch
+  // does not mute us. Without this, an iPhone with the mute switch on stays silent.
+  const audioSession = (navigator as any).audioSession;
+  if (audioSession) {
+    try {
+      audioSession.type = 'playback';
+    } catch {
+      // Non-fatal: older iOS exposes the property but rejects the assignment.
+    }
+  }
+
+  attachUnlockListeners();
+  return audioContext;
 }
 
-// Function to preload all audio files
-export function preloadAudio(keyRange: 'standard' | 'extended' = 'standard'): Promise<void> {
-  // Return existing promise if preloading is already in progress
-  if (preloadPromise) {
-    return preloadPromise;
-  }
+// iOS starts every AudioContext suspended and will only resume it from inside a user gesture
+// handler. Resume synchronously on the first interaction and prime the graph with a silent
+// buffer so the very first real note has no startup latency.
+function attachUnlockListeners(): void {
+  if (unlockListenersAttached || typeof window === 'undefined') return;
+  unlockListenersAttached = true;
 
-  // Return immediately if already preloaded
-  if (isAudioPreloaded) {
-    return Promise.resolve();
-  }
+  const events = ['pointerdown', 'touchend', 'keydown'] as const;
 
-  // Set the audio range first
-  setAudioKeyRange(keyRange);
-  
-  preloadPromise = new Promise((resolve, reject) => {
-    let loadedCount = 0;
-    const totalFiles = currentAudioFiles.length;
-    let hasError = false;
+  const unlock = () => {
+    const ctx = audioContext;
+    if (!ctx) return;
 
-    // Handle completion (success or failure)
-    const handleComplete = () => {
-      if (loadedCount === totalFiles) {
-        if (!hasError) {
-          isAudioPreloaded = true;
-          resolve();
-        } else {
-          // Still resolve since we have some audio files loaded
-          isAudioPreloaded = true;
-          resolve();
-        }
+    // Must be called synchronously within the gesture handler, not from a .then().
+    ctx.resume();
+
+    const source = ctx.createBufferSource();
+    source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    source.connect(ctx.destination);
+    source.start(0);
+
+    isUnlocked = true;
+    events.forEach((event) => window.removeEventListener(event, unlock, true));
+  };
+
+  events.forEach((event) => window.addEventListener(event, unlock, true));
+
+  // iOS suspends the context when the tab is backgrounded and after audio interruptions such
+  // as an incoming call. Without this, sound never comes back after switching apps.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && audioContext?.state === 'suspended' && isUnlocked) {
+      audioContext.resume();
+    }
+  });
+}
+
+// decodeAudioData is promise-based in modern browsers but callback-only in older Safari.
+function decode(ctx: AudioContext, data: ArrayBuffer): Promise<AudioBuffer> {
+  return new Promise((resolve, reject) => {
+    const result = ctx.decodeAudioData(data, resolve, reject);
+    // Modern implementations also return a promise; adopt it when present.
+    if (result && typeof result.then === 'function') {
+      result.then(resolve, reject);
+    }
+  });
+}
+
+// Fetch and decode one sample. Deduplicated across concurrent callers.
+function loadSample(fileName: string): Promise<void> {
+  if (bufferCache.has(fileName)) return Promise.resolve();
+
+  const pending = pendingLoads.get(fileName);
+  if (pending) return pending;
+
+  const ctx = getContext();
+  if (!ctx) return Promise.resolve();
+
+  const load = fetch(`/audio/piano/${fileName}.mp3`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} for ${fileName}.mp3`);
       }
-    };
-
-    // Preload each audio file
-    currentAudioFiles.forEach((fileName) => {
-      const audio = new Audio(`/audio/piano/${fileName}.mp3`);
-
-      // Set up event listeners
-      const onLoad = () => {
-        audioCache.set(fileName, audio);
-        loadedCount++;
-        handleComplete();
-        // Clean up listeners
-        audio.removeEventListener('canplaythrough', onLoad);
-        audio.removeEventListener('error', onError);
-      };
-
-      const onError = (error: any) => {
-        hasError = true;
-        loadedCount++;
-        handleComplete();
-        // Clean up listeners
-        audio.removeEventListener('canplaythrough', onLoad);
-        audio.removeEventListener('error', onError);
-      };
-
-      audio.addEventListener('canplaythrough', onLoad);
-      audio.addEventListener('error', onError);
-
-      // Set preload attribute and start loading
-      audio.preload = 'auto';
-      audio.load();
+      return response.arrayBuffer();
+    })
+    .then((data) => decode(ctx, data))
+    .then((buffer) => {
+      bufferCache.set(fileName, buffer);
+    })
+    .catch((error) => {
+      console.error(`Failed to load audio sample ${fileName}.mp3:`, error);
+    })
+    .finally(() => {
+      pendingLoads.delete(fileName);
     });
 
-    // Timeout fallback (30 seconds)
-    setTimeout(() => {
-      if (!isAudioPreloaded) {
-        isAudioPreloaded = true;
-        resolve();
-      }
-    }, 30000);
-  });
-
-  return preloadPromise;
+  pendingLoads.set(fileName, load);
+  return load;
 }
 
-// Function to check if audio is preloaded
+// Function to set the key range for audio files.
+// Unlike the previous HTMLAudioElement implementation this never discards what is already
+// decoded — buffers are range-independent and cheap to keep. It only widens the set to load.
+export function setAudioKeyRange(keyRange: 'standard' | 'extended' = 'standard'): void {
+  if (keyRange === currentKeyRange) return;
+
+  currentKeyRange = keyRange;
+  currentAudioFiles = keyRange === 'extended' ? extendedAudioFiles : standardAudioFiles;
+
+  // Pull in any samples the new range adds, in the background.
+  void preloadAudio(keyRange);
+}
+
+// Function to preload all audio files for a key range
+export function preloadAudio(keyRange: 'standard' | 'extended' = 'standard'): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  if (keyRange !== currentKeyRange) {
+    currentKeyRange = keyRange;
+    currentAudioFiles = keyRange === 'extended' ? extendedAudioFiles : standardAudioFiles;
+  }
+
+  return Promise.all(currentAudioFiles.map(loadSample)).then(() => undefined);
+}
+
+// Function to check if every sample in the current range is decoded and ready
 export function isAudioReady(): boolean {
-  return isAudioPreloaded;
+  return currentAudioFiles.every((fileName) => bufferCache.has(fileName));
 }
 
 // Function to get preload progress (returns number between 0 and 1)
 export function getPreloadProgress(): number {
-  return audioCache.size / currentAudioFiles.length;
-}
-
-// Function to get preloaded audio or create new one as fallback
-function getAudio(fileName: string): HTMLAudioElement {
-  const cachedAudio = audioCache.get(fileName);
-  if (cachedAudio) {
-    return cachedAudio.cloneNode() as HTMLAudioElement;
-  }
-
-  // Fallback: create new audio if not preloaded
-  return new Audio(`/audio/piano/${fileName}.mp3`);
+  const loaded = currentAudioFiles.filter((fileName) => bufferCache.has(fileName)).length;
+  return loaded / currentAudioFiles.length;
 }
 
 // Function to convert note data to MP3 filename
@@ -147,7 +207,7 @@ function getNoteFileName(noteData: string): string {
   // Examples: C#3 → Db3, D#4 → Eb4, F#3 → Gb3, G#4 → Ab4, A#3 → Bb3
   const sharpToFlatMap: { [key: string]: string } = {
     'C#': 'Db',
-    'D#': 'Eb', 
+    'D#': 'Eb',
     'F#': 'Gb',
     'G#': 'Ab',
     'A#': 'Bb'
@@ -163,20 +223,20 @@ function getNoteFileName(noteData: string): string {
 
   // Handle inconsistent MP3 file naming:
   // - Octaves 3-4: lowercase natural notes (c3.mp3, d3.mp3, a3.mp3, etc.)
-  // - Octaves 2, 5-6: uppercase natural notes (C2.mp3, A5.mp3, B6.mp3, etc.)  
+  // - Octaves 2, 5-6: uppercase natural notes (C2.mp3, A5.mp3, B6.mp3, etc.)
   // - All flats: always uppercase (Db3.mp3, Eb4.mp3, Ab3.mp3, etc.)
-  
+
   const octaveMatch = primaryNote.match(/(\d+)$/);
   if (!octaveMatch) return primaryNote; // Fallback if no octave found
-  
+
   const octave = parseInt(octaveMatch[1]);
   const noteWithoutOctave = primaryNote.replace(/\d+$/, '');
-  
+
   // If it's a flat note, always use uppercase
   if (noteWithoutOctave.includes('b')) {
     return primaryNote; // Already in correct format (uppercase)
   }
-  
+
   // For natural notes, use case based on octave
   if (octave >= 3 && octave <= 4) {
     // Octaves 3-4: use lowercase
@@ -187,30 +247,96 @@ function getNoteFileName(noteData: string): string {
   }
 }
 
-// Function to play audio for a given note
-export function playNote(noteData: string): void {
-  try {
-    const fileName = getNoteFileName(noteData);
-    const audio = getAudio(fileName);
+// Start one sample at a specific context time. Every call gets a fresh source node — they are
+// single-use by design, which is what makes chords and rapid repeats work.
+function startVoice(ctx: AudioContext, fileName: string, when: number): void {
+  const buffer = bufferCache.get(fileName);
+  if (!buffer) return;
 
-    // Reset audio to beginning if it's already playing
-    audio.currentTime = 0;
-
-    // Play the audio
-    audio.play().catch((error) => {
-      console.warn(`Could not play audio for ${fileName}:`, error);
-    });
-  } catch (error) {
-    console.error(`Error playing note ${noteData}:`, error);
+  // Fade out any voice still ringing for this note so retriggers don't phase against
+  // themselves.
+  const previous = activeVoices.get(fileName);
+  if (previous) {
+    previous.gain.gain.cancelScheduledValues(when);
+    previous.gain.gain.setValueAtTime(previous.gain.gain.value, when);
+    previous.gain.gain.linearRampToValueAtTime(0, when + RETRIGGER_FADE);
+    previous.source.stop(when + RETRIGGER_FADE);
   }
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, when);
+  gain.gain.linearRampToValueAtTime(1, when + ATTACK);
+
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(ctx.destination);
+
+  source.onended = () => {
+    if (activeVoices.get(fileName)?.source === source) {
+      activeVoices.delete(fileName);
+    }
+    gain.disconnect();
+  };
+
+  source.start(when);
+  activeVoices.set(fileName, { source, gain });
 }
 
-// Function to play multiple notes as a chord
-export function playChord(notes: string[]): void {
-  // Play all notes simultaneously with slight delay to create chord effect
-  notes.forEach((note, index) => {
-    setTimeout(() => {
-      playNote(note);
-    }, index * 50); // 50ms delay between each note for better chord sound
+// Resolve the context, resuming it if a previous interruption left it suspended.
+function getRunningContext(): AudioContext | null {
+  const ctx = getContext();
+  if (!ctx) return null;
+  if (ctx.state === 'suspended') {
+    // playNote is normally called from within a gesture handler, so this resumes immediately.
+    ctx.resume();
+  }
+  return ctx;
+}
+
+// Function to play audio for a given note
+export function playNote(noteData: string): void {
+  const ctx = getRunningContext();
+  if (!ctx) return;
+
+  const fileName = getNoteFileName(noteData);
+
+  if (bufferCache.has(fileName)) {
+    startVoice(ctx, fileName, ctx.currentTime);
+    return;
+  }
+
+  // Not decoded yet (first visit, or a sample outside the preloaded range). Fetch it and play
+  // as soon as it lands.
+  void loadSample(fileName).then(() => {
+    if (bufferCache.has(fileName)) {
+      startVoice(ctx, fileName, ctx.currentTime);
+    }
   });
+}
+
+// Function to play multiple notes as a chord.
+// All voices are scheduled at the same context time so the chord sounds as one event. Pass
+// arpeggiateMs to deliberately roll the notes instead.
+export function playChord(notes: string[], arpeggiateMs = 0): void {
+  const ctx = getRunningContext();
+  if (!ctx) return;
+
+  const fileNames = notes.map(getNoteFileName);
+  const missing = fileNames.filter((fileName) => !bufferCache.has(fileName));
+
+  const schedule = () => {
+    // Re-read the clock after any loading, and give the scheduler a small lead so every voice
+    // starts on the same tick rather than drifting across callbacks.
+    const start = ctx.currentTime + 0.02;
+    fileNames.forEach((fileName, index) => {
+      startVoice(ctx, fileName, start + (index * arpeggiateMs) / 1000);
+    });
+  };
+
+  if (missing.length === 0) {
+    schedule();
+  } else {
+    void Promise.all(missing.map(loadSample)).then(schedule);
+  }
 }
