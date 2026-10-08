@@ -168,7 +168,9 @@ and answering those with a full cached `200` breaks audio playback on iOS specif
 
 Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) builds a `linux/arm64` image
 → pushes to GHCR → SSHes to a Raspberry Pi over a Cloudflare tunnel →
-`docker compose -f docker-compose.prod.yml up -d`.
+`docker compose -f docker-compose.prod.yml up -d` in `/var/www/piano-triads`.
+That compose file (port binding, memory limit, log caps) lives in the separate
+`guilpejon/pi-infra` repo (`apps/piano-triads/`), not here; see `deploy/server-setup.md`.
 
 A `check` job runs `npm ci && npm run check` and the deploy job `needs` it, so a type error
 blocks the deploy. `npm run lint` is deliberately not in CI — it fails on `main` (see above),
