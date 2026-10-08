@@ -10,6 +10,9 @@
   // so a new build waits for the user to accept it rather than swapping under them.
   let needsRefresh = false;
   let applyUpdate: (reloadPage?: boolean) => Promise<void> = async () => {};
+  // Dismissing still activates the waiting worker, just without a reload; otherwise it stays
+  // waiting and the banner comes back on every page load until every tab is closed.
+  let reloadOnActivate = false;
 
   // Register the service worker. Imported dynamically so the virtual module never runs during
   // SSR. This is the app's only registration — nothing else may call navigator.serviceWorker.
@@ -22,6 +25,11 @@
         onNeedRefresh() {
           needsRefresh = true;
         },
+        // Replaces the plugin's unconditional reload once the new worker takes control
+        // (registerSW ignores applyUpdate's reloadPage argument).
+        onNeedReload() {
+          if (reloadOnActivate) window.location.reload();
+        },
         onRegisterError(error) {
           console.error('Service Worker registration failed:', error);
         }
@@ -33,11 +41,13 @@
 
   function reloadForUpdate() {
     needsRefresh = false;
-    void applyUpdate(true);
+    reloadOnActivate = true;
+    void applyUpdate();
   }
 
   function dismissUpdate() {
     needsRefresh = false;
+    void applyUpdate();
   }
 
   onMount(() => {
