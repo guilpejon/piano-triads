@@ -318,12 +318,6 @@
           </div>
         {/if}
 
-        <RoundStatus
-          state={gameState}
-          successText="Correct — that was {currentChord}"
-          failText="Incorrect — that was {currentChord}"
-        />
-
         <!-- Answer options -->
         {#if gameState !== 'waiting'}
           <div class="options-grid" role="group" aria-label="Answer options">
@@ -364,12 +358,18 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano
-          bind:this={pianoComponent}
-          chordNotes={currentChordNotes}
-          stickyOnMobile={true}
-          showOctaveMarkers={true}
-        />
+        <RoundStatus
+          state={gameState}
+          successText="Correct — that was {currentChord}"
+          failText="Incorrect — that was {currentChord}"
+        >
+          <Piano
+            bind:this={pianoComponent}
+            chordNotes={currentChordNotes}
+            stickyOnMobile={true}
+            showOctaveMarkers={true}
+          />
+        </RoundStatus>
       </div>
     </section>
 
@@ -572,8 +572,9 @@
   }
 
   /* Piano */
+  /* Extra top room: RoundStatus floats its result badge in the gap above the keys. */
   .piano-section {
-    margin: 2rem 0;
+    margin: 3.5rem 0 2rem;
   }
 
   .piano-container {
