@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Piano from '$lib/components/Piano.svelte';
-  import RoundStatus from '$lib/components/RoundStatus.svelte';
-  import DifficultyPicker from '$lib/components/DifficultyPicker.svelte';
+  import Piano from '#lib/components/Piano.svelte';
+  import RoundStatus from '#lib/components/RoundStatus.svelte';
+  import DifficultyPicker from '#lib/components/DifficultyPicker.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import { getChord, getPracticeChords } from '$lib/utils/chordUtils';
-  import { playChord } from '$lib/utils/audioUtils';
+  import { getChord, getPracticeChords } from '#lib/utils/chordUtils.js';
+  import { playChord } from '#lib/utils/audioUtils.js';
   import {
     loadProgress,
     saveProgress,
@@ -16,13 +16,13 @@
     DIFFICULTY_SETTINGS,
     type Difficulty,
     type UserProgress
-  } from '$lib/utils/progressUtils';
+  } from '#lib/utils/progressUtils.js';
   import {
     celebrateAchievement,
     celebrateStreak,
     isStreakMilestone
-  } from '$lib/stores/celebrationStore';
-  import { fireConfetti } from '$lib/utils/confetti';
+  } from '#lib/stores/celebrationStore.js';
+  import { fireConfetti } from '#lib/utils/confetti.js';
 
   // Reference to Piano component for auto-scroll
   let pianoComponent: Piano;

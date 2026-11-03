@@ -14,7 +14,7 @@
     ACHIEVEMENTS,
     type UserProgress,
     type Achievement
-  } from '$lib/utils/progressUtils';
+  } from '#lib/utils/progressUtils.js';
 
   let progress: UserProgress | null = null;
   let overallStats: ReturnType<typeof getOverallStats> | null = null;

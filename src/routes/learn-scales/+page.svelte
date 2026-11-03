@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Piano from '$lib/components/Piano.svelte';
+  import Piano from '#lib/components/Piano.svelte';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { playNote } from '$lib/utils/audioUtils';
+  import { page } from '$app/state';
+  import { playNote } from '#lib/utils/audioUtils.js';
   import {
     loadProgress,
     saveProgress,
     checkAchievements,
     type UserProgress
-  } from '$lib/utils/progressUtils';
+  } from '#lib/utils/progressUtils.js';
   import {
     generateScale,
     getScaleDefinition,
@@ -18,7 +18,7 @@
     getScaleDegreeNames,
     getNoteNameOnly,
     areNotesEquivalent
-  } from '$lib/utils/chordUtils';
+  } from '#lib/utils/chordUtils.js';
 
   // Current scale state
   let currentRootNote = 'C';
@@ -69,19 +69,19 @@
     searchParams.set('root', currentRootNote);
 
     const newPath = `/learn-scales?${searchParams.toString()}`;
-    goto(newPath, { replaceState: true });
+    goto(newPath, { replace: true });
   }
 
   // Function to parse URL and set initial scale state
   function parseURLAndSetScale() {
     // Parse scale type from query parameters
-    const scaleParam = $page.url.searchParams.get('scale');
+    const scaleParam = page.url.searchParams.get('scale');
     if (scaleParam && availableScaleTypes.includes(scaleParam)) {
       currentScaleType = scaleParam;
     }
 
     // Parse root note from query parameters
-    const rootParam = $page.url.searchParams.get('root');
+    const rootParam = page.url.searchParams.get('root');
     if (rootParam && availableRootNotes.includes(rootParam)) {
       currentRootNote = rootParam;
     }

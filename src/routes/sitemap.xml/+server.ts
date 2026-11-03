@@ -1,4 +1,4 @@
-import { getSluggedChords } from '$lib/utils/chordUtils';
+import { getSluggedChords } from '#lib/utils/chordUtils.js';
 
 // Built at prerender time, so the Pi serves it as a static file.
 export const prerender = true;

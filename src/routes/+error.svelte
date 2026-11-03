@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
+  import { toStore } from 'svelte/store';
   import { goto } from '$app/navigation';
 
+  // `page` from $app/state is rune state, which a legacy `$:` doesn't track; bridge it to stores.
+  const status = toStore(() => page.status);
+  const error = toStore(() => page.error);
+
   // Determine if this is a 404 error
-  $: is404 = $page.status === 404;
-  $: errorCode = $page.status || 404;
-  $: errorMessage = $page.error?.message || 'Page not found';
+  $: is404 = $status === 404;
+  $: errorCode = $status || 404;
+  $: errorMessage = $error?.message || 'Page not found';
 
   // Piano keys animation state
   let animatedKeys = [0, 2, 4, 5, 7, 9, 11]; // C major scale

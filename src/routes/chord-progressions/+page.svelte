@@ -1,14 +1,14 @@
 <script lang="ts">
-  import Piano from '$lib/components/Piano.svelte';
+  import Piano from '#lib/components/Piano.svelte';
   import { onMount } from 'svelte';
-  import { playChord } from '$lib/utils/audioUtils';
+  import { playChord } from '#lib/utils/audioUtils.js';
   import {
     loadProgress,
     saveProgress,
     checkAchievements,
     type UserProgress
-  } from '$lib/utils/progressUtils';
-  import { getChord, getNoteNameOnly, areNotesEquivalent } from '$lib/utils/chordUtils';
+  } from '#lib/utils/progressUtils.js';
+  import { getChord, getNoteNameOnly, areNotesEquivalent } from '#lib/utils/chordUtils.js';
 
   // Reference to Piano component for auto-scroll
   let pianoComponent: Piano;

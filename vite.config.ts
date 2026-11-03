@@ -1,3 +1,5 @@
+import adapter from '@sveltejs/adapter-node';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
@@ -5,10 +7,22 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
-    tailwindcss(), 
-    sveltekit(),
-    VitePWA({
+    tailwindcss(),
+    sveltekit({
+      // Consult https://svelte.dev/docs/kit/integrations
+      // for more information about preprocessors
+      preprocess: vitePreprocess(),
+      adapter: adapter({ out: 'build' })
+    }),
+
+    // Run the PWA plugins only for the client environment: in the ssr build they emit a
+    // second, empty-precache sw.js into the same directory.
+    ...VitePWA({
       registerType: 'prompt',
+      // SvelteKit 3 builds the client through Vite's environment API and no longer tells
+      // this plugin where its output goes; without these two paths the service worker is
+      // written to dist/ with an empty precache and never ships.
+      outDir: '.svelte-kit/output/client',
       includeAssets: ['favicon.svg', 'robots.txt', 'audio/**/*', 'icons/**/*', 'icon-source.svg', 'icon-maskable.svg'],
       manifest: {
         name: 'Piano Triads - Master Piano Chords & Scales',
@@ -109,6 +123,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        globDirectory: '.svelte-kit/output/client',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3}'],
         runtimeCaching: [
           {
@@ -160,6 +175,8 @@ export default defineConfig({
       devOptions: {
         enabled: false // Disable in dev to avoid hydration conflicts
       }
-    })
+    }).map((plugin) => Object.assign(plugin, {
+      applyToEnvironment: (environment: { name: string }) => environment.name === 'client'
+    }))
   ]
 });

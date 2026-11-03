@@ -3,7 +3,7 @@
 // and dismisses them. Kept separate from progressUtils so celebrations stay presentational.
 
 import { writable } from 'svelte/store';
-import type { Achievement } from '$lib/utils/progressUtils';
+import type { Achievement } from '#lib/utils/progressUtils.js';
 
 type CelebrationData =
   | { type: 'achievement'; achievement: Achievement }

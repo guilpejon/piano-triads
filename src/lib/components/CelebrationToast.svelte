@@ -7,7 +7,7 @@
     celebrations,
     dismissCelebration,
     type CelebrationEvent
-  } from '$lib/stores/celebrationStore';
+  } from '#lib/stores/celebrationStore.js';
 
   const AUTO_DISMISS_MS = 4500;
 

@@ -7,6 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- vite-plugin-pwa generates manifest.webmanifest but cannot inject this link: its
+         transformIndexHtml hook never runs under SvelteKit, which has no index.html. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Apply the saved theme before first paint so the page never flashes the wrong one.
          No stored value means follow the OS, which app.css handles via prefers-color-scheme,

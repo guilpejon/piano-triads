@@ -5,8 +5,8 @@
     getDailyStreak,
     toDayKey,
     type UserProgress
-  } from '$lib/utils/progressUtils';
-  import { getSluggedChords } from '$lib/utils/chordUtils';
+  } from '#lib/utils/progressUtils.js';
+  import { getSluggedChords } from '#lib/utils/chordUtils.js';
 
   const DAILY_GOAL_ROUNDS = 10;
 
