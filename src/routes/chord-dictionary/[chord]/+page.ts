@@ -7,7 +7,7 @@ import {
   getChordToneRule,
   getRelatedChords,
   getSluggedChords
-} from '$lib/utils/chordUtils';
+} from '#lib/utils/chordUtils.js';
 import type { EntryGenerator, PageLoad } from './$types';
 
 // One prerendered page per chord. This route previously 302'd to

@@ -1,23 +1,23 @@
 <script lang="ts">
-  import Piano from '$lib/components/Piano.svelte';
-  import MusicScore from '$lib/components/MusicScore.svelte';
-  import { playChord, preloadAudio } from '$lib/utils/audioUtils';
+  import Piano from '#lib/components/Piano.svelte';
+  import MusicScore from '#lib/components/MusicScore.svelte';
+  import { playChord, preloadAudio } from '#lib/utils/audioUtils.js';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import {
     loadProgress,
     saveProgress,
     checkAchievements,
     type UserProgress
-  } from '$lib/utils/progressUtils';
+  } from '#lib/utils/progressUtils.js';
   import {
     getChordDictionary,
     type ChordDefinition,
     getChordToneRule,
     chordSlug,
     getChord
-  } from '$lib/utils/chordUtils';
+  } from '#lib/utils/chordUtils.js';
 
   const chordDictionary = getChordDictionary();
 
@@ -75,13 +75,13 @@
     }
 
     const newPath = `/chord-dictionary?${searchParams.toString()}`;
-    goto(newPath, { replaceState: true });
+    goto(newPath, { replace: true });
   }
 
   // Function to parse URL and set initial chord state
   function parseURLAndSetChord() {
     // Parse chord from query parameters
-    const chordParam = $page.url.searchParams.get('chord');
+    const chordParam = page.url.searchParams.get('chord');
     if (chordParam) {
       const parsedChord = parseChordFromString(chordParam);
       if (parsedChord) {
@@ -91,7 +91,7 @@
     }
 
     // Parse inversion from query parameters
-    const inversionParam = $page.url.searchParams.get('inversion');
+    const inversionParam = page.url.searchParams.get('inversion');
     if (inversionParam) {
       currentInversion = inversionParam;
     }

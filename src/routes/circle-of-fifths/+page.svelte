@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { playNote } from '$lib/utils/audioUtils';
+  import { playNote } from '#lib/utils/audioUtils.js';
 
   // Circle of Fifths data with proper angles (starting from C at top)
   const circleData = [

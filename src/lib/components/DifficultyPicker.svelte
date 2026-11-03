@@ -6,7 +6,7 @@
     DIFFICULTY_LABELS,
     DIFFICULTY_SETTINGS,
     type Difficulty
-  } from '$lib/utils/progressUtils';
+  } from '#lib/utils/progressUtils.js';
 
   export let value: Difficulty = 'standard';
   export let mode: 'chordPractice' | 'pitchTraining' | 'musicReading' | 'chordQuiz';

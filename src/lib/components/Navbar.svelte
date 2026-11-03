@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
+  import { toStore } from 'svelte/store';
   import { onMount } from 'svelte';
-  import { theme, initTheme, setTheme, cycleTheme, type Theme } from '$lib/utils/themeUtils';
-  import { loadProgress, progressStore, getDailyStreak } from '$lib/utils/progressUtils';
+  import { theme, initTheme, setTheme, cycleTheme, type Theme } from '#lib/utils/themeUtils.js';
+  import { loadProgress, progressStore, getDailyStreak } from '#lib/utils/progressUtils.js';
 
   // The inline script in app.html has already applied the stored theme to <html>; this only
   // syncs the store so the button renders the right icon. loadProgress seeds progressStore
@@ -116,11 +117,14 @@
   // Check if current path is in any dropdown items
   function isDropdownActive(dropdownItems: NavItem[]) {
     if (typeof window === 'undefined') return false;
-    return dropdownItems.some((item: NavItem) => $page.url.pathname === item.href);
+    return dropdownItems.some((item: NavItem) => $pathname === item.href);
   }
 
+  // `page` from $app/state is rune state, which a legacy `$:` doesn't track; bridge it to a store.
+  const pathname = toStore(() => page.url.pathname);
+
   // Reactive statement to get current path (SSR-safe)
-  $: currentPath = typeof window !== 'undefined' ? $page.url.pathname : '/';
+  $: currentPath = typeof window !== 'undefined' ? $pathname : '/';
 </script>
 
 <nav class="navbar">

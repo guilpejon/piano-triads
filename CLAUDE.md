@@ -26,13 +26,25 @@ per-octave note arrays in `audioUtils.ts`), a `// prettier-ignore` keeps both.
 
 ## Architecture
 
-SvelteKit 2 + Svelte 5 PWA. No backend, no database — all user state is `localStorage`.
+SvelteKit 3 + Svelte 5 PWA. No backend, no database — all user state is `localStorage`.
 Nine routes, each a self-contained page; five shared components; four utility modules that
 carry all the domain logic.
 
 **Written entirely in Svelte 4 legacy syntax** — `export let`, `$:`, `on:click`, `<slot>`,
 `createEventDispatcher`. There are zero runes (`$state`/`$props`/`$derived`) in `src/`.
 Match the surrounding style rather than mixing idioms in.
+
+SvelteKit 3 specifics that follow from that:
+- There is no `svelte.config.js`; Kit options (adapter, preprocess) are passed to
+  `sveltekit({...})` in `vite.config.ts`.
+- Shared code is imported as `#lib/...` (Node subpath imports declared in `package.json`), with
+  an explicit extension: `#lib/utils/chordUtils.js` (the file is `.ts`), `#lib/components/Piano.svelte`.
+- `$app/stores` no longer exists. `page` from `$app/state` is rune state, and a legacy `$:`
+  only tracks its static dependencies, so `$: x = page.url.pathname` will **not** re-run on
+  navigation. In a reactive statement, bridge it with
+  `const pathname = toStore(() => page.url.pathname)` (from `svelte/store`) and read
+  `$pathname`. Reading `page` directly is fine inside the template and in functions called
+  on demand.
 
 ### `src/lib/utils/` — the domain layer
 
@@ -95,7 +107,7 @@ Match the surrounding style rather than mixing idioms in.
   explicit light choice has to win on a machine set to dark. Change both together.
 
 - **`seoUtils.ts`** — `pageSEOConfigs` keyed by route id. `SEOHead.svelte` is rendered once
-  in `+layout.svelte` and looks up `$page.route.id`. **Adding a route means adding an entry
+  in `+layout.svelte` and looks up `page.route.id`. **Adding a route means adding an entry
   here**, or the page inherits homepage metadata. Each entry repeats title/description across
   primary, OG, Twitter, and structuredData blocks.
 
@@ -156,6 +168,15 @@ light-only, and a few colors are hard-coded outside it (e.g. the footer in `+lay
 manifest, and `InstallPrompt.svelte` performs the single `registerSW()` call. A hand-written
 `static/sw.js` and `static/manifest.json` used to exist alongside it and were removed —
 do not reintroduce them, and do not add a second `navigator.serviceWorker.register()`.
+
+Under SvelteKit 3 the plugin can no longer find Kit's client output by itself, so
+`vite.config.ts` sets `outDir` and `workbox.globDirectory` to `.svelte-kit/output/client` and
+limits the plugin to the `client` environment. Remove either and the build still succeeds,
+but `sw.js` lands in `dist/` with an empty precache and never ships. After touching the PWA
+config, check that the build log says `precache  ~200 entries` and that `build/client/sw.js`
+exists. The `transform_index_html_unsupported` warning is expected: that hook never ran under
+SvelteKit, which is also why the HTML has no `<link rel="manifest">`, despite the comment in
+`SEOHead.svelte`.
 
 `registerType` is `'prompt'`, so a new build surfaces the update banner in
 `InstallPrompt.svelte` instead of swapping under the user. `devOptions.enabled` is `false`,

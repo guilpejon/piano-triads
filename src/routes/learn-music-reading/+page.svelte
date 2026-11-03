@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Piano from '$lib/components/Piano.svelte';
-  import MusicScore from '$lib/components/MusicScore.svelte';
+  import Piano from '#lib/components/Piano.svelte';
+  import MusicScore from '#lib/components/MusicScore.svelte';
   import { onMount } from 'svelte';
-  import { playNote } from '$lib/utils/audioUtils';
+  import { playNote } from '#lib/utils/audioUtils.js';
 
   // State for selected notes and display
   let selectedNotes: string[] = [];

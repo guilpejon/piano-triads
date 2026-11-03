@@ -1,13 +1,24 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { mergeSEO, pageSEOConfigs, SHARED_OG_META, SHARED_TWITTER_META, type SEOData } from '$lib/utils/seoUtils';
+  import { page } from '$app/state';
+  import { toStore } from 'svelte/store';
+  import { mergeSEO, pageSEOConfigs, SHARED_OG_META, SHARED_TWITTER_META, type SEOData } from '#lib/utils/seoUtils.js';
   
+  // `page` from $app/state is rune state, which a legacy `$:` doesn't track; bridge it to a
+  // store. It must emit a fresh object on every navigation (not just when the route id
+  // changes): +error.svelte sets document.title itself, and leaving it for a route with the
+  // same config key (e.g. /nope -> /) would otherwise keep the "404" title.
+  const current = toStore(() => ({
+    routeId: page.route.id,
+    seo: page.data?.seo,
+    href: page.url.href
+  }));
+
   // Get the current route for dynamic SEO
-  $: currentRoute = $page.route.id?.replace(/^\//, '') || '';  // Remove leading slash
+  $: currentRoute = $current.routeId?.replace(/^\//, '') || '';  // Remove leading slash
   // Routes with per-instance metadata (the prerendered chord pages) return it from load as
   // `seo`. Emitting a second <title> from the page itself would lose to this component's,
   // since layout head content is rendered first.
-  $: pageConfig = ($page.data?.seo as Partial<SEOData>) || pageSEOConfigs[currentRoute] || {};
+  $: pageConfig = ($current.seo as Partial<SEOData>) || pageSEOConfigs[currentRoute] || {};
   $: seoData = mergeSEO(pageConfig);
 </script>
 

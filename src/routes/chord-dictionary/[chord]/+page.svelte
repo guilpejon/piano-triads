@@ -1,7 +1,7 @@
 <script lang="ts">
-  import MusicScore from '$lib/components/MusicScore.svelte';
-  import { playChord } from '$lib/utils/audioUtils';
-  import { chordSlug, getNoteNameOnly } from '$lib/utils/chordUtils';
+  import MusicScore from '#lib/components/MusicScore.svelte';
+  import { playChord } from '#lib/utils/audioUtils.js';
+  import { chordSlug, getNoteNameOnly } from '#lib/utils/chordUtils.js';
   import type { PageData } from './$types';
 
   export let data: PageData;

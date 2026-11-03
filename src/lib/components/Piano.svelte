@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { playNote, setAudioKeyRange } from '$lib/utils/audioUtils';
+  import { playNote, setAudioKeyRange } from '#lib/utils/audioUtils.js';
   import { onMount, afterUpdate, onDestroy } from 'svelte';
 
   // Props to control which enharmonic notation to show

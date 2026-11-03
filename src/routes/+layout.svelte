@@ -1,10 +1,10 @@
 <script lang="ts">
   import '../app.css';
-  import Navbar from '$lib/components/Navbar.svelte';
-  import InstallPrompt from '$lib/components/InstallPrompt.svelte';
-  import CelebrationToast from '$lib/components/CelebrationToast.svelte';
-  import SEOHead from '$lib/components/SEOHead.svelte';
-  import { preloadAudio } from '$lib/utils/audioUtils';
+  import Navbar from '#lib/components/Navbar.svelte';
+  import InstallPrompt from '#lib/components/InstallPrompt.svelte';
+  import CelebrationToast from '#lib/components/CelebrationToast.svelte';
+  import SEOHead from '#lib/components/SEOHead.svelte';
+  import { preloadAudio } from '#lib/utils/audioUtils.js';
   import { onMount } from 'svelte';
 
   // Preload audio files when the app loads.
