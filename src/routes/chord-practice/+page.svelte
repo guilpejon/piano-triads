@@ -545,14 +545,6 @@
           </div>
         {/if}
 
-        <RoundStatus
-          state={gameState}
-          successText="Correct — you built {chordDisplayName}"
-          failText="Incorrect — {chordDisplayName} is {currentChordNotes
-            .map(getNoteNameOnly)
-            .join(', ')}"
-        />
-
         {#if practiceMode === 'survival' && survivalOver && gameState === 'failed'}
           <div class="survival-summary" role="status">
             <p class="survival-headline">
@@ -617,7 +609,15 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} stickyOnMobile={true} showOctaveMarkers={true} />
+        <RoundStatus
+          state={gameState}
+          successText="Correct — you built {chordDisplayName}"
+          failText="Incorrect — {chordDisplayName} is {currentChordNotes
+            .map(getNoteNameOnly)
+            .join(', ')}"
+        >
+          <Piano bind:this={pianoComponent} chordNotes={currentChordNotes} stickyOnMobile={true} showOctaveMarkers={true} />
+        </RoundStatus>
       </div>
     </section>
 

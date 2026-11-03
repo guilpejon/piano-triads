@@ -614,12 +614,6 @@
             {/if}
           </div>
         {/if}
-
-        <RoundStatus
-          state={gameState}
-          successText="Correct — that was {currentTarget}"
-          failText="Incorrect — that was {currentTarget}"
-        />
       </div>
     </section>
 
@@ -642,7 +636,13 @@
     <!-- Piano Section -->
     <section class="piano-section">
       <div class="piano-container">
-        <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} stickyOnMobile={true} showOctaveMarkers={true} />
+        <RoundStatus
+          state={gameState}
+          successText="Correct — that was {currentTarget}"
+          failText="Incorrect — that was {currentTarget}"
+        >
+          <Piano bind:this={pianoComponent} chordNotes={currentTargetNotes} stickyOnMobile={true} showOctaveMarkers={true} />
+        </RoundStatus>
       </div>
     </section>
 
