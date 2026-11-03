@@ -174,9 +174,9 @@ Under SvelteKit 3 the plugin can no longer find Kit's client output by itself, s
 limits the plugin to the `client` environment. Remove either and the build still succeeds,
 but `sw.js` lands in `dist/` with an empty precache and never ships. After touching the PWA
 config, check that the build log says `precache  ~200 entries` and that `build/client/sw.js`
-exists. The `transform_index_html_unsupported` warning is expected: that hook never ran under
-SvelteKit, which is also why the HTML has no `<link rel="manifest">`, despite the comment in
-`SEOHead.svelte`.
+exists. The `transform_index_html_unsupported` warning is expected: that hook never runs under
+SvelteKit, so the plugin can't inject `<link rel="manifest">` either. That link is written by
+hand in `app.html`; keep it pointing at `/manifest.webmanifest`.
 
 `registerType` is `'prompt'`, so a new build surfaces the update banner in
 `InstallPrompt.svelte` instead of swapping under the user. `devOptions.enabled` is `false`,

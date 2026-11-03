@@ -73,9 +73,8 @@
   <meta name="msapplication-TileColor" content="#3480f1" />
   <meta name="msapplication-tap-highlight" content="no" />
 
-  <!-- The manifest link is injected by vite-plugin-pwa (manifest.webmanifest); do not add a
-       second one here. This used to point at the hand-written /manifest.json, which no
-       longer exists. -->
+  <!-- The manifest link lives in app.html (vite-plugin-pwa can't inject it under SvelteKit);
+       do not add a second one here. -->
 
   <!-- Apple Touch Icons -->
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
