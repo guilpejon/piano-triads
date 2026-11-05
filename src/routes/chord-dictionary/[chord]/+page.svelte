@@ -1,6 +1,6 @@
 <script lang="ts">
   import MusicScore from '#lib/components/MusicScore.svelte';
-  import { playChord } from '#lib/utils/audioUtils.js';
+  import { playChord, playNote } from '#lib/utils/audioUtils.js';
   import { chordSlug, getNoteNameOnly } from '#lib/utils/chordUtils.js';
   import type { PageData } from './$types';
 
@@ -54,8 +54,14 @@
       <div class="glass-card notes-card">
         <h2 class="card-heading">Notes</h2>
         <ul class="note-list">
-          {#each noteNames as note}
-            <li class="note-chip">{note}</li>
+          {#each data.chord.root_position as note, i}
+            <li>
+              <button
+                class="note-chip"
+                aria-label="Play {noteNames[i]}"
+                on:click={() => playNote(note)}>{noteNames[i]}</button
+              >
+            </li>
           {/each}
         </ul>
 
@@ -174,7 +180,20 @@
     background: var(--color-surface-subtle);
     border: 1px solid var(--color-border-light);
     color: var(--color-text-primary);
+    font-size: 1rem;
     font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .note-chip:hover {
+    background: var(--color-surface-subtle-hover);
+    border-color: var(--color-border-medium);
+    transform: translateY(-1px);
+  }
+
+  .note-chip:active {
+    transform: translateY(0);
   }
 
   .play-button,
